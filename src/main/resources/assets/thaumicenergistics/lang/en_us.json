@@ -154,5 +154,7 @@
   "tooltip.thaumicenergistics.cell_bytes": "%s of %s bytes used.",
   "tooltip.thaumicenergistics.cell_types": "%s of %s essentia types stored.",
   "tooltip.thaumicenergistics.partitioned": "Partitioned",
-  "tooltip.thaumicenergistics.cell_contents": "%s × %s"
+  "tooltip.thaumicenergistics.cell_contents": "%s × %s",
+  "item.thaumicenergistics.essentia_import_bus": "Essentia Import Bus",
+  "item.thaumicenergistics.essentia_export_bus": "Essentia Export Bus"
 }

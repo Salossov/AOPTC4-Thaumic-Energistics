@@ -99,5 +99,7 @@
   "tooltip.thaumicenergistics.cell_bytes": "%s 바이트가 %s 중에서 사용됨",
   "tooltip.thaumicenergistics.cell_types": "%s 개의 에센스 저장소가 %s 개중에서 사용됨",
   "tooltip.thaumicenergistics.partitioned": "Partitioned",
-  "tooltip.thaumicenergistics.cell_contents": "%s × %s"
+  "tooltip.thaumicenergistics.cell_contents": "%s × %s",
+  "item.thaumicenergistics.essentia_import_bus": "에센시아 입력 버스",
+  "item.thaumicenergistics.essentia_export_bus": "에센시아 출력 버스"
 }

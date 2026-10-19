@@ -61,6 +61,9 @@ def main() -> None:
                 values[modern] = values.get(legacy, english[legacy])
             values["tooltip.thaumicenergistics.partitioned"] = "Размечено" if name.endswith("ru_RU.lang") else "Partitioned"
             values["tooltip.thaumicenergistics.cell_contents"] = "%s × %s"
+            for kind in ("import", "export"):
+                legacy = f"thaumicenergistics.aeparts.essentia.{kind.title()}Bus.name"
+                values[f"item.thaumicenergistics.essentia_{kind}_bus"] = values.get(legacy, english[legacy])
             target = RESOURCE_ROOT / "assets/thaumicenergistics/lang" / (Path(name).stem.lower() + ".json")
             write_json(target, values)
             translations += 1
@@ -72,9 +75,30 @@ def main() -> None:
                 "parent": "minecraft:item/generated", "textures": {"layer0": f"thaumicenergistics:items/storage.component.{suffix}"}})
     write_json(RESOURCE_ROOT / "assets/thaumicenergistics/models/item/storage_casing.json", {
         "parent": "minecraft:item/generated", "textures": {"layer0": "thaumicenergistics:items/essentia.cell.casing"}})
+    for kind in ("import", "export"):
+        textures = {name: f"thaumicenergistics:blocks/parts/essentia.{kind}.bus.{name}" for name in ("face", "overlay", "chamber", "side")}
+        textures["particle"] = textures["side"]
+        textures["light"] = "thaumicenergistics:blocks/parts/bus.color.light"
+        # Original part boxes, mirrored from the old SOUTH coordinate convention to AE2's NORTH.
+        boxes = [([4,4,0],[12,12,1],"side"), ([4,4,1],[12,12,2],"chamber"),
+                 ([5,5,2],[11,11,3],"chamber"), ([5,5,3],[11,11,4],"side")] if kind == "import" else [
+                 ([4,4,3.5],[12,12,4],"side"), ([4,4,2.5],[12,12,3.5],"chamber"),
+                 ([5,5,1.5],[11,11,2.5],"chamber"), ([5,5,1],[11,11,1.5],"side"), ([6,6,0],[10,10,1],"face")]
+        for state in ("off", "on"):
+            elements = []
+            for lower, upper, texture in boxes:
+                faces = {face:{"texture":"#"+texture} for face in ("north","south","east","west","up","down")}
+                if kind == "import" and lower == [4,4,0]: faces["north"] = {"texture":"#face"}
+                elements.append({"from":lower,"to":upper,"faces":faces})
+            elements.append({"from":[6,6,4],"to":[10,10,5],"faces":{
+                face:{"texture":"#light" if state == "on" else "#chamber"} for face in ("north","south","east","west","up","down")}})
+            write_json(RESOURCE_ROOT / f"assets/thaumicenergistics/models/part/essentia_{kind}_bus_{state}.json", {
+                "parent":"minecraft:block/block", "textures":textures,"elements":elements})
+        write_json(RESOURCE_ROOT / f"assets/thaumicenergistics/models/item/essentia_{kind}_bus.json", {
+            "parent":f"thaumicenergistics:part/essentia_{kind}_bus_off"})
     report = {"reference_sha1": "a6240b09a0680f3e3246a6d0fe17650299533a84", "assets": records, "language_files": translations}
     write_json(ADDON / "analysis/imported-resources.json", report)
-    print(f"THE_RELEASE_RESOURCES_IMPORTED assets={len(records)} languages={translations} item_models=10")
+    print(f"THE_RELEASE_RESOURCES_IMPORTED assets={len(records)} languages={translations} item_models=12 part_models=4")
 
 
 if __name__ == "__main__":

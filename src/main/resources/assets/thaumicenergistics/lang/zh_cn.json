@@ -154,5 +154,7 @@
   "tooltip.thaumicenergistics.cell_bytes": "%s / %s 字节已使用.",
   "tooltip.thaumicenergistics.cell_types": "%s / %s 源质类型储存.",
   "tooltip.thaumicenergistics.partitioned": "Partitioned",
-  "tooltip.thaumicenergistics.cell_contents": "%s × %s"
+  "tooltip.thaumicenergistics.cell_contents": "%s × %s",
+  "item.thaumicenergistics.essentia_import_bus": "源质输入总线",
+  "item.thaumicenergistics.essentia_export_bus": "源质输出总线"
 }

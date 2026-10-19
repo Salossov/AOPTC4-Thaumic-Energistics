@@ -2,3 +2,4 @@
 *.jar binary
 *.png binary
 *.nbt binary
+*.png.mcmeta binary

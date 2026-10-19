@@ -31,11 +31,60 @@ import thaumicenergistics.storage.CellTier;
 import thaumicenergistics.storage.EssentiaCell;
 import thaumicenergistics.storage.EssentiaKey;
 import thaumicenergistics.storage.EssentiaKeyType;
+import thaumicenergistics.storage.ContainerStorage;
+import thaumicenergistics.storage.EssentiaTransfers;
+import thaumicenergistics.storage.PoweredEssentiaStorage;
 
 @GameTestHolder(ThaumicEnergistics.ID)
 @PrefixGameTestTemplate(false)
 public final class StorageNativeTest {
     private static final IActionSource SOURCE = IActionSource.empty();
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void nativeContainersAndPartialTransfers(GameTestHelper helper) {
+        VerificationReports.install();
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlockAndUpdate(pos, BuiltInRegistries.BLOCK.get(ResourceLocation.parse("thaumcraft:warded_jar")).defaultBlockState());
+        var jar = level.getCapability(thaumcraft.api.aspects.EssentiaCapabilities.CONTAINER, pos, null);
+        helper.assertTrue(jar != null, "native Thaumcraft jar exposes public container capability");
+        jar.setAspects(new thaumcraft.api.aspects.AspectList().add(Aspects.WATER, 64));
+        var external = ContainerStorage.at(level, pos, false);
+        var water = EssentiaKey.of(Aspects.WATER);
+        var earth = EssentiaKey.of(Aspects.EARTH);
+        var stack = new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());
+        var cell = new EssentiaCell(stack, null);
+        cell.insert(earth, 2047, Actionable.MODULATE, SOURCE);
+        helper.assertTrue(EssentiaTransfers.importFrom(external, cell, water, 32, SOURCE) == 1, "partial import into one remaining cell unit");
+        helper.assertTrue(jar.containerContains(Aspects.WATER) == 63 && cell.ledger().total() == 2048, "approved fix: only one source unit removed, not requested 32");
+        helper.assertTrue(EssentiaTransfers.importFrom(external, cell, water, 32, SOURCE) == 0 && jar.containerContains(Aspects.WATER) == 63, "full network leaves source untouched");
+        helper.assertTrue(EssentiaTransfers.exportTo(cell, external, water, 32, SOURCE) == 1, "export limited to exact jar space");
+        helper.assertTrue(jar.containerContains(Aspects.WATER) == 64 && cell.ledger().total() == 2047, "export conserves units");
+        helper.assertTrue(external.insert(earth, 1, Actionable.MODULATE, SOURCE) == 0, "mixed jar aspects rejected");
+        cell.insert(water, 1, Actionable.MODULATE, SOURCE);
+        var budget = new double[]{0.29};
+        appeng.api.networking.energy.IEnergySource energy = (requested, mode, multiplier) -> {
+            double provided = Math.min(requested, budget[0]);
+            if (mode == Actionable.MODULATE) budget[0] -= provided;
+            return provided;
+        };
+        var powered = new PoweredEssentiaStorage(cell, energy);
+        helper.assertTrue(powered.extract(water, 1, Actionable.MODULATE, SOURCE) == 0 && cell.ledger().total() == 2048, "insufficient 0.3 AE budget prevents transfer");
+        budget[0] = 1;
+        helper.assertTrue(powered.extract(water, 1, Actionable.SIMULATE, SOURCE) == 1 && budget[0] == 1, "power and resource simulation do not mutate");
+        helper.assertTrue(powered.extract(water, 1, Actionable.MODULATE, SOURCE) == 1 && Math.abs(budget[0] - 0.7) < 1e-9, "original 0.3 AE per committed unit");
+        var voidPos = pos.east(2);
+        level.setBlockAndUpdate(voidPos, BuiltInRegistries.BLOCK.get(ResourceLocation.parse("thaumcraft:void_jar")).defaultBlockState());
+        var voidJar = level.getCapability(thaumcraft.api.aspects.EssentiaCapabilities.CONTAINER, voidPos, null);
+        voidJar.setAspects(new thaumcraft.api.aspects.AspectList().add(Aspects.WATER, 64));
+        helper.assertTrue(ContainerStorage.at(level, voidPos, false).insert(water, 8, Actionable.MODULATE, SOURCE) == 0, "default does not void overflow");
+        helper.assertTrue(ContainerStorage.at(level, voidPos, true).insert(water, 8, Actionable.SIMULATE, SOURCE) == 8 && voidJar.containerContains(Aspects.WATER) == 64, "explicit void simulation");
+        helper.assertTrue(ContainerStorage.at(level, voidPos, true).insert(water, 8, Actionable.MODULATE, SOURCE) == 8 && voidJar.containerContains(Aspects.WATER) == 64, "explicit void overflow matches original mode");
+        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(voidPos, Blocks.AIR.defaultBlockState());
+        System.out.println("THE_NATIVE_CONTAINER_TRANSFERS_PASS");
+        helper.succeed();
+    }
 
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void keysAndPersistentCells(GameTestHelper helper) {

@@ -129,5 +129,7 @@
   "tooltip.thaumicenergistics.cell_bytes": "%s из %s байт использовано.",
   "tooltip.thaumicenergistics.cell_types": "%s из %s типов эссенции накоплено.",
   "tooltip.thaumicenergistics.partitioned": "Размечено",
-  "tooltip.thaumicenergistics.cell_contents": "%s × %s"
+  "tooltip.thaumicenergistics.cell_contents": "%s × %s",
+  "item.thaumicenergistics.essentia_import_bus": "Шина импорта эссенции",
+  "item.thaumicenergistics.essentia_export_bus": "Шина экспорта эссенции"
 }
