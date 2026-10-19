@@ -42,6 +42,10 @@ public final class ThaumicEnergistics {
             BLOCK_ENTITIES.register("essentia_cell_workbench", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     thaumicenergistics.blocks.CellWorkbenchBlockEntity::new, CELL_WORKBENCH.get()).build(null));
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ID);
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.StorageBusMenu>> STORAGE_BUS_MENU =
+            MENUS.register("essentia_storage_bus", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(thaumicenergistics.menu.StorageBusMenu::fromNetwork));
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.StoragePriorityMenu>> PRIORITY_MENU =
+            MENUS.register("storage_priority", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create((id,inventory,data) -> new thaumicenergistics.menu.StoragePriorityMenu(id,inventory,null)));
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaBusMenu>> BUS_MENU =
             MENUS.register("essentia_bus", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(thaumicenergistics.menu.EssentiaBusMenu::fromNetwork));
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.CellWorkbenchMenu>> WORKBENCH_MENU =

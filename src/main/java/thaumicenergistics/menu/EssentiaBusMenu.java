@@ -76,7 +76,7 @@ public final class EssentiaBusMenu extends AbstractContainerMenu {
         if (toolSlot >= 0) {
             InternalInventory tool = part == null ? null : toolHost.getInventory();
             var container = tool == null ? new SimpleContainer(9) : tool.toContainer();
-            for (int row = 0; row < 3; row++) for (int col = 0; col < 3; col++) {
+            for (int col = 0; col < 3; col++) for (int row = 0; row < 3; row++) {
                 final int toolIndex = row * 3 + col;
                 addSlot(new Slot(container, toolIndex, 187 + col * 18, 102 + row * 18) {
                     @Override public boolean mayPlace(ItemStack stack) { return tool == null || tool.isItemValid(toolIndex, stack); }
@@ -147,7 +147,6 @@ public final class EssentiaBusMenu extends AbstractContainerMenu {
     private boolean setFilter(int slot, ItemStack stack) {
         if (!filterEnabled(slot)) return false;
         var key = aspectFromItem(stack);
-        if (key == null && !stack.isEmpty()) return false;
         if (key != null) for (int i = 0; i < 9; i++) if (key.tag().equals(part.filter(i))) return false;
         part.filter(slot, key);
         broadcastChanges();

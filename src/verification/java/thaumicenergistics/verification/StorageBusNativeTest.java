@@ -25,6 +25,63 @@ import thaumicenergistics.storage.EssentiaKey;
 @PrefixGameTestTemplate(false)
 public final class StorageBusNativeTest {
     @GameTest(template = "empty", timeoutTicks = 160)
+    public static void nativeStorageBusFinitePower(GameTestHelper helper) {
+        VerificationReports.install(); var level = helper.getLevel(); var cable = helper.absolutePos(new BlockPos(3,2,3));
+        var target = cable.south(); var batteryPos = cable.west();
+        level.setBlockAndUpdate(batteryPos,BuiltInRegistries.BLOCK.get(ResourceLocation.parse("ae2:energy_cell")).defaultBlockState());
+        ((appeng.api.networking.energy.IAEPowerStorage)level.getBlockEntity(batteryPos)).injectAEPower(1000,Actionable.MODULATE);
+        level.setBlockAndUpdate(target,BuiltInRegistries.BLOCK.get(ResourceLocation.parse("thaumcraft:warded_jar")).defaultBlockState());
+        var jar = level.getCapability(EssentiaCapabilities.CONTAINER,target,null); jar.setAspects(new AspectList().add(Aspects.WATER,8));
+        PartHelper.setPart(level,cable,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+        var bus = PartHelper.setPart(level,cable,Direction.SOUTH,null,ThaumicEnergistics.STORAGE_BUS.get());
+        helper.runAfterDelay(50,() -> {
+            helper.assertTrue(bus.getMainNode().isActive(), "finite battery boots actual storage-bus network");
+            var energy = bus.getMainNode().getGrid().getEnergyService(); var water = EssentiaKey.of(Aspects.WATER); var source = IActionSource.empty();
+            var multiplier = appeng.api.config.PowerMultiplier.CONFIG;
+            double before = energy.extractAEPower(1e9,Actionable.SIMULATE,multiplier);
+            helper.assertTrue(bus.storage().extract(water,1000,Actionable.SIMULATE,source) == 8 && jar.containerContains(Aspects.WATER) == 8
+                    && Math.abs(energy.extractAEPower(1e9,Actionable.SIMULATE,multiplier)-before) < 1e-7, "storage bus simulates power for available eight units, not whole thousand-unit request");
+            helper.assertTrue(bus.storage().extract(water,1000,Actionable.MODULATE,source) == 8
+                    && Math.abs(before-energy.extractAEPower(1e9,Actionable.SIMULATE,multiplier)-2.4) < 1e-7, "actual finite grid debits original .3 AE per extracted unit");
+            before = energy.extractAEPower(1e9,Actionable.SIMULATE,multiplier);
+            helper.assertTrue(bus.storage().insert(water,2,Actionable.MODULATE,source) == 2
+                    && Math.abs(before-energy.extractAEPower(1e9,Actionable.SIMULATE,multiplier)-.6) < 1e-7, "actual finite grid debits .3 AE per inserted unit");
+            energy.extractAEPower(1e9,Actionable.MODULATE,multiplier); energy.injectPower(.29,Actionable.MODULATE);
+            helper.assertTrue(bus.storage().extract(water,1,Actionable.MODULATE,source) == 0 && jar.containerContains(Aspects.WATER) == 2,
+                    "insufficient .29 AE leaves native jar untouched");
+            energy.injectPower(.32,Actionable.MODULATE);
+            helper.assertTrue(bus.storage().extract(water,2,Actionable.MODULATE,source) == 2 && jar.containerContains(Aspects.WATER) == 0,
+                    "refilling to .61 AE permits two actual units without partial-budget rounding");
+            for (var pos : java.util.List.of(cable,target,batteryPos)) level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());
+            System.out.println("THE_NATIVE_STORAGE_BUS_FINITE_POWER_PASS"); helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 160)
+    public static void nativeStorageBusPriorityOrder(GameTestHelper helper) {
+        VerificationReports.install(); var level = helper.getLevel(); var drive = helper.absolutePos(new BlockPos(2,2,2)); var cable = drive.south(); var target = cable.south();
+        level.setBlockAndUpdate(drive,BuiltInRegistries.BLOCK.get(ResourceLocation.parse("ae2:drive")).defaultBlockState());
+        level.setBlockAndUpdate(drive.west(),BuiltInRegistries.BLOCK.get(ResourceLocation.parse("ae2:creative_energy_cell")).defaultBlockState());
+        level.setBlockAndUpdate(target,BuiltInRegistries.BLOCK.get(ResourceLocation.parse("thaumcraft:warded_jar")).defaultBlockState());
+        var jar = level.getCapability(EssentiaCapabilities.CONTAINER,target,null);
+        var driveSlots = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,drive,Direction.UP);
+        var cellItem = ThaumicEnergistics.CELLS.get(thaumicenergistics.storage.CellTier.K1).get(); driveSlots.insertItem(0,new ItemStack(cellItem),false);
+        PartHelper.setPart(level,cable,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+        var bus = PartHelper.setPart(level,cable,Direction.SOUTH,null,ThaumicEnergistics.STORAGE_BUS.get()); bus.priority(10);
+        helper.runAfterDelay(50,() -> {
+            var storage = bus.getMainNode().getGrid().getStorageService().getInventory(); var water = EssentiaKey.of(Aspects.WATER); var source = IActionSource.empty();
+            helper.assertTrue(storage.insert(water,100,Actionable.MODULATE,source) == 100 && jar.containerContains(Aspects.WATER) == 64
+                    && new thaumicenergistics.storage.EssentiaCell(driveSlots.getStackInSlot(0),null).ledger().total() == 36,
+                    "native positive-priority jar fills before lower-priority drive and preserves remainder");
+            jar.setAspects(new AspectList()); driveSlots.extractItem(0,1,false); driveSlots.insertItem(0,new ItemStack(cellItem),false); bus.priority(-10);
+            helper.assertTrue(storage.insert(water,20,Actionable.MODULATE,source) == 20 && jar.containerContains(Aspects.WATER) == 0
+                    && new thaumicenergistics.storage.EssentiaCell(driveSlots.getStackInSlot(0),null).ledger().total() == 20,
+                    "native negative-priority bus yields to zero-priority drive after remount");
+            for (var pos : java.util.List.of(cable,target,drive,drive.west())) level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());
+            System.out.println("THE_NATIVE_STORAGE_BUS_PRIORITY_PASS"); helper.succeed();
+        });
+    }
+    @GameTest(template = "empty", timeoutTicks = 160)
     public static void nativeStorageBusCondenser(GameTestHelper helper) {
         VerificationReports.install();
         var level = helper.getLevel(); var cable = helper.absolutePos(new BlockPos(3,2,3)); var target = cable.south();

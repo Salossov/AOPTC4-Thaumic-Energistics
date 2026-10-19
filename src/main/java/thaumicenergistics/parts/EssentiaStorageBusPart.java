@@ -58,6 +58,15 @@ public final class EssentiaStorageBusPart extends AEBasePart implements IStorage
         upgrades = UpgradeInventories.forMachine(item, 1, this::configurationChanged);
     }
     public EssentiaStorageBusStorage storage() { return storage; }
+    @Override public boolean onUseWithoutItem(Player player, net.minecraft.world.phys.Vec3 hit) { openMenu(player,false); return true; }
+    public void openMenu(Player player, boolean priorityScreen) {
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer server) || !thaumicenergistics.menu.StorageBusMenu.partValid(this,player)) return;
+        var provider = new net.minecraft.world.SimpleMenuProvider((id,inventory,owner) -> priorityScreen
+                ? new thaumicenergistics.menu.StoragePriorityMenu(id,inventory,this) : new thaumicenergistics.menu.StorageBusMenu(id,inventory,this),
+                priorityScreen ? net.minecraft.network.chat.Component.translatable("gui.ae2.Priority") : getName());
+        if (priorityScreen) server.openMenu(provider);
+        else server.openMenu(provider,buffer -> buffer.writeVarInt(thaumicenergistics.menu.EssentiaBusMenu.findToolSlot(player)));
+    }
     @Override public IUpgradeInventory getUpgrades() { return upgrades; }
     public String filter(int slot) { return filters[slot]; }
     public int priority() { return priority; }
