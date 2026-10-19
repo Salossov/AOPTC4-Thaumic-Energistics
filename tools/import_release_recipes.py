@@ -115,7 +115,7 @@ def main() -> None:
     report = {"recipes": [], "mappings": ITEMS, "replacements": {
         "PureCertusQuartz": "Removed modern AE2 item; regular certus is its analogue. Original group now contains only regular and charged certus.",
         "IronIngot": "Forge ingotIron -> common c:ingots/iron tag", "research_keys": "Original TE names -> lowercase namespaced IDs; new worlds only."},
-        "research_status": "Aliases await approval; Vis arcane-terminal parent is still unported."}
+        "research_status": "Research aliases approved; implementation pending. Vis arcane-terminal parent is still unported."}
     for feature, research in FEATURES.items():
         relative = f"thaumicenergistics/common/features/{feature}.java"
         source = ADDON / "source_code/src/main/java" / relative

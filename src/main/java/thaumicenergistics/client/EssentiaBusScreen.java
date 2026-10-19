@@ -28,13 +28,13 @@ public final class EssentiaBusScreen extends AbstractContainerScreen<EssentiaBus
     }
 
     @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.blit(BACKGROUND, leftPos, topPos, 0, 0, 176, 184);
-        graphics.blit(BACKGROUND, leftPos + 176, topPos, 176, 0, 35, 86);
-        if (menu.hasNetworkTool()) graphics.blit(BACKGROUND, leftPos + 176, topPos + 96, 176, 96, 70, 64);
+        GuiTextures.blit(graphics, BACKGROUND, leftPos, topPos, 0, 0, 176, 184);
+        GuiTextures.blit(graphics, BACKGROUND, leftPos + 176, topPos, 176, 0, 35, 86);
+        if (menu.hasNetworkTool()) GuiTextures.blit(graphics, BACKGROUND, leftPos + 176, topPos + 96, 176, 96, 70, 64);
         for (int i = 0; i < 9; i++) {
             int x = leftPos + 62 + i % 3 * 18, y = topPos + 22 + i / 3 * 18;
             // Enabled slots have the same dark inset as the center slot in the release texture.
-            if (menu.filterEnabled(i)) graphics.blit(BACKGROUND, x - 1, y - 1, 79, 39, 18, 18);
+            if (menu.filterEnabled(i)) GuiTextures.blit(graphics, BACKGROUND, x - 1, y - 1, 79, 39, 18, 18);
         }
         if (menu.hasRedstoneCard()) {
             var icon = switch (menu.redstoneMode()) {

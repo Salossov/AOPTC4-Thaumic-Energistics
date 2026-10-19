@@ -20,7 +20,7 @@ public final class CellWorkbenchScreen extends AbstractContainerScreen<CellWorkb
         titleLabelX = 6; titleLabelY = 6;
     }
     @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        GuiTextures.blit(graphics, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         if (!menu.getSlot(CellWorkbenchMenu.CELL_SLOT).hasItem())
             Icon.BACKGROUND_STORAGE_CELL.getBlitter().dest(leftPos + 152, topPos + 8).blit(graphics);
         Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos - 18, topPos + 8).blit(graphics);

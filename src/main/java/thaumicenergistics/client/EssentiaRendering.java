@@ -41,16 +41,30 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
                 : ResourceLocation.parse(key.aspect().texture());
     }
     @Override public void drawInGui(Minecraft minecraft, GuiGraphics graphics, int x, int y, EssentiaKey key) {
-        graphics.blit(texture(key), x, y, 0, 0, 16, 16, 16, 16);
+        int color = key.aspect() == null ? 0xffffff : key.aspect().getColor();
+        float[] previous = com.mojang.blaze3d.systems.RenderSystem.getShaderColor().clone();
+        graphics.flush();
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+        graphics.setColor(((color >> 16) & 255) / 255f, ((color >> 8) & 255) / 255f, (color & 255) / 255f, 1);
+        // flush() enables depth testing even when the container disabled it for slots.
+        com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
+        graphics.blit(texture(key), x, y, 16, 16, 0, 0, 32, 32, 32, 32);
+        graphics.flush();
+        graphics.setColor(previous[0], previous[1], previous[2], previous[3]);
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
     }
     @Override public void drawOnBlockFace(PoseStack poses, MultiBufferSource buffers, EssentiaKey key, float scale, int light, Level level) {
         var vertices = buffers.getBuffer(RenderType.entityTranslucent(texture(key)));
         var pose = poses.last();
         float half = scale / 2;
-        vertices.addVertex(pose, -half, -half, 0).setColor(255,255,255,255).setUv(0,1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose,0,0,1);
-        vertices.addVertex(pose, half, -half, 0).setColor(255,255,255,255).setUv(1,1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose,0,0,1);
-        vertices.addVertex(pose, half, half, 0).setColor(255,255,255,255).setUv(1,0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose,0,0,1);
-        vertices.addVertex(pose, -half, half, 0).setColor(255,255,255,255).setUv(0,0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose,0,0,1);
+        int color = key.aspect() == null ? 0xffffff : key.aspect().getColor();
+        int red = (color >> 16) & 255, green = (color >> 8) & 255, blue = color & 255;
+        vertices.addVertex(pose, -half, -half, 0).setColor(red,green,blue,255).setUv(0,1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose,0,0,1);
+        vertices.addVertex(pose, half, -half, 0).setColor(red,green,blue,255).setUv(1,1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose,0,0,1);
+        vertices.addVertex(pose, half, half, 0).setColor(red,green,blue,255).setUv(1,0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose,0,0,1);
+        vertices.addVertex(pose, -half, half, 0).setColor(red,green,blue,255).setUv(0,0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose,0,0,1);
     }
     @Override public Component getDisplayName(EssentiaKey key) { return key.getDisplayName(); }
 }

@@ -26,7 +26,10 @@ neoForge {
         }
     }
     runs {
-        client { client(); gameDirectory = file('runs/client') }
+        client {
+            client(); sourceSet = sourceSets.verification; gameDirectory = file('runs/client')
+            programArguments.addAll('--mixin','thaumicenergistics-smoke.mixins.json')
+        }
         clientSmoke {
             client()
             sourceSet = sourceSets.verification
@@ -35,6 +38,7 @@ neoForge {
             // This host permits IPv4 localhost but rejects ::1; JDK's NIO selector
             // wakeup pipe otherwise fails before integrated-server login.
             systemProperty 'java.net.preferIPv4Stack', 'true'
+            programArguments.addAll('--mixin','thaumicenergistics-smoke.mixins.json')
             programArguments.addAll('--quickPlaySingleplayer', 'THE-client-menu-smoke', '--width', '1280', '--height', '720')
         }
         gameTestServer {
@@ -88,6 +92,28 @@ tasks.register('storageRulesTest', JavaExec) {
     mainClass = 'thaumicenergistics.storage.StorageRulesTest'
 }
 tasks.named('check') { dependsOn 'storageRulesTest', 'verificationClasses' }
+
+tasks.register('prepareQuietClient') {
+    def earlyConfig = file('runs/client/config/fml.toml')
+    def options = file('runs/client/options.txt')
+    doLast {
+        earlyConfig.parentFile.mkdirs()
+        def configText = earlyConfig.isFile() ? earlyConfig.getText('UTF-8') : ''
+        // Disable the separate FML splash before any GLFW window can be created.
+        configText = configText.replaceAll('(?m)^earlyWindowControl\\s*=.*$', 'earlyWindowControl = false')
+        if (!(configText =~ /(?m)^earlyWindowControl\s*=/).find()) configText += '\nearlyWindowControl = false\n'
+        earlyConfig.setText(configText,'UTF-8')
+        def optionText = options.isFile() ? options.getText('UTF-8') : ''
+        [soundCategory_master:'0.0', pauseOnLostFocus:'false', fullscreen:'false', maxFps:'30'].each { name,value ->
+            def line = "${name}:${value}"
+            if ((optionText =~ "(?m)^${name}:").find()) optionText = optionText.replaceAll("(?m)^${name}:.*\$",line)
+            else optionText += "\n${line}\n"
+        }
+        options.setText(optionText,'UTF-8')
+    }
+}
+tasks.named('runClient') { dependsOn 'prepareQuietClient' }
+tasks.named('runClientSmoke') { dependsOn 'prepareQuietClient' }
 
 tasks.named('runGameTestServer') {
     dependsOn 'jar'
@@ -150,9 +176,10 @@ tasks.named('runClientSmoke') {
     doLast {
         if (!result.isFile()) throw new GradleException('Client smoke produced no result')
         def outcome = new groovy.json.JsonSlurper().parse(result)
-        def requiredChecks = ['server_cursor_filter_packet','inverter_tool_and_void_packets','absolute_priority_real_payload',
-                'backspace_at_typing_limit','io_capacity_card_packet','workbench_real_cell_and_partition_packets','vis_drain_color_real_client_sync']
-        if (outcome.automation_passed != true || outcome.screenshots.size() < 8
+        def requiredChecks = ['server_cursor_filter_packet','storage_filter_retained_after_inverter','inverter_tool_and_void_packets','absolute_priority_real_payload',
+                'backspace_at_typing_limit','io_capacity_card_packet','workbench_real_cell_and_partition_packets','vis_drain_color_real_client_sync',
+                'hidden_unfocused_window','sound_playback_blocked','aspect_palette_rendered']
+        if (outcome.automation_passed != true || outcome.screenshots.size() < 11
                 || requiredChecks.any { outcome[it] != true }
                 || outcome.screenshots.any { !new File(it).isFile() || new File(it).length() < 100 }) {
             throw new GradleException("Client automation failed or screenshots missing: ${result}")

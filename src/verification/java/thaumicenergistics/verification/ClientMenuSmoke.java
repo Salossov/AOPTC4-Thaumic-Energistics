@@ -73,6 +73,13 @@ public final class ClientMenuSmoke {
         if (!Boolean.getBoolean("thaumicenergistics.clientSmoke") || finished) return;
         var mc = Minecraft.getInstance();
         try {
+            long window=mc.getWindow().getWindow();
+            if (!Boolean.getBoolean("thaumicenergistics.hiddenWindowHook") || !Boolean.getBoolean("thaumicenergistics.silentSoundHook"))
+                throw new IllegalStateException("Hidden/silent verification hooks were not installed");
+            if (org.lwjgl.glfw.GLFW.glfwGetWindowAttrib(window,org.lwjgl.glfw.GLFW.GLFW_VISIBLE)!=0
+                    || org.lwjgl.glfw.GLFW.glfwGetWindowAttrib(window,org.lwjgl.glfw.GLFW.GLFW_FOCUSED)!=0)
+                throw new IllegalStateException("Verification window must stay hidden and unfocused");
+            EVIDENCE.put("hidden_unfocused_window",true); EVIDENCE.put("sound_playback_blocked",true);
             if (++totalTicks > 6000) throw new IllegalStateException("Client smoke timeout; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName()));
             if (totalTicks % 200 == 0) System.out.println("THE_CLIENT_SMOKE_STATE step=" + step + " screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName()));
             if (SERVER_ERROR.get() != null) throw new IllegalStateException("Server fixture/action failed",SERVER_ERROR.get());
@@ -126,6 +133,8 @@ public final class ClientMenuSmoke {
                 }
                 case 7 -> {
                     if (mc.player.containerMenu instanceof StorageBusMenu menu && menu.allowVoid() && !menu.getSlot(46).getItem().isEmpty()) {
+                        if(!EssentiaKey.of(Aspects.WATER).equals(menu.filter(4))) throw new IllegalStateException("Storage filter lost after inverter insertion");
+                        EVIDENCE.put("storage_filter_retained_after_inverter",true);
                         EVIDENCE.put("inverter_tool_and_void_packets",true); capture("storage-inverter-void");
                     }
                 }
@@ -200,7 +209,14 @@ public final class ClientMenuSmoke {
                         EVIDENCE.put("vis_drain_color_real_client_sync",true); capture("vis-interface-water");
                     }
                 }
-                case 28 -> finish(true,null);
+                case 28 -> { mc.setScreen(new AspectPaletteScreen()); advance(); }
+                case 29 -> {
+                    if(mc.screen instanceof AspectPaletteScreen palette) {
+                        EVIDENCE.put("aspect_palette",palette.samples()); EVIDENCE.put("gui_scale",mc.getWindow().getGuiScale());
+                        EVIDENCE.put("aspect_palette_rendered",true); capture("aspect-palette");
+                    }
+                }
+                case 30 -> finish(true,null);
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
             if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName()));
@@ -236,6 +252,8 @@ public final class ClientMenuSmoke {
         var inverter = ae("inverter_card"); inverter.setCount(2); player.getInventory().setItem(10,inverter);
         var capacity = ae("capacity_card"); capacity.setCount(2); player.getInventory().setItem(11,capacity);
         player.getInventory().setItem(12,cell);
+        player.getInventory().setItem(13,new ItemStack(ThaumicEnergistics.DIFFUSION_CORE.get()));
+        player.getInventory().setItem(14,new ItemStack(ThaumicEnergistics.COALESCENCE_CORE.get()));
         player.teleportTo(level,4.5,100,6.5,160,25);
         storage.openMenu(player,false);
         Minecraft.getInstance().execute(ClientMenuSmoke::advance);

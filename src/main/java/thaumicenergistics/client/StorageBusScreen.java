@@ -24,9 +24,9 @@ public final class StorageBusScreen extends AbstractContainerScreen<StorageBusMe
         graphics.renderItem(wrench.getDefaultInstance(),x+3,y+3);
     }
     @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.blit(TEXTURE,leftPos,topPos,0,0,176,222);
-        graphics.blit(TEXTURE,leftPos+179,topPos,179,0,32,32);
-        if (menu.hasNetworkTool()) graphics.blit(TEXTURE,leftPos+179,topPos+93,178,93,68,68);
+        GuiTextures.blit(graphics, TEXTURE,leftPos,topPos,0,0,176,222);
+        GuiTextures.blit(graphics, TEXTURE,leftPos+179,topPos,179,0,32,32);
+        if (menu.hasNetworkTool()) GuiTextures.blit(graphics, TEXTURE,leftPos+179,topPos+93,178,93,68,68);
         if (!menu.getSlot(9).hasItem()) Icon.BACKGROUND_UPGRADE.getBlitter().dest(leftPos+187,topPos+8).blit(graphics);
         tab(graphics,leftPos+154,topPos);
         Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos-18,topPos+8,18,18).blit(graphics);
