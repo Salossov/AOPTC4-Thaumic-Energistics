@@ -35,13 +35,23 @@ def main() -> None:
         for name in jar.namelist():
             if not name.startswith("assets/thaumicenergistics/") or name.endswith("/") or "/lang/" in name:
                 continue
-            target = (RESOURCE_ROOT / name).resolve()
-            if not target.is_relative_to(RESOURCE_ROOT.resolve()):
+            modern_name = name.replace("golemBackpack", "golem_backpack").lower()
+            # Keep the requested spelling: Windows resolve() may return the old
+            # uppercase on-disk filename during a case-only modernization.
+            target = RESOURCE_ROOT.resolve() / modern_name
+            if not target.resolve().is_relative_to(RESOURCE_ROOT.resolve()):
                 raise ValueError(name)
             target.parent.mkdir(parents=True, exist_ok=True)
             data = jar.read(name)
+            if modern_name != name:
+                old = RESOURCE_ROOT.resolve() / name
+                if old.is_file():
+                    if old.read_bytes() != data:
+                        raise ValueError(f"Refusing to remove modified legacy asset {name}")
+                    old.unlink()
+                    if old.parent != target.parent and not any(old.parent.iterdir()): old.parent.rmdir()
             target.write_bytes(data)
-            records.append({"path": name, "sha256": hashlib.sha256(data).hexdigest()})
+            records.append({"path": modern_name, "original_path": name, "sha256": hashlib.sha256(data).hexdigest()})
         translations = 0
         for name in jar.namelist():
             if not name.startswith("assets/thaumicenergistics/lang/") or not name.endswith(".lang"):

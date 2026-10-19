@@ -27,6 +27,16 @@ neoForge {
     }
     runs {
         client { client(); gameDirectory = file('runs/client') }
+        clientSmoke {
+            client()
+            sourceSet = sourceSets.verification
+            gameDirectory = file('runs/client')
+            systemProperty 'thaumicenergistics.clientSmoke', 'true'
+            // This host permits IPv4 localhost but rejects ::1; JDK's NIO selector
+            // wakeup pipe otherwise fails before integrated-server login.
+            systemProperty 'java.net.preferIPv4Stack', 'true'
+            programArguments.addAll('--quickPlaySingleplayer', 'THE-client-menu-smoke', '--width', '1280', '--height', '720')
+        }
         gameTestServer {
             type = 'gameTestServer'
             sourceSet = sourceSets.verification
@@ -62,6 +72,11 @@ tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.withType(AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
 tasks.withType(Jar).configureEach { from('LICENSE'); from('NOTICE.md') }
 tasks.named('processResources') {
+    def legacyResearchOutput = file('build/resources/main/assets/thaumicenergistics/textures/research/Research.Background.png')
+    doFirst {
+        // Windows Copy can otherwise keep the old case-only output spelling.
+        if (legacyResearchOutput.isFile() && !legacyResearchOutput.delete()) throw new GradleException('Cannot clear old research-texture output')
+    }
     inputs.property('mod_version', project.version)
     def values = [mod_version: project.version]
     filesMatching('META-INF/neoforge.mods.toml') { expand(values) }
@@ -105,5 +120,37 @@ tasks.named('runGameTestServer') {
         evidence.report_sha256 = java.security.MessageDigest.getInstance('SHA-256').digest(report.bytes).encodeHex().toString()
         provenance.text = new groovy.json.JsonBuilder(evidence).toPrettyString()
         logger.lifecycle("THE_FRESH_GAMETEST_REPORT_PASS tests=${count}")
+    }
+}
+
+tasks.named('runClientSmoke') {
+    dependsOn 'jar'
+    def result = file('runs/client/thaumicenergistics-smoke/result.json')
+    def provenance = file('build/test-results/client-smoke-inputs.json')
+    def clientInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar]
+    doFirst {
+        if (result.exists() && !result.delete()) throw new GradleException('Cannot clear previous client-smoke result')
+        def inputs = clientInputs.collectEntries { name, path ->
+            [(name): [path: path.absolutePath, sha256: java.security.MessageDigest.getInstance('SHA-256').digest(path.bytes).encodeHex().toString()]]
+        }
+        provenance.parentFile.mkdirs()
+        provenance.text = new groovy.json.JsonBuilder([inputs: inputs, completed: false]).toPrettyString()
+    }
+    doLast {
+        if (!result.isFile()) throw new GradleException('Client smoke produced no result')
+        def outcome = new groovy.json.JsonSlurper().parse(result)
+        if (outcome.automation_passed != true || outcome.screenshots.size() < 8
+                || outcome.screenshots.any { !new File(it).isFile() || new File(it).length() < 100 }) {
+            throw new GradleException("Client automation failed or screenshots missing: ${result}")
+        }
+        def evidence = new groovy.json.JsonSlurper().parse(provenance)
+        clientInputs.each { name, path ->
+            def actual = java.security.MessageDigest.getInstance('SHA-256').digest(path.bytes).encodeHex().toString()
+            if (actual != evidence.inputs[name].sha256) throw new GradleException("Client input changed during verification: ${name}")
+        }
+        evidence.completed = true
+        evidence.result_sha256 = java.security.MessageDigest.getInstance('SHA-256').digest(result.bytes).encodeHex().toString()
+        provenance.text = new groovy.json.JsonBuilder(evidence).toPrettyString()
+        logger.lifecycle("THE_FRESH_CLIENT_SMOKE_PASS screenshots=${outcome.screenshots.size()}; visual review still required")
     }
 }

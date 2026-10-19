@@ -13,6 +13,33 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def client_evidence(code_files: list[Path]) -> dict:
+    result_path = PROJECT / "runs/client/thaumicenergistics-smoke/result.json"
+    receipt_path = PROJECT / "build/test-results/client-smoke-inputs.json"
+    review_path = PROJECT.parent / "analysis/client-menu-review.json"
+    if not receipt_path.is_file():
+        return {"automation_passed": False, "visual_reviewed": False}
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if not receipt.get("completed") or receipt.get("result_sha256") != sha256(result_path):
+        raise SystemExit("Client receipt incomplete or belongs to another result")
+    for name, entry in receipt["inputs"].items():
+        if sha256(Path(entry["path"])) != entry["sha256"]:
+            raise SystemExit(f"Client input rebuilt since verification: {name}; rerun client smoke")
+    if any(path.stat().st_mtime_ns > result_path.stat().st_mtime_ns for path in code_files):
+        raise SystemExit("Client smoke predates a Java source change; rerun client smoke")
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    screenshots = result.get("screenshots", [])
+    if not result.get("automation_passed") or len(screenshots) < 8:
+        raise SystemExit("Client smoke failed or screenshots missing")
+    hashes = {str(Path(path).resolve()): sha256(Path(path)) for path in screenshots}
+    review = json.loads(review_path.read_text(encoding="utf-8")) if review_path.is_file() else {}
+    reviewed = (review.get("result_sha256") == sha256(result_path)
+                and review.get("screenshots") == hashes and review.get("passed") is True)
+    return {"automation_passed": True, "visual_reviewed": reviewed,
+            "result_sha256": sha256(result_path), "screenshots": hashes,
+            "scope": "storage bus, priority editor, import/export menus, cell workbench and fixture at GUI scale 2"}
+
+
 def main() -> None:
     artifact = PROJECT / "build/libs/thaumicenergistics-1.21.1-1.1.3.0-port.1.jar"
     reference = json.loads((PROJECT.parent / "analysis/imported-resources.json").read_text(encoding="utf-8"))
@@ -21,8 +48,9 @@ def main() -> None:
                      or any(part in name for part in ("verification/", "StorageRulesTest", "decompiled/", "source_code/"))]
         changed = [entry["path"] for entry in reference["assets"]
                    if hashlib.sha256(jar.read(entry["path"])).hexdigest() != entry["sha256"]]
-        if forbidden or changed:
-            raise SystemExit(f"Invalid artifact: forbidden={forbidden}, changed_assets={changed}")
+        invalid_paths = [name for name in jar.namelist() if name.startswith("assets/") and name != name.lower()]
+        if forbidden or changed or invalid_paths:
+            raise SystemExit(f"Invalid artifact: forbidden={forbidden}, changed_assets={changed}, invalid_paths={invalid_paths}")
         if "LICENSE" not in jar.namelist() or "NOTICE.md" not in jar.namelist():
             raise SystemExit("Missing license or original credits")
     report_path = PROJECT / "build/test-results/gametest.xml"
@@ -43,10 +71,13 @@ def main() -> None:
     report = {
         "artifact": artifact.name, "artifact_sha256": sha256(artifact),
         "identical_release_assets": len(reference["assets"]), "forbidden_entries": forbidden,
+        "renamed_release_assets": sum(entry.get("original_path",entry["path"]) != entry["path"] for entry in reference["assets"]),
         "core_sha256": sha256(WORKSPACE / "repo/mod/build/libs/thaumcraft-1.21.1-1.0.0.jar"),
         "api_sha256": sha256(WORKSPACE / "repo/api/build/libs/thaumcraft-api-1.0.0.jar"),
         "native_report_sha256": sha256(report_path), "native_tests": len(cases),
-        "test_names": [case.attrib["name"] for case in cases], "client_verified": False,
+        "test_names": [case.attrib["name"] for case in cases],
+        "implemented_menus_client": client_evidence(code_files),
+        "full_mod_client_verified": False,
         "full_port_complete": False,
     }
     output = PROJECT.parent / "analysis/release-audit.json"
