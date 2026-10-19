@@ -29,7 +29,10 @@ def client_evidence(code_files: list[Path]) -> dict:
         raise SystemExit("Client smoke predates a Java source change; rerun client smoke")
     result = json.loads(result_path.read_text(encoding="utf-8"))
     screenshots = result.get("screenshots", [])
-    if not result.get("automation_passed") or len(screenshots) < 8:
+    checks = ("server_cursor_filter_packet", "inverter_tool_and_void_packets", "absolute_priority_real_payload",
+              "backspace_at_typing_limit", "io_capacity_card_packet", "workbench_real_cell_and_partition_packets",
+              "vis_drain_color_real_client_sync")
+    if not result.get("automation_passed") or len(screenshots) < 10 or not all(result.get(key) is True for key in checks):
         raise SystemExit("Client smoke failed or screenshots missing")
     hashes = {str(Path(path).resolve()): sha256(Path(path)) for path in screenshots}
     review = json.loads(review_path.read_text(encoding="utf-8")) if review_path.is_file() else {}
@@ -37,7 +40,8 @@ def client_evidence(code_files: list[Path]) -> dict:
                 and review.get("screenshots") == hashes and review.get("passed") is True)
     return {"automation_passed": True, "visual_reviewed": reviewed,
             "result_sha256": sha256(result_path), "screenshots": hashes,
-            "scope": "storage bus, priority editor, import/export menus, cell workbench and fixture at GUI scale 2"}
+            "vis_link_drain_color_synced": result["vis_drain_color_real_client_sync"],
+            "scope": "storage bus, priority editor, import/export menus, cell workbench and water Vis-interface fixture at GUI scale 2"}
 
 
 def main() -> None:

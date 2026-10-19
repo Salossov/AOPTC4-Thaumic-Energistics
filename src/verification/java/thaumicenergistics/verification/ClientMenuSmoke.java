@@ -58,7 +58,9 @@ import thaumicenergistics.storage.EssentiaKey;
 public final class ClientMenuSmoke {
     private static final String SAVE = "THE-client-menu-smoke";
     private static final BlockPos CABLE = new BlockPos(3,100,3), BENCH = new BlockPos(5,100,3);
+    private static final BlockPos VIS_INPUT = new BlockPos(3,100,12), VIS_OUTPUT = new BlockPos(3,100,14);
     private static final AtomicReference<Throwable> SERVER_ERROR = new AtomicReference<>();
+    private static final java.util.concurrent.atomic.AtomicBoolean VIS_LINK_DRAINED = new java.util.concurrent.atomic.AtomicBoolean();
     private static final Map<String,Object> EVIDENCE = new LinkedHashMap<>();
     private static final List<String> CAPTURES = new ArrayList<>();
     private static final long RUN = System.currentTimeMillis();
@@ -178,7 +180,27 @@ public final class ClientMenuSmoke {
                 }
                 case 24 -> { mc.player.closeContainer(); advance(); }
                 case 25 -> { if (mc.screen == null) capture("world-fixture"); }
-                case 26 -> finish(true,null);
+                case 26 -> { server(ClientMenuSmoke::visFixture); advance(); }
+                case 27 -> {
+                    server(player -> {
+                        var host=PartHelper.getPartHost(player.level(),VIS_OUTPUT);
+                        if(host!=null && host.getPart(Direction.SOUTH) instanceof thaumicenergistics.parts.VisInterfacePart part && part.isActive()) {
+                            var input=(thaumicenergistics.parts.VisInterfacePart)PartHelper.getPartHost(player.level(),VIS_INPUT).getPart(Direction.WEST);
+                            if(!input.isActive()) return;
+                            if(!part.isVisProvider()) {
+                                var card=ae("memory_card"); player.setShiftKeyDown(true); input.onUseItemOn(card,player,InteractionHand.MAIN_HAND,Vec3.ZERO);
+                                player.setShiftKeyDown(false); part.onUseItemOn(card,player,InteractionHand.MAIN_HAND,Vec3.ZERO);
+                                if(!part.isVisProvider()) throw new IllegalStateException("Actual Vis memory-card link failed after grid boot");
+                            }
+                            if(part.consumeVis(Aspects.WATER,1)>0) VIS_LINK_DRAINED.set(true);
+                        }
+                    });
+                    var host=PartHelper.getPartHost(mc.level,VIS_OUTPUT);
+                    if(VIS_LINK_DRAINED.get() && host!=null && host.getPart(Direction.SOUTH) instanceof thaumicenergistics.parts.VisInterfacePart part && part.drainColor()==Aspects.WATER.getColor()) {
+                        EVIDENCE.put("vis_drain_color_real_client_sync",true); capture("vis-interface-water");
+                    }
+                }
+                case 28 -> finish(true,null);
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
             if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName()));
@@ -193,6 +215,7 @@ public final class ClientMenuSmoke {
         for (int x = 0; x < 9; x++) for (int z = 0; z < 9; z++) level.setBlockAndUpdate(new BlockPos(x,99,z),Blocks.SMOOTH_STONE.defaultBlockState());
         level.setDayTime(6000); level.setWeatherParameters(20000,0,false,false);
         var drive = CABLE.north();
+        level.setBlockAndUpdate(CABLE,Blocks.AIR.defaultBlockState());
         level.setBlockAndUpdate(drive,block("ae2:drive")); level.setBlockAndUpdate(drive.west(),block("ae2:creative_energy_cell"));
         for (var pos : List.of(CABLE.south(),CABLE.east(),CABLE.west())) {
             level.setBlockAndUpdate(pos,block("thaumcraft:warded_jar"));
@@ -216,6 +239,21 @@ public final class ClientMenuSmoke {
         player.teleportTo(level,4.5,100,6.5,160,25);
         storage.openMenu(player,false);
         Minecraft.getInstance().execute(ClientMenuSmoke::advance);
+    }
+    private static void visFixture(ServerPlayer player) {
+        var level=player.serverLevel();
+        for(int x=0;x<9;x++)for(int z=10;z<18;z++)level.setBlockAndUpdate(new BlockPos(x,99,z),Blocks.SMOOTH_STONE.defaultBlockState());
+        for(var pos:List.of(VIS_INPUT,VIS_OUTPUT,VIS_INPUT.south()))level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(VIS_INPUT.east(),block("ae2:creative_energy_cell"));
+        PartHelper.setPart(level,VIS_INPUT,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+        PartHelper.setPart(level,VIS_INPUT.south(),null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+        PartHelper.setPart(level,VIS_OUTPUT,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+        var input=PartHelper.setPart(level,VIS_INPUT,Direction.WEST,null,ThaumicEnergistics.VIS_INTERFACE.get());
+        var output=PartHelper.setPart(level,VIS_OUTPUT,Direction.SOUTH,null,ThaumicEnergistics.VIS_INTERFACE.get());
+        level.setBlockAndUpdate(VIS_INPUT.west(),block("thaumcraft:vis_relay").setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING,Direction.WEST));
+        level.setBlockAndUpdate(VIS_INPUT.west(2),block("thaumcraft:energized_aura_node"));
+        level.setBlockAndUpdate(VIS_OUTPUT.south(),block("thaumcraft:vis_relay").setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING,Direction.SOUTH));
+        player.teleportTo(level,4.7,100.1,15.4,112,43);
     }
     private static net.minecraft.world.level.block.state.BlockState block(String id) { return BuiltInRegistries.BLOCK.get(ResourceLocation.parse(id)).defaultBlockState(); }
     private static void server(Consumer<ServerPlayer> action) {

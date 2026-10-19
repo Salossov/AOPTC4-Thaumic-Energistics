@@ -102,6 +102,7 @@
   "tooltip.thaumicenergistics.cell_contents": "%s × %s",
   "block.thaumicenergistics.essentia_cell_workbench": "에센시아 셀 워크벤치",
   "item.thaumicenergistics.essentia_storage_bus": "에센시아 저장 버스",
+  "item.thaumicenergistics.vis_interface": "비스 충전 중계 인터페이스",
   "item.thaumicenergistics.essentia_import_bus": "에센시아 입력 버스",
   "item.thaumicenergistics.essentia_export_bus": "에센시아 출력 버스"
 }

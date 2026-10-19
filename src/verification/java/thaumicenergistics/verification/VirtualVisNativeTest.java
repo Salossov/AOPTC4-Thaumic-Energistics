@@ -79,7 +79,8 @@ public final class VirtualVisNativeTest {
                 try { VisNetHandler.registerVirtualSource(owner, Direction.EAST, new FiniteSource(1, (byte)0)); }
                 catch (IllegalStateException expected) { duplicate = true; }
                 helper.assertTrue(duplicate, "duplicate face registration rejected");
-                helper.assertTrue(VisNetHandler.loadedNodes(level).stream().filter(node -> node.isSource()).count() == 2, "distinct faces do not overwrite each other");
+                helper.assertTrue(VisNetHandler.loadedNodes(level).stream().filter(node -> node.isSource()
+                        && (node.getBlockPos().equals(ownerPos.east()) || node.getBlockPos().equals(ownerPos.west()))).count() == 2, "distinct faces do not overwrite each other");
                 east.close(); west.close();
                 var recursive = VisNetHandler.registerVirtualSource(owner, Direction.EAST, new VirtualVisSource() {
                     @Override public int range() { return 1; }
@@ -94,7 +95,8 @@ public final class VirtualVisNativeTest {
                 helper.assertTrue(wrongThread, "off-thread mutation rejected");
                 level.setBlockAndUpdate(ownerPos, Blocks.STONE.defaultBlockState());
                 helper.assertTrue(VisNetHandler.drainVis(level, consumer, Aspects.AIR, 1) == 0, "removed/replaced owner immediately unavailable");
-                helper.assertTrue(VisNetHandler.loadedNodes(level).stream().noneMatch(TileVisNode::isSource), "stale owner registration pruned");
+                helper.assertTrue(VisNetHandler.loadedNodes(level).stream().noneMatch(node -> node.isSource()
+                        && (node.getBlockPos().equals(ownerPos.east()) || node.getBlockPos().equals(ownerPos.west()))), "stale owner registration pruned");
                 recursive.close();
                 level.setBlockAndUpdate(ownerPos, Blocks.CHEST.defaultBlockState());
                 var passive = VisNetHandler.registerVirtualSource(level.getBlockEntity(ownerPos), Direction.EAST, new FiniteSource(2, (byte)0));

@@ -79,6 +79,7 @@
   "tooltip.thaumicenergistics.cell_contents": "%s × %s",
   "block.thaumicenergistics.essentia_cell_workbench": "Essentia Cell Workbench",
   "item.thaumicenergistics.essentia_storage_bus": "ME-Essentia-Speicherbus",
+  "item.thaumicenergistics.vis_interface": "Vis Relay Interface",
   "item.thaumicenergistics.essentia_import_bus": "ME-Essentia-Importbus",
   "item.thaumicenergistics.essentia_export_bus": "ME-Essentia-Exportbus"
 }

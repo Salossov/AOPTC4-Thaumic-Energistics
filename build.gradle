@@ -127,8 +127,19 @@ tasks.named('runClientSmoke') {
     dependsOn 'jar'
     def result = file('runs/client/thaumicenergistics-smoke/result.json')
     def provenance = file('build/test-results/client-smoke-inputs.json')
+    def smokeSave = file('runs/client/saves/THE-client-menu-smoke')
+    def ownershipMarker = new File(smokeSave,'.thaumicenergistics-smoke-owned')
+    def testLevel = file('runs/gametest/world/level.dat')
     def clientInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar]
     doFirst {
+        // Refuse an unmarked save before Minecraft can open or autosave it.
+        if (smokeSave.exists() && !ownershipMarker.isFile()) throw new GradleException("Refusing unmarked client save: ${smokeSave}")
+        if (!smokeSave.exists()) {
+            if (!testLevel.isFile()) throw new GradleException('Run GameTests first to create the isolated level template')
+            if (!smokeSave.mkdirs()) throw new GradleException('Cannot create isolated client save')
+            java.nio.file.Files.copy(testLevel.toPath(),new File(smokeSave,'level.dat').toPath())
+            ownershipMarker.text = 'Thaumic Energistics isolated verification save; no user chunks/playerdata copied.\n'
+        }
         if (result.exists() && !result.delete()) throw new GradleException('Cannot clear previous client-smoke result')
         def inputs = clientInputs.collectEntries { name, path ->
             [(name): [path: path.absolutePath, sha256: java.security.MessageDigest.getInstance('SHA-256').digest(path.bytes).encodeHex().toString()]]
@@ -139,7 +150,10 @@ tasks.named('runClientSmoke') {
     doLast {
         if (!result.isFile()) throw new GradleException('Client smoke produced no result')
         def outcome = new groovy.json.JsonSlurper().parse(result)
+        def requiredChecks = ['server_cursor_filter_packet','inverter_tool_and_void_packets','absolute_priority_real_payload',
+                'backspace_at_typing_limit','io_capacity_card_packet','workbench_real_cell_and_partition_packets','vis_drain_color_real_client_sync']
         if (outcome.automation_passed != true || outcome.screenshots.size() < 8
+                || requiredChecks.any { outcome[it] != true }
                 || outcome.screenshots.any { !new File(it).isFile() || new File(it).length() < 100 }) {
             throw new GradleException("Client automation failed or screenshots missing: ${result}")
         }
