@@ -1,0 +1,76 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+group = 'thaumicenergistics'
+version = project.mod_version
+base { archivesName = 'thaumicenergistics-1.21.1' }
+java { toolchain.languageVersion = JavaLanguageVersion.of(21); withSourcesJar() }
+sourceSets {
+    verification {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations.verificationImplementation.extendsFrom configurations.implementation
+configurations.verificationCompileOnly.extendsFrom configurations.compileOnly
+configurations.verificationRuntimeOnly.extendsFrom configurations.runtimeOnly
+neoForge {
+    version = project.neo_version
+    addModdingDependenciesTo sourceSets.verification
+    addModdingDependenciesTo sourceSets.test
+    mods {
+        thaumicenergistics {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.verification
+        }
+    }
+    runs {
+        client { client(); gameDirectory = file('runs/client') }
+        gameTestServer {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.verification
+            gameDirectory = file('runs/gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'thaumicenergistics'
+            systemProperty 'thaumicenergistics.testReport', file('build/test-results/gametest.xml').absolutePath
+        }
+    }
+}
+def apiJar = file(providers.gradleProperty('thaumcraftApiJar')
+        .getOrElse("../../../repo/api/build/libs/thaumcraft-api-${project.thaumcraft_version}.jar"))
+def coreJar = file(providers.gradleProperty('thaumcraftRuntimeJar')
+        .getOrElse("../../../repo/mod/build/libs/thaumcraft-1.21.1-${project.thaumcraft_version}.jar"))
+dependencies {
+    compileOnly files(apiJar)
+    implementation "org.appliedenergistics:appliedenergistics2:${project.ae2_version}"
+    runtimeOnly files(coreJar)
+    runtimeOnly 'top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1'
+    verificationRuntimeOnly files(apiJar)
+}
+repositories {
+    mavenCentral()
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.theillusivec4.top/' } }
+        filter { includeGroup 'top.theillusivec4.curios' }
+    }
+}
+tasks.register('verifyThaumcraftApi') {
+    inputs.file(apiJar)
+    doLast { if (!apiJar.isFile()) throw new GradleException("Missing public Thaumcraft API: ${apiJar}") }
+}
+tasks.named('compileJava') { dependsOn 'verifyThaumcraftApi' }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.withType(AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
+tasks.withType(Jar).configureEach { from('LICENSE'); from('NOTICE.md') }
+tasks.named('processResources') {
+    inputs.property('mod_version', project.version)
+    def values = [mod_version: project.version]
+    filesMatching('META-INF/neoforge.mods.toml') { expand(values) }
+}
+tasks.named('test') { enabled = false }
+tasks.register('storageRulesTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'thaumicenergistics.storage.StorageRulesTest'
+}
+tasks.named('check') { dependsOn 'storageRulesTest', 'verificationClasses' }

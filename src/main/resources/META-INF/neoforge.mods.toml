@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+[[mods]]
+modId="thaumicenergistics"
+version="${mod_version}"
+displayName="Thaumic Energistics"
+authors="Nividica (original); unofficial 1.21.1 port"
+description='''A bridge between Thaumcraft and Applied Energistics. Migration in progress.'''
+[[dependencies.thaumicenergistics]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"
+[[dependencies.thaumicenergistics]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.252,21.2)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.thaumicenergistics]]
+modId="thaumcraft"
+type="required"
+versionRange="[1.0.0]"
+ordering="AFTER"
+side="BOTH"
+[[dependencies.thaumicenergistics]]
+modId="ae2"
+type="required"
+versionRange="[19.2.18]"
+ordering="AFTER"
+side="BOTH"
