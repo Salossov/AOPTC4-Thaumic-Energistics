@@ -33,6 +33,9 @@ import java.util.List;
 public final class ThaumicEnergistics {
     public static final String ID = "thaumicenergistics";
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ID);
+    private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ID);
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaBusMenu>> BUS_MENU =
+            MENUS.register("essentia_bus", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(thaumicenergistics.menu.EssentiaBusMenu::fromNetwork));
     private static final DeferredRegister<AEKeyType> KEY_TYPES = DeferredRegister.create(AEKeyType.REGISTRY_KEY, ID);
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, ID);
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CellContents>> CELL_CONTENTS =
@@ -67,6 +70,7 @@ public final class ThaumicEnergistics {
     public ThaumicEnergistics(IEventBus modBus) {
         COMPONENTS.register(modBus);
         ITEMS.register(modBus);
+        MENUS.register(modBus);
         TABS.register(modBus);
         // AE2 creates its registry after mod constructors; register on the NeoForge registry event.
         KEY_TYPES.register(modBus);

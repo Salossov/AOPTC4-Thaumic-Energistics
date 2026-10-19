@@ -11,3 +11,4 @@
 - No project-wide scans without permission; narrow every search. Use PowerShell, never cmd.exe or .bat. The user explicitly authorized a Git repository here and local commits for completed milestones. Do not publish/push, create worktrees, delete user data or migrate worlds without a separate request.
 - Build with ./gradlew.ps1 build. Distinguish implemented, tested on server, and seen in client. Never claim checks that did not run.
 - Working documentation lives OUTSIDE this Git repository in ../docs/MIGRATION_STATUS.md and ../docs/HANDOFF.md, as requested by the user. Keep plans, status and handoff notes outside the repository. Never package legacy jars, reference code, private tools, test code, worlds or logs in the release.
+- Record user decision questions, offered options and actual answers in ../docs/DECISIONS.ru.md, outside Git. Append new answers promptly; never invent missing historical options.

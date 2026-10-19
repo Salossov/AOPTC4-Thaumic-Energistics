@@ -23,6 +23,10 @@ import thaumicenergistics.storage.EssentiaKeyType;
 @EventBusSubscriber(modid = ThaumicEnergistics.ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> {
     @SubscribeEvent
+    public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        event.register(ThaumicEnergistics.BUS_MENU.get(), EssentiaBusScreen::new);
+    }
+    @SubscribeEvent
     public static void setup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             AEKeyRendering.register(EssentiaKeyType.INSTANCE, EssentiaKey.class, new EssentiaRendering());

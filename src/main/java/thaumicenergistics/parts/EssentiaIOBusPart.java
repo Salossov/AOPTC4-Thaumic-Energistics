@@ -70,6 +70,19 @@ public final class EssentiaIOBusPart extends AEBasePart implements IGridTickable
     public String filter(int slot) { return filters[slot]; }
     public RedstoneMode redstoneMode() { return redstoneMode; }
     public boolean allowVoid() { return allowVoid; }
+    public boolean hasRedstoneCard() { return isUpgradedWith(upgrade("redstone_card")); }
+    @Override public boolean onUseWithoutItem(Player player, net.minecraft.world.phys.Vec3 hit) {
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+                && appeng.util.Platform.hasPermissions(getHost().getLocation(), player)) {
+            serverPlayer.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                    (id, inventory, owner) -> new thaumicenergistics.menu.EssentiaBusMenu(id, inventory, this), getName()),
+                    buffer -> {
+                        buffer.writeBoolean(importing);
+                        buffer.writeVarInt(thaumicenergistics.menu.EssentiaBusMenu.findToolSlot(player));
+                    });
+        }
+        return true;
+    }
     public static int transferAmount(int speedCards, int ticksSinceLastCall) {
         return Math.max(1, Math.min(64, (int)((4 + speedCards * 8) * (ticksSinceLastCall / 20.0F))));
     }
