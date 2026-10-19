@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WRW",
+    "R R",
+    "TTT"
+  ],
+  "key": {
+    "W": {
+      "item": "thaumcraft:warded_glass"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "T": {
+      "item": "thaumcraft:thaumium_ingot"
+    }
+  },
+  "result": {
+    "id": "thaumicenergistics:storage_casing",
+    "count": 1
+  }
+}

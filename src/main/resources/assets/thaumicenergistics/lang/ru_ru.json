@@ -133,6 +133,8 @@
   "block.thaumicenergistics.essentia_cell_workbench": "Верстак для ячеек эссенции",
   "item.thaumicenergistics.essentia_storage_bus": "Шина хранения эссенции",
   "item.thaumicenergistics.vis_interface": "Интерфейс Вис-реле",
+  "item.thaumicenergistics.diffusion_core": "Ядро диффузии",
+  "item.thaumicenergistics.coalescence_core": "Ядро слияния",
   "item.thaumicenergistics.essentia_import_bus": "Шина импорта эссенции",
   "item.thaumicenergistics.essentia_export_bus": "Шина экспорта эссенции"
 }

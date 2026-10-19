@@ -60,6 +60,8 @@ public final class ThaumicEnergistics {
     public static final Map<CellTier, DeferredHolder<Item, EssentiaCellItem>> CELLS = new EnumMap<>(CellTier.class);
     public static final Map<CellTier, DeferredHolder<Item, Item>> COMPONENT_ITEMS = new EnumMap<>(CellTier.class);
     public static final DeferredHolder<Item, Item> STORAGE_CASING = ITEMS.register("storage_casing", () -> new Item(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> DIFFUSION_CORE = ITEMS.register("diffusion_core", () -> new Item(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> COALESCENCE_CORE = ITEMS.register("coalescence_core", () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, EssentiaBusItem> IMPORT_BUS = ITEMS.register("essentia_import_bus", () -> new EssentiaBusItem(true));
     public static final DeferredHolder<Item, EssentiaBusItem> EXPORT_BUS = ITEMS.register("essentia_export_bus", () -> new EssentiaBusItem(false));
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaStorageBusItem> STORAGE_BUS = ITEMS.register("essentia_storage_bus", thaumicenergistics.parts.EssentiaStorageBusItem::new);
@@ -76,6 +78,7 @@ public final class ThaumicEnergistics {
                 .icon(() -> new ItemStack(CELLS.get(CellTier.K1).get()))
                 .displayItems((parameters, output) -> {
                     output.accept(STORAGE_CASING.get());
+                    output.accept(DIFFUSION_CORE.get()); output.accept(COALESCENCE_CORE.get());
                     output.accept(CELL_WORKBENCH_ITEM.get());
                     output.accept(IMPORT_BUS.get()); output.accept(EXPORT_BUS.get());
                     output.accept(STORAGE_BUS.get());

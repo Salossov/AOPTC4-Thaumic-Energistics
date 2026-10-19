@@ -1,0 +1,31 @@
+{
+  "type": "thaumcraft:arcane",
+  "research": "thaumicenergistics:teio",
+  "vis": {
+    "ignis": 2,
+    "terra": 2,
+    "aqua": 1
+  },
+  "pattern": [
+    "JDJ",
+    "IFI"
+  ],
+  "key": {
+    "J": {
+      "item": "thaumcraft:warded_jar"
+    },
+    "D": {
+      "item": "thaumicenergistics:diffusion_core"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "F": {
+      "item": "thaumcraft:filtered_essentia_tube"
+    }
+  },
+  "result": {
+    "id": "thaumicenergistics:essentia_import_bus",
+    "count": 1
+  }
+}

@@ -158,6 +158,8 @@
   "block.thaumicenergistics.essentia_cell_workbench": "Essentia Cell Workbench",
   "item.thaumicenergistics.essentia_storage_bus": "Essentia Storage Bus",
   "item.thaumicenergistics.vis_interface": "Vis Relay Interface",
+  "item.thaumicenergistics.diffusion_core": "Diffusion Core",
+  "item.thaumicenergistics.coalescence_core": "Coalescence Core",
   "item.thaumicenergistics.essentia_import_bus": "Essentia Import Bus",
   "item.thaumicenergistics.essentia_export_bus": "Essentia Export Bus"
 }

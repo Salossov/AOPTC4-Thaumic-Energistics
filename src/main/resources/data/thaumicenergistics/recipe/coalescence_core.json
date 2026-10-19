@@ -1,0 +1,29 @@
+{
+  "type": "thaumcraft:arcane_shapeless",
+  "research": "thaumicenergistics:tecores",
+  "vis": {
+    "aqua": 2,
+    "ordo": 2
+  },
+  "ingredients": [
+    {
+      "item": "thaumcraft:quicksilver_drop"
+    },
+    {
+      "item": "thaumcraft:quicksilver_drop"
+    },
+    {
+      "item": "thaumcraft:quicksilver_drop"
+    },
+    {
+      "item": "thaumcraft:order_shard"
+    },
+    {
+      "item": "ae2:formation_core"
+    }
+  ],
+  "result": {
+    "id": "thaumicenergistics:coalescence_core",
+    "count": 1
+  }
+}

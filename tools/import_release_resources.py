@@ -77,6 +77,9 @@ def main() -> None:
             values["item.thaumicenergistics.essentia_storage_bus"] = values.get(legacy, english[legacy])
             legacy = "thaumicenergistics.aeparts.vis.interface.name"
             values["item.thaumicenergistics.vis_interface"] = values.get(legacy, english[legacy])
+            for core in ("diffusion", "coalescence"):
+                legacy = f"thaumicenergistics.item.material.{core}.core.name"
+                values[f"item.thaumicenergistics.{core}_core"] = values.get(legacy, english[legacy])
             for kind in ("import", "export"):
                 legacy = f"thaumicenergistics.aeparts.essentia.{kind.title()}Bus.name"
                 values[f"item.thaumicenergistics.essentia_{kind}_bus"] = values.get(legacy, english[legacy])
@@ -91,6 +94,9 @@ def main() -> None:
                 "parent": "minecraft:item/generated", "textures": {"layer0": f"thaumicenergistics:items/storage.component.{suffix}"}})
     write_json(RESOURCE_ROOT / "assets/thaumicenergistics/models/item/storage_casing.json", {
         "parent": "minecraft:item/generated", "textures": {"layer0": "thaumicenergistics:items/essentia.cell.casing"}})
+    for core in ("diffusion", "coalescence"):
+        write_json(RESOURCE_ROOT / f"assets/thaumicenergistics/models/item/{core}_core.json", {
+            "parent": "minecraft:item/generated", "textures": {"layer0": f"thaumicenergistics:items/material.{core}.core"}})
     for kind in ("import", "export"):
         textures = {name: f"thaumicenergistics:blocks/parts/essentia.{kind}.bus.{name}" for name in ("face", "overlay", "chamber", "side")}
         textures["particle"] = textures["side"]
@@ -156,7 +162,7 @@ def main() -> None:
         "replace": False, "values": ["thaumicenergistics:essentia_cell_workbench"]})
     report = {"reference_sha1": "a6240b09a0680f3e3246a6d0fe17650299533a84", "assets": records, "language_files": translations}
     write_json(ADDON / "analysis/imported-resources.json", report)
-    print(f"THE_RELEASE_RESOURCES_IMPORTED assets={len(records)} languages={translations} item_models=15 part_models=8 block_models=1")
+    print(f"THE_RELEASE_RESOURCES_IMPORTED assets={len(records)} languages={translations} item_models=17 part_models=8 block_models=1")
 
 
 if __name__ == "__main__":

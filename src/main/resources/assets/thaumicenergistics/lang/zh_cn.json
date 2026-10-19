@@ -158,6 +158,8 @@
   "block.thaumicenergistics.essentia_cell_workbench": "源质元件工作台",
   "item.thaumicenergistics.essentia_storage_bus": "源质储存总线",
   "item.thaumicenergistics.vis_interface": "要素中继接口",
+  "item.thaumicenergistics.diffusion_core": "扩散核心",
+  "item.thaumicenergistics.coalescence_core": "聚集核心",
   "item.thaumicenergistics.essentia_import_bus": "源质输入总线",
   "item.thaumicenergistics.essentia_export_bus": "源质输出总线"
 }

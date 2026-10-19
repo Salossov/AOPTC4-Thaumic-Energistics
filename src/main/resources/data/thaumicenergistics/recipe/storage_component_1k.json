@@ -1,0 +1,28 @@
+{
+  "type": "thaumcraft:arcane",
+  "research": "thaumicenergistics:testorage",
+  "vis": {
+    "ignis": 3,
+    "ordo": 1
+  },
+  "pattern": [
+    "EQ ",
+    "QPQ",
+    " QE"
+  ],
+  "key": {
+    "E": {
+      "item": "thaumcraft:wisp_essence"
+    },
+    "Q": {
+      "tag": "thaumicenergistics:cell_certus_quartz"
+    },
+    "P": {
+      "item": "ae2:logic_processor"
+    }
+  },
+  "result": {
+    "id": "thaumicenergistics:storage_component_1k",
+    "count": 1
+  }
+}

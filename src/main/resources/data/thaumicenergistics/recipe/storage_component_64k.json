@@ -1,0 +1,31 @@
+{
+  "type": "thaumcraft:arcane",
+  "research": "thaumicenergistics:testorage",
+  "vis": {
+    "ignis": 3,
+    "ordo": 8
+  },
+  "pattern": [
+    "SPS",
+    "6G6",
+    "S6S"
+  ],
+  "key": {
+    "S": {
+      "item": "thaumcraft:salis_mundus"
+    },
+    "6": {
+      "item": "thaumicenergistics:storage_component_16k"
+    },
+    "P": {
+      "item": "ae2:engineering_processor"
+    },
+    "G": {
+      "item": "ae2:quartz_glass"
+    }
+  },
+  "result": {
+    "id": "thaumicenergistics:storage_component_64k",
+    "count": 1
+  }
+}

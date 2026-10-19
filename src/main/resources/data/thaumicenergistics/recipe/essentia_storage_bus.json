@@ -1,0 +1,34 @@
+{
+  "type": "thaumcraft:arcane",
+  "research": "thaumicenergistics:teio",
+  "vis": {
+    "ignis": 3,
+    "terra": 3,
+    "aqua": 1
+  },
+  "pattern": [
+    "DFC",
+    "IWI"
+  ],
+  "key": {
+    "D": {
+      "item": "thaumicenergistics:diffusion_core"
+    },
+    "C": {
+      "item": "thaumicenergistics:coalescence_core"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "F": {
+      "item": "thaumcraft:filtered_essentia_tube"
+    },
+    "W": {
+      "item": "thaumcraft:warded_glass"
+    }
+  },
+  "result": {
+    "id": "thaumicenergistics:essentia_storage_bus",
+    "count": 1
+  }
+}
