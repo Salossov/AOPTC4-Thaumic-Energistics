@@ -3,6 +3,8 @@ package thaumicenergistics.storage;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyType;
 import com.mojang.serialization.MapCodec;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
@@ -17,11 +19,13 @@ import thaumcraft.api.aspects.Aspect;
 
 /** Canonical aspect identity only; quantities are separate longs in AE2. */
 public final class EssentiaKey extends AEKey {
+    // KeyCounter and fuzzyEquals index primary keys by reference identity, not equals().
+    private static final Interner<ResourceLocation> PRIMARY_IDS = Interners.newWeakInterner();
     public static final MapCodec<EssentiaKey> CODEC = ResourceLocation.CODEC.fieldOf("aspect")
             .xmap(EssentiaKey::new, EssentiaKey::getId);
     private final ResourceLocation id;
 
-    public EssentiaKey(ResourceLocation id) { this.id = Objects.requireNonNull(id); }
+    public EssentiaKey(ResourceLocation id) { this.id = PRIMARY_IDS.intern(Objects.requireNonNull(id)); }
     public static EssentiaKey of(Aspect aspect) { return ofTag(Objects.requireNonNull(aspect).getTag()); }
     public static EssentiaKey ofTag(String tag) {
         CellContents.requireTag(tag);

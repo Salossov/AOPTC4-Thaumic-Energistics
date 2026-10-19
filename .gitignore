@@ -5,3 +5,6 @@ runs/
 logs/
 *.log
 .idea/
+/docs/
+/README*.md
+__pycache__/

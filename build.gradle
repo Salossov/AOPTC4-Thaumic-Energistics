@@ -45,7 +45,6 @@ dependencies {
     implementation "org.appliedenergistics:appliedenergistics2:${project.ae2_version}"
     runtimeOnly files(coreJar)
     runtimeOnly 'top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1'
-    verificationRuntimeOnly files(apiJar)
 }
 repositories {
     mavenCentral()
@@ -74,3 +73,19 @@ tasks.register('storageRulesTest', JavaExec) {
     mainClass = 'thaumicenergistics.storage.StorageRulesTest'
 }
 tasks.named('check') { dependsOn 'storageRulesTest', 'verificationClasses' }
+
+tasks.named('runGameTestServer') {
+    def report = file('build/test-results/gametest.xml')
+    doFirst { if (report.exists() && !report.delete()) throw new GradleException('Cannot clear previous test report') }
+    doLast {
+        if (!report.isFile()) throw new GradleException('No fresh GameTest XML: inspect the server startup log')
+        def factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+        factory.setFeature('http://apache.org/xml/features/disallow-doctype-decl', true)
+        def result = factory.newDocumentBuilder().parse(report)
+        int count = result.getElementsByTagName('testcase').length
+        if (count == 0 || result.getElementsByTagName('failure').length > 0 || result.getElementsByTagName('error').length > 0) {
+            throw new GradleException("GameTests failed or empty: ${report}")
+        }
+        logger.lifecycle("THE_FRESH_GAMETEST_REPORT_PASS tests=${count}")
+    }
+}

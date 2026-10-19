@@ -1,6 +1,6 @@
 package thaumicenergistics;
 
-import appeng.api.stacks.AEKeyTypes;
+import appeng.api.stacks.AEKeyType;
 import appeng.api.storage.StorageCells;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -27,6 +27,7 @@ import java.util.Map;
 public final class ThaumicEnergistics {
     public static final String ID = "thaumicenergistics";
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ID);
+    private static final DeferredRegister<AEKeyType> KEY_TYPES = DeferredRegister.create(AEKeyType.REGISTRY_KEY, ID);
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, ID);
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CellContents>> CELL_CONTENTS =
             COMPONENTS.register("cell_contents", () -> DataComponentType.<CellContents>builder()
@@ -38,6 +39,7 @@ public final class ThaumicEnergistics {
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
 
     static {
+        KEY_TYPES.register("essentia", () -> EssentiaKeyType.INSTANCE);
         for (var tier : CellTier.values()) {
             CELLS.put(tier, ITEMS.register("essentia_cell_" + tier.suffix, () -> new EssentiaCellItem(tier)));
             if (!tier.creative()) COMPONENT_ITEMS.put(tier, ITEMS.register("storage_component_" + tier.suffix, () -> new Item(new Item.Properties())));
@@ -57,7 +59,8 @@ public final class ThaumicEnergistics {
         COMPONENTS.register(modBus);
         ITEMS.register(modBus);
         TABS.register(modBus);
-        AEKeyTypes.register(EssentiaKeyType.INSTANCE);
+        // AE2 creates its registry after mod constructors; register on the NeoForge registry event.
+        KEY_TYPES.register(modBus);
         modBus.addListener(ThaumicEnergistics::setup);
     }
 
