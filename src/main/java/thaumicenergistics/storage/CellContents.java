@@ -5,7 +5,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +30,8 @@ public record CellContents(Map<String, Long> amounts, List<String> partitions) {
         });
         partitions.forEach(CellContents::requireTag);
         amounts = Collections.unmodifiableMap(copy);
-        partitions = List.copyOf(new LinkedHashSet<>(partitions));
+        // Original replaceAspectInPartitionList may create duplicates; retain order and entries.
+        partitions = List.copyOf(partitions);
     }
 
     public static void requireTag(String tag) {

@@ -64,12 +64,13 @@ public final class CellLedger {
     }
 
     public void partitions(List<String> tags) {
-        var next = new CellContents(contents.amounts(), tags);
-        if (next.partitions().size() > tier.types) throw new IllegalArgumentException("Too many partitions");
-        contents = next;
+        // The original 12-type cap limits stored contents, not the partition whitelist.
+        contents = new CellContents(contents.amounts(), tags);
     }
 
     public void partitionToContents() {
-        if (!tier.creative()) partitions(List.copyOf(contents.amounts().keySet()));
+        // The original workbench uses the ordinary handler even for creative cells:
+        // partition-to-contents clears their configuration because they store no real units.
+        partitions(List.copyOf(contents.amounts().keySet()));
     }
 }

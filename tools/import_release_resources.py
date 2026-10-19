@@ -61,6 +61,8 @@ def main() -> None:
                 values[modern] = values.get(legacy, english[legacy])
             values["tooltip.thaumicenergistics.partitioned"] = "Размечено" if name.endswith("ru_RU.lang") else "Partitioned"
             values["tooltip.thaumicenergistics.cell_contents"] = "%s × %s"
+            legacy = "thaumicenergistics.block.essentia.cell.workbench.name"
+            values["block.thaumicenergistics.essentia_cell_workbench"] = values.get(legacy, english[legacy])
             for kind in ("import", "export"):
                 legacy = f"thaumicenergistics.aeparts.essentia.{kind.title()}Bus.name"
                 values[f"item.thaumicenergistics.essentia_{kind}_bus"] = values.get(legacy, english[legacy])
@@ -96,9 +98,22 @@ def main() -> None:
                 "parent":"minecraft:block/block", "textures":textures,"elements":elements})
         write_json(RESOURCE_ROOT / f"assets/thaumicenergistics/models/item/essentia_{kind}_bus.json", {
             "parent":f"thaumicenergistics:part/essentia_{kind}_bus_off"})
+    write_json(RESOURCE_ROOT / "assets/thaumicenergistics/blockstates/essentia_cell_workbench.json", {
+        "variants": {"": {"model": "thaumicenergistics:block/essentia_cell_workbench"}}})
+    write_json(RESOURCE_ROOT / "assets/thaumicenergistics/models/block/essentia_cell_workbench.json", {
+        "parent": "minecraft:block/cube_bottom_top", "textures": {
+            face: f"thaumicenergistics:blocks/essentia.cell.workbench.{face}" for face in ("top", "bottom", "side")}})
+    write_json(RESOURCE_ROOT / "assets/thaumicenergistics/models/item/essentia_cell_workbench.json", {
+        "parent": "thaumicenergistics:block/essentia_cell_workbench"})
+    write_json(RESOURCE_ROOT / "data/thaumicenergistics/loot_table/blocks/essentia_cell_workbench.json", {
+        "type": "minecraft:block", "pools": [{"rolls": 1, "entries": [
+            {"type": "minecraft:item", "name": "thaumicenergistics:essentia_cell_workbench"}],
+            "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+    write_json(RESOURCE_ROOT / "data/minecraft/tags/block/mineable/pickaxe.json", {
+        "replace": False, "values": ["thaumicenergistics:essentia_cell_workbench"]})
     report = {"reference_sha1": "a6240b09a0680f3e3246a6d0fe17650299533a84", "assets": records, "language_files": translations}
     write_json(ADDON / "analysis/imported-resources.json", report)
-    print(f"THE_RELEASE_RESOURCES_IMPORTED assets={len(records)} languages={translations} item_models=12 part_models=4")
+    print(f"THE_RELEASE_RESOURCES_IMPORTED assets={len(records)} languages={translations} item_models=13 part_models=4 block_models=1")
 
 
 if __name__ == "__main__":

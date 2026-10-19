@@ -33,9 +33,20 @@ import java.util.List;
 public final class ThaumicEnergistics {
     public static final String ID = "thaumicenergistics";
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ID);
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ID);
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, ID);
+    public static final net.neoforged.neoforge.registries.DeferredBlock<thaumicenergistics.blocks.CellWorkbenchBlock> CELL_WORKBENCH =
+            BLOCKS.register("essentia_cell_workbench", thaumicenergistics.blocks.CellWorkbenchBlock::new);
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.BlockItem> CELL_WORKBENCH_ITEM = ITEMS.registerSimpleBlockItem(CELL_WORKBENCH);
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<thaumicenergistics.blocks.CellWorkbenchBlockEntity>> CELL_WORKBENCH_ENTITY =
+            BLOCK_ENTITIES.register("essentia_cell_workbench", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+                    thaumicenergistics.blocks.CellWorkbenchBlockEntity::new, CELL_WORKBENCH.get()).build(null));
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaBusMenu>> BUS_MENU =
             MENUS.register("essentia_bus", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(thaumicenergistics.menu.EssentiaBusMenu::fromNetwork));
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.CellWorkbenchMenu>> WORKBENCH_MENU =
+            MENUS.register("essentia_cell_workbench", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
+                    (id, inventory, data) -> new thaumicenergistics.menu.CellWorkbenchMenu(id, inventory, null)));
     private static final DeferredRegister<AEKeyType> KEY_TYPES = DeferredRegister.create(AEKeyType.REGISTRY_KEY, ID);
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, ID);
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CellContents>> CELL_CONTENTS =
@@ -59,6 +70,7 @@ public final class ThaumicEnergistics {
                 .icon(() -> new ItemStack(CELLS.get(CellTier.K1).get()))
                 .displayItems((parameters, output) -> {
                     output.accept(STORAGE_CASING.get());
+                    output.accept(CELL_WORKBENCH_ITEM.get());
                     output.accept(IMPORT_BUS.get()); output.accept(EXPORT_BUS.get());
                     for (var tier : CellTier.values()) {
                         if (!tier.creative()) output.accept(COMPONENT_ITEMS.get(tier).get());
@@ -70,12 +82,17 @@ public final class ThaumicEnergistics {
     public ThaumicEnergistics(IEventBus modBus) {
         COMPONENTS.register(modBus);
         ITEMS.register(modBus);
+        BLOCKS.register(modBus);
+        BLOCK_ENTITIES.register(modBus);
         MENUS.register(modBus);
         TABS.register(modBus);
         // AE2 creates its registry after mod constructors; register on the NeoForge registry event.
         KEY_TYPES.register(modBus);
         PartModels.registerModels(id("part/essentia_import_bus_off"), id("part/essentia_import_bus_on"), id("part/essentia_export_bus_off"), id("part/essentia_export_bus_on"));
         modBus.addListener(ThaumicEnergistics::setup);
+        modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) ->
+                event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
+                        CELL_WORKBENCH_ENTITY.get(), (workbench, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(workbench.inventory())));
     }
 
     private static void setup(FMLCommonSetupEvent event) {

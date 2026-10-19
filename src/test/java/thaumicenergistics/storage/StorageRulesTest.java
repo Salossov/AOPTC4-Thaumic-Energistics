@@ -48,8 +48,10 @@ public final class StorageRulesTest {
         cell.partitionToContents();
         equal(cell.insert("other:excluded", 1, true), 0, "partition excludes new type");
         check(cell.preferred("test:a1"), "partition preference");
+        cell.partitions(java.util.stream.IntStream.range(0, 13).mapToObj(i -> "p" + i).toList());
+        equal(cell.contents().partitions().size(), 13, "whitelist is independent of twelve stored-type cap");
         var preserved = cell.contents();
-        try { cell.partitions(java.util.stream.IntStream.range(0, 13).mapToObj(i -> "p" + i).toList()); throw new AssertionError("partition overflow accepted"); }
+        try { cell.partitions(List.of("Invalid Aspect")); throw new AssertionError("invalid aspect accepted"); }
         catch (IllegalArgumentException expected) { check(cell.contents().equals(preserved), "invalid partition change atomic"); }
         cell.partitions(List.of());
         var random = new Random(1130);
@@ -76,13 +78,14 @@ public final class StorageRulesTest {
         var cell = new CellLedger(CellTier.CREATIVE, CellContents.EMPTY);
         equal(cell.extract("aer", 1, true), 0, "unconfigured creative gives nothing");
         cell.partitions(List.of("aer", "aer", "missing:addon"));
-        equal(cell.usedTypes(), 2, "creative partitions distinct");
+        equal(cell.usedTypes(), 3, "original replacement can retain duplicate creative partitions");
         var before = cell.contents();
         equal(cell.extract("aer", Long.MAX_VALUE, true), Long.MAX_VALUE, "creative source");
         equal(cell.insert("aer", Long.MAX_VALUE, true), 0, "creative rejects insertion");
         equal(cell.extract("terra", 1, true), 0, "creative restricts aspects");
+        check(cell.contents().equals(before), "creative extraction does not mutate");
         cell.partitionToContents();
-        check(cell.contents().equals(before), "creative no mutation");
+        check(cell.contents().partitions().isEmpty(), "original workbench clears creative partition-to-contents");
         equal(CellLedger.CREATIVE_DISPLAY_AMOUNT, 2_000_000_000L, "release creative display amount");
     }
     private static void corruptionAndUnknownAspects() {

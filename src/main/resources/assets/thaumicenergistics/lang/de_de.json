@@ -77,6 +77,7 @@
   "tooltip.thaumicenergistics.cell_types": "%s von %s Essentia-Typen",
   "tooltip.thaumicenergistics.partitioned": "Partitioned",
   "tooltip.thaumicenergistics.cell_contents": "%s × %s",
+  "block.thaumicenergistics.essentia_cell_workbench": "Essentia Cell Workbench",
   "item.thaumicenergistics.essentia_import_bus": "ME-Essentia-Importbus",
   "item.thaumicenergistics.essentia_export_bus": "ME-Essentia-Exportbus"
 }
