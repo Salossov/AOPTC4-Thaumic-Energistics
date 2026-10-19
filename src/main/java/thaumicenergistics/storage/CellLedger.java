@@ -1,6 +1,7 @@
 package thaumicenergistics.storage;
 
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,8 +44,13 @@ public final class CellLedger {
         long accepted = Math.min(requested, Math.max(0, tier.capacity() - total()));
         if (accepted > 0 && commit) {
             var next = new LinkedHashMap<>(contents.amounts());
+            var slots = new ArrayList<>(contents.slots());
+            if (!next.containsKey(tag)) {
+                int empty = slots.indexOf("");
+                if (empty < 0) slots.add(tag); else slots.set(empty, tag);
+            }
             next.put(tag, next.getOrDefault(tag, 0L) + accepted);
-            contents = new CellContents(next, contents.partitions());
+            contents = new CellContents(next, contents.partitions(), slots);
         }
         return accepted;
     }
@@ -57,15 +63,17 @@ public final class CellLedger {
         long extracted = Math.min(stored, requested);
         if (extracted > 0 && commit) {
             var next = new LinkedHashMap<>(contents.amounts());
-            if (stored == extracted) next.remove(tag); else next.put(tag, stored - extracted);
-            contents = new CellContents(next, contents.partitions());
+            var slots = new ArrayList<>(contents.slots());
+            if (stored == extracted) { next.remove(tag); slots.set(slots.indexOf(tag), ""); }
+            else next.put(tag, stored - extracted);
+            contents = new CellContents(next, contents.partitions(), slots);
         }
         return extracted;
     }
 
     public void partitions(List<String> tags) {
         // The original 12-type cap limits stored contents, not the partition whitelist.
-        contents = new CellContents(contents.amounts(), tags);
+        contents = new CellContents(contents.amounts(), tags, contents.slots());
     }
 
     public void partitionToContents() {

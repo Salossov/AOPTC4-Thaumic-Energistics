@@ -5,23 +5,29 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 /** Immutable, copy-safe item data. Unknown addon aspects are retained, never discarded. */
-public record CellContents(Map<String, Long> amounts, List<String> partitions) {
+public record CellContents(Map<String, Long> amounts, List<String> partitions, List<String> slots) {
     public static final CellContents EMPTY = new CellContents(Map.of(), List.of());
     public static final Codec<CellContents> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.unboundedMap(Codec.STRING, Codec.LONG.validate(value -> value > 0
                     ? DataResult.success(value) : DataResult.error(() -> "Cell amounts must be positive")))
                     .optionalFieldOf("amounts", Map.of()).forGetter(CellContents::amounts),
-            Codec.STRING.listOf().optionalFieldOf("partitions", List.of()).forGetter(CellContents::partitions)
+            Codec.STRING.listOf().optionalFieldOf("partitions", List.of()).forGetter(CellContents::partitions),
+            Codec.STRING.listOf().optionalFieldOf("slots", List.of()).forGetter(CellContents::slots)
     ).apply(instance, CellContents::new));
+
+    public CellContents(Map<String, Long> amounts, List<String> partitions) { this(amounts, partitions, List.of()); }
 
     public CellContents {
         Objects.requireNonNull(amounts);
         Objects.requireNonNull(partitions);
+        Objects.requireNonNull(slots);
         var copy = new LinkedHashMap<String, Long>();
         amounts.forEach((tag, amount) -> {
             requireTag(tag);
@@ -29,9 +35,22 @@ public record CellContents(Map<String, Long> amounts, List<String> partitions) {
             copy.put(tag, amount);
         });
         partitions.forEach(CellContents::requireTag);
-        amounts = Collections.unmodifiableMap(copy);
+        // Empty strings retain array holes from the original HandlerItemEssentiaCell.
+        // Missing/duplicate assignments cannot erase amounts; unassigned stored tags append.
+        var layout = new ArrayList<String>();
+        var assigned = new HashSet<String>();
+        for (var tag : slots) {
+            Objects.requireNonNull(tag);
+            if (!tag.isEmpty()) requireTag(tag);
+            layout.add(!tag.isEmpty() && copy.containsKey(tag) && assigned.add(tag) ? tag : "");
+        }
+        for (var tag : copy.keySet()) if (assigned.add(tag)) layout.add(tag);
+        var ordered = new LinkedHashMap<String, Long>();
+        for (var tag : layout) if (!tag.isEmpty()) ordered.put(tag, copy.get(tag));
+        amounts = Collections.unmodifiableMap(ordered);
         // Original replaceAspectInPartitionList may create duplicates; retain order and entries.
         partitions = List.copyOf(partitions);
+        slots = List.copyOf(layout);
     }
 
     public static void requireTag(String tag) {

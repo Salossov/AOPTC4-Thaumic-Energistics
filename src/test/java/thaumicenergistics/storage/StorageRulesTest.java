@@ -21,8 +21,32 @@ public final class StorageRulesTest {
             if (!tier.creative()) ordinary(tier);
         }
         creative();
+        originalSlotReuse();
         corruptionAndUnknownAspects();
         System.out.println("THE_STORAGE_RULES_PASS checks=" + checks);
+    }
+    private static void originalSlotReuse() {
+        var cell = new CellLedger(CellTier.K1, CellContents.EMPTY);
+        cell.insert("aer", 4, true); cell.insert("aqua", 3, true); cell.insert("terra", 2, true);
+        var before = cell.contents();
+        equal(cell.extract("aqua", 3, false), 3, "hole extraction simulation");
+        check(cell.contents().equals(before), "simulation leaves physical slot layout unchanged");
+        cell.extract("aqua", 3, true);
+        check(cell.contents().slots().equals(List.of("aer", "", "terra")), "original vacant slot retained");
+        var encoded = CellContents.CODEC.encodeStart(JsonOps.INSTANCE, cell.contents()).getOrThrow();
+        cell = new CellLedger(CellTier.K1, CellContents.CODEC.parse(JsonOps.INSTANCE, encoded).getOrThrow());
+        cell.insert("terra", 1, true);
+        check(cell.contents().slots().equals(List.of("aer", "", "terra")), "existing aspect found after earlier empty slot");
+        cell.insert("ordo", 5, true);
+        check(List.copyOf(cell.contents().amounts().keySet()).equals(List.of("aer", "ordo", "terra")), "first empty slot reused after serialization");
+        cell.partitionToContents();
+        check(cell.contents().partitions().equals(List.of("aer", "ordo", "terra")), "partition-current follows storage positions rather than insertion order");
+        var recovered = new CellContents(java.util.Map.of("aer", 4L, "terra", 2L), List.of(), List.of("aer", "aer", "missing:addon"));
+        equal(recovered.amounts().size(), 2, "bad slot assignments cannot erase stored amounts");
+        check(recovered.slots().equals(List.of("aer", "", "", "terra")), "duplicate and stale assignments become reusable holes");
+        var oldFormat = com.google.gson.JsonParser.parseString("{\"amounts\":{\"aer\":4,\"terra\":2},\"partitions\":[]}");
+        var old = CellContents.CODEC.parse(JsonOps.INSTANCE, oldFormat).getOrThrow();
+        check(old.slots().equals(List.of("aer", "terra")), "earlier development cell components load without slots field");
     }
     private static void ordinary(CellTier tier) {
         var cell = new CellLedger(tier, CellContents.EMPTY);

@@ -129,6 +129,22 @@ public final class StorageNativeTest {
             var loaded = ItemStack.parse(registries, saved).orElseThrow();
             helper.assertTrue(stack.get(ThaumicEnergistics.CELL_CONTENTS).equals(loaded.get(ThaumicEnergistics.CELL_CONTENTS)), "actual ItemStack NBT persistence");
         }
+        var ordered = new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());
+        var orderedCell = new EssentiaCell(ordered,null);
+        orderedCell.insert(EssentiaKey.of(Aspects.AIR), 4, Actionable.MODULATE, SOURCE);
+        orderedCell.insert(EssentiaKey.of(Aspects.WATER), 3, Actionable.MODULATE, SOURCE);
+        orderedCell.insert(EssentiaKey.of(Aspects.EARTH), 2, Actionable.MODULATE, SOURCE);
+        orderedCell.extract(EssentiaKey.of(Aspects.WATER), 3, Actionable.MODULATE, SOURCE);
+        var loadedWithHole = ItemStack.parse(registries,ordered.save(registries)).orElseThrow();
+        var decodedBuffer = new RegistryFriendlyByteBuf(Unpooled.buffer(),registries);
+        try {
+            ItemStack.STREAM_CODEC.encode(decodedBuffer,loadedWithHole);
+            loadedWithHole = ItemStack.STREAM_CODEC.decode(decodedBuffer);
+        } finally { decodedBuffer.release(); }
+        var reloadedCell = new EssentiaCell(loadedWithHole,null);
+        reloadedCell.insert(EssentiaKey.of(Aspects.FIRE),5,Actionable.MODULATE,SOURCE);
+        helper.assertTrue(List.copyOf(reloadedCell.ledger().contents().amounts().keySet()).equals(List.of("aer","ignis","terra")),
+                "native item NBT and network component codecs preserve reusable storage position");
         System.out.println("THE_NATIVE_CELLS_PASS");
         helper.succeed();
     }
