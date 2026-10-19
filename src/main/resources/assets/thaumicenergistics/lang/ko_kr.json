@@ -101,6 +101,7 @@
   "tooltip.thaumicenergistics.partitioned": "Partitioned",
   "tooltip.thaumicenergistics.cell_contents": "%s × %s",
   "block.thaumicenergistics.essentia_cell_workbench": "에센시아 셀 워크벤치",
+  "item.thaumicenergistics.essentia_storage_bus": "에센시아 저장 버스",
   "item.thaumicenergistics.essentia_import_bus": "에센시아 입력 버스",
   "item.thaumicenergistics.essentia_export_bus": "에센시아 출력 버스"
 }

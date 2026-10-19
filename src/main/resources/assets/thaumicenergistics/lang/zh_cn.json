@@ -156,6 +156,7 @@
   "tooltip.thaumicenergistics.partitioned": "Partitioned",
   "tooltip.thaumicenergistics.cell_contents": "%s × %s",
   "block.thaumicenergistics.essentia_cell_workbench": "源质元件工作台",
+  "item.thaumicenergistics.essentia_storage_bus": "源质储存总线",
   "item.thaumicenergistics.essentia_import_bus": "源质输入总线",
   "item.thaumicenergistics.essentia_export_bus": "源质输出总线"
 }

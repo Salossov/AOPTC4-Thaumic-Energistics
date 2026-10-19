@@ -26,6 +26,12 @@ def main() -> None:
         if "LICENSE" not in jar.namelist() or "NOTICE.md" not in jar.namelist():
             raise SystemExit("Missing license or original credits")
     report_path = PROJECT / "build/test-results/gametest.xml"
+    provenance = json.loads((PROJECT / "build/test-results/native-inputs.json").read_text(encoding="utf-8"))
+    if not provenance.get("completed") or provenance.get("report_sha256") != sha256(report_path):
+        raise SystemExit("Native dependency provenance is incomplete or belongs to another report")
+    for name, entry in provenance["inputs"].items():
+        if sha256(Path(entry["path"])) != entry["sha256"]:
+            raise SystemExit(f"Native input rebuilt since verification: {name}; rerun GameTests")
     code_files = [path for source in ("src/main/java", "src/verification/java")
                   for path in (PROJECT / source).rglob("*.java")]
     if any(path.stat().st_mtime_ns > report_path.stat().st_mtime_ns for path in code_files):

@@ -63,6 +63,8 @@ def main() -> None:
             values["tooltip.thaumicenergistics.cell_contents"] = "%s × %s"
             legacy = "thaumicenergistics.block.essentia.cell.workbench.name"
             values["block.thaumicenergistics.essentia_cell_workbench"] = values.get(legacy, english[legacy])
+            legacy = "thaumicenergistics.aeparts.essentia.StorageBus.name"
+            values["item.thaumicenergistics.essentia_storage_bus"] = values.get(legacy, english[legacy])
             for kind in ("import", "export"):
                 legacy = f"thaumicenergistics.aeparts.essentia.{kind.title()}Bus.name"
                 values[f"item.thaumicenergistics.essentia_{kind}_bus"] = values.get(legacy, english[legacy])
@@ -100,6 +102,21 @@ def main() -> None:
             "parent":f"thaumicenergistics:part/essentia_{kind}_bus_off"})
     write_json(RESOURCE_ROOT / "assets/thaumicenergistics/blockstates/essentia_cell_workbench.json", {
         "variants": {"": {"model": "thaumicenergistics:block/essentia_cell_workbench"}}})
+    for state in ("off", "on"):
+        textures = {name: f"thaumicenergistics:blocks/parts/essentia.storage.bus.{name}" for name in ("face", "overlay", "side")}
+        textures["particle"] = textures["side"]
+        textures["light"] = "thaumicenergistics:blocks/parts/bus.color.light"
+        elements = []
+        for lower, upper in (([1,1,0],[15,15,1]),([4,4,1],[12,12,2]),([5,5,2],[11,11,3])):
+            faces = {face: {"texture": "#light" if state == "on" and lower == [5,5,2] else "#side"}
+                     for face in ("north", "south", "east", "west", "up", "down")}
+            if lower == [1,1,0]: faces["north"] = {"texture": "#face"}
+            elements.append({"from": lower, "to": upper, "faces": faces})
+        elements.append({"from": [1,1,-0.001], "to": [15,15,-0.001], "faces": {"north": {"texture": "#overlay"}}})
+        write_json(RESOURCE_ROOT / f"assets/thaumicenergistics/models/part/essentia_storage_bus_{state}.json", {
+            "parent": "minecraft:block/block", "textures": textures, "elements": elements})
+    write_json(RESOURCE_ROOT / "assets/thaumicenergistics/models/item/essentia_storage_bus.json", {
+        "parent": "thaumicenergistics:part/essentia_storage_bus_off"})
     write_json(RESOURCE_ROOT / "assets/thaumicenergistics/models/block/essentia_cell_workbench.json", {
         "parent": "minecraft:block/cube_bottom_top", "textures": {
             face: f"thaumicenergistics:blocks/essentia.cell.workbench.{face}" for face in ("top", "bottom", "side")}})
@@ -113,7 +130,7 @@ def main() -> None:
         "replace": False, "values": ["thaumicenergistics:essentia_cell_workbench"]})
     report = {"reference_sha1": "a6240b09a0680f3e3246a6d0fe17650299533a84", "assets": records, "language_files": translations}
     write_json(ADDON / "analysis/imported-resources.json", report)
-    print(f"THE_RELEASE_RESOURCES_IMPORTED assets={len(records)} languages={translations} item_models=13 part_models=4 block_models=1")
+    print(f"THE_RELEASE_RESOURCES_IMPORTED assets={len(records)} languages={translations} item_models=14 part_models=6 block_models=1")
 
 
 if __name__ == "__main__":

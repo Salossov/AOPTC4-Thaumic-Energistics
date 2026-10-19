@@ -75,8 +75,18 @@ tasks.register('storageRulesTest', JavaExec) {
 tasks.named('check') { dependsOn 'storageRulesTest', 'verificationClasses' }
 
 tasks.named('runGameTestServer') {
+    dependsOn 'jar'
     def report = file('build/test-results/gametest.xml')
-    doFirst { if (report.exists() && !report.delete()) throw new GradleException('Cannot clear previous test report') }
+    def provenance = file('build/test-results/native-inputs.json')
+    def nativeInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar]
+    doFirst {
+        if (report.exists() && !report.delete()) throw new GradleException('Cannot clear previous test report')
+        def inputs = nativeInputs.collectEntries { name, path ->
+            [(name): [path: path.absolutePath, sha256: java.security.MessageDigest.getInstance('SHA-256').digest(path.bytes).encodeHex().toString()]]
+        }
+        provenance.parentFile.mkdirs()
+        provenance.text = new groovy.json.JsonBuilder([inputs: inputs, completed: false]).toPrettyString()
+    }
     doLast {
         if (!report.isFile()) throw new GradleException('No fresh GameTest XML: inspect the server startup log')
         def factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
@@ -86,6 +96,14 @@ tasks.named('runGameTestServer') {
         if (count == 0 || result.getElementsByTagName('failure').length > 0 || result.getElementsByTagName('error').length > 0) {
             throw new GradleException("GameTests failed or empty: ${report}")
         }
+        def evidence = new groovy.json.JsonSlurper().parse(provenance)
+        nativeInputs.each { name, path ->
+            def actual = java.security.MessageDigest.getInstance('SHA-256').digest(path.bytes).encodeHex().toString()
+            if (actual != evidence.inputs[name].sha256) throw new GradleException("Native input changed during GameTests: ${name}; rerun against the rebuilt dependency")
+        }
+        evidence.completed = true
+        evidence.report_sha256 = java.security.MessageDigest.getInstance('SHA-256').digest(report.bytes).encodeHex().toString()
+        provenance.text = new groovy.json.JsonBuilder(evidence).toPrettyString()
         logger.lifecycle("THE_FRESH_GAMETEST_REPORT_PASS tests=${count}")
     }
 }

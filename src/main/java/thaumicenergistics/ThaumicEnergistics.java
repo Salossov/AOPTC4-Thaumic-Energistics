@@ -58,6 +58,7 @@ public final class ThaumicEnergistics {
     public static final DeferredHolder<Item, Item> STORAGE_CASING = ITEMS.register("storage_casing", () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, EssentiaBusItem> IMPORT_BUS = ITEMS.register("essentia_import_bus", () -> new EssentiaBusItem(true));
     public static final DeferredHolder<Item, EssentiaBusItem> EXPORT_BUS = ITEMS.register("essentia_export_bus", () -> new EssentiaBusItem(false));
+    public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaStorageBusItem> STORAGE_BUS = ITEMS.register("essentia_storage_bus", thaumicenergistics.parts.EssentiaStorageBusItem::new);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
 
     static {
@@ -72,6 +73,7 @@ public final class ThaumicEnergistics {
                     output.accept(STORAGE_CASING.get());
                     output.accept(CELL_WORKBENCH_ITEM.get());
                     output.accept(IMPORT_BUS.get()); output.accept(EXPORT_BUS.get());
+                    output.accept(STORAGE_BUS.get());
                     for (var tier : CellTier.values()) {
                         if (!tier.creative()) output.accept(COMPONENT_ITEMS.get(tier).get());
                         output.accept(CELLS.get(tier).get());
@@ -89,6 +91,7 @@ public final class ThaumicEnergistics {
         // AE2 creates its registry after mod constructors; register on the NeoForge registry event.
         KEY_TYPES.register(modBus);
         PartModels.registerModels(id("part/essentia_import_bus_off"), id("part/essentia_import_bus_on"), id("part/essentia_export_bus_off"), id("part/essentia_export_bus_on"));
+        PartModels.registerModels(id("part/essentia_storage_bus_off"),id("part/essentia_storage_bus_on"));
         modBus.addListener(ThaumicEnergistics::setup);
         modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) ->
                 event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
@@ -104,6 +107,7 @@ public final class ThaumicEnergistics {
                 Upgrades.add(BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:capacity_card")), item, 2);
                 Upgrades.add(BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:redstone_card")), item, 1);
             }
+            Upgrades.add(BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:inverter_card")),STORAGE_BUS.get(),1);
         });
     }
 
