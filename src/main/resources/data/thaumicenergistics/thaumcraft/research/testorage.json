@@ -1,0 +1,75 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:testorage",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:teresearch",
+    "thaumicenergistics:pseudo_distilessentia",
+    "thaumicenergistics:pseudo_wardedarcana"
+  ],
+  "hidden_parents": [
+    "DISTILESSENTIA"
+  ],
+  "icon": "thaumicenergistics:essentia_cell_64k",
+  "column": 0,
+  "row": 2,
+  "aspects": {
+    "vacuos": 5,
+    "potentia": 5,
+    "vitreus": 3,
+    "metallum": 3
+  },
+  "complexity": 2,
+  "auto_unlock": false,
+  "concealed": false,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TESTORAGE.1",
+    "thaumicenergistics.research_page.TESTORAGE.2"
+  ],
+  "recipe_pages": [
+    "thaumicenergistics:storage_component_1k",
+    "thaumicenergistics:storage_component_4k",
+    "thaumicenergistics:storage_component_16k",
+    "thaumicenergistics:storage_component_64k",
+    "thaumicenergistics:storage_casing",
+    "thaumicenergistics:essentia_cell_1k_shaped",
+    "thaumicenergistics:essentia_cell_4k_shaped",
+    "thaumicenergistics:essentia_cell_16k_shaped",
+    "thaumicenergistics:essentia_cell_64k_shaped",
+    "thaumicenergistics:essentia_cell_1k_shapeless",
+    "thaumicenergistics:essentia_cell_4k_shapeless",
+    "thaumicenergistics:essentia_cell_16k_shapeless",
+    "thaumicenergistics:essentia_cell_64k_shapeless",
+    "thaumicenergistics:essentia_cell_workbench"
+  ],
+  "recipe_groups": {
+    "thaumicenergistics:testorage_recipes_3": [
+      "thaumicenergistics:storage_component_4k",
+      "thaumicenergistics:storage_component_16k",
+      "thaumicenergistics:storage_component_64k"
+    ],
+    "thaumicenergistics:testorage_recipes_5": [
+      "thaumicenergistics:essentia_cell_1k_shaped",
+      "thaumicenergistics:essentia_cell_4k_shaped",
+      "thaumicenergistics:essentia_cell_16k_shaped",
+      "thaumicenergistics:essentia_cell_64k_shaped"
+    ],
+    "thaumicenergistics:testorage_recipes_6": [
+      "thaumicenergistics:essentia_cell_1k_shapeless",
+      "thaumicenergistics:essentia_cell_4k_shapeless",
+      "thaumicenergistics:essentia_cell_16k_shapeless",
+      "thaumicenergistics:essentia_cell_64k_shapeless"
+    ]
+  },
+  "page_order": [
+    "thaumicenergistics.research_page.TESTORAGE.1",
+    "thaumicenergistics.research_page.TESTORAGE.2",
+    "thaumicenergistics:storage_component_1k",
+    "thaumicenergistics:testorage_recipes_3",
+    "thaumicenergistics:storage_casing",
+    "thaumicenergistics:testorage_recipes_5",
+    "thaumicenergistics:testorage_recipes_6",
+    "thaumicenergistics:essentia_cell_workbench"
+  ]
+}

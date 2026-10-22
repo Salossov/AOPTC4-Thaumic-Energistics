@@ -1,0 +1,12 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:qa_linked_research",
+  "category": "thaumicenergistics:qa_links",
+  "linked_research": "BOTTLETAINT",
+  "column": 0,
+  "row": 0,
+  "stub": true,
+  "hidden": true,
+  "warp": 127,
+  "icon": "minecraft:air"
+}

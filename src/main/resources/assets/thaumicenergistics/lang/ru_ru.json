@@ -136,5 +136,13 @@
   "item.thaumicenergistics.diffusion_core": "Ядро диффузии",
   "item.thaumicenergistics.coalescence_core": "Ядро слияния",
   "item.thaumicenergistics.essentia_import_bus": "Шина импорта эссенции",
-  "item.thaumicenergistics.essentia_export_bus": "Шина экспорта эссенции"
+  "item.thaumicenergistics.essentia_export_bus": "Шина экспорта эссенции",
+  "tc.research_name.thaumicenergistics:teresearch": "Thaumic Energistics",
+  "tc.research_text.thaumicenergistics:teresearch": "Для тауматургии наступает цифровая эпоха.",
+  "tc.research_name.thaumicenergistics:tecores": "Цифросенция",
+  "tc.research_text.thaumicenergistics:tecores": "Цифровая эссенция.",
+  "tc.research_name.thaumicenergistics:testorage": "Хранилище цифросенции",
+  "tc.research_text.thaumicenergistics:testorage": "Эта вещица и вправду может хранить эссенцию?",
+  "tc.research_name.thaumicenergistics:teio": "Транспортировка цифросенции",
+  "tc.research_text.thaumicenergistics:teio": "Цифровой перенос эссенции!"
 }

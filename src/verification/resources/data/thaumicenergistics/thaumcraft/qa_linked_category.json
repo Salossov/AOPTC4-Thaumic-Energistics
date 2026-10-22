@@ -1,0 +1,7 @@
+{
+  "kind": "book_category",
+  "id": "thaumicenergistics:qa_links",
+  "name": "Linked research verification",
+  "icon": "thaumcraft:textures/misc/r_artifice.png",
+  "order": 999
+}

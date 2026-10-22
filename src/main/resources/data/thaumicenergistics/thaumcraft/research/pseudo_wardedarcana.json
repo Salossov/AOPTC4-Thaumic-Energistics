@@ -1,0 +1,12 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:pseudo_wardedarcana",
+  "category": "thaumicenergistics:main",
+  "linked_research": "WARDEDARCANA",
+  "column": 1,
+  "row": 2,
+  "complexity": 1,
+  "stub": true,
+  "hidden": true,
+  "icon": "minecraft:air"
+}

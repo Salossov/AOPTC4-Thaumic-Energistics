@@ -54,10 +54,13 @@ def apiJar = file(providers.gradleProperty('thaumcraftApiJar')
         .getOrElse("../../../repo/api/build/libs/thaumcraft-api-${project.thaumcraft_version}.jar"))
 def coreJar = file(providers.gradleProperty('thaumcraftRuntimeJar')
         .getOrElse("../../../repo/mod/build/libs/thaumcraft-1.21.1-${project.thaumcraft_version}.jar"))
+def aopUiJar = file(providers.gradleProperty('aopUiJar')
+        .getOrElse('../../../aopui/build/libs/aopui-1.21.1-0.7.0.jar'))
 dependencies {
     compileOnly files(apiJar)
     implementation "org.appliedenergistics:appliedenergistics2:${project.ae2_version}"
     runtimeOnly files(coreJar)
+    runtimeOnly files(aopUiJar)
     runtimeOnly 'top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1'
 }
 repositories {
@@ -119,7 +122,7 @@ tasks.named('runGameTestServer') {
     dependsOn 'jar'
     def report = file('build/test-results/gametest.xml')
     def provenance = file('build/test-results/native-inputs.json')
-    def nativeInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar]
+    def nativeInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar, aop_ui: aopUiJar]
     doFirst {
         if (report.exists() && !report.delete()) throw new GradleException('Cannot clear previous test report')
         def inputs = nativeInputs.collectEntries { name, path ->
@@ -156,7 +159,7 @@ tasks.named('runClientSmoke') {
     def smokeSave = file('runs/client/saves/THE-client-menu-smoke')
     def ownershipMarker = new File(smokeSave,'.thaumicenergistics-smoke-owned')
     def testLevel = file('runs/gametest/world/level.dat')
-    def clientInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar]
+    def clientInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar, aop_ui: aopUiJar]
     doFirst {
         // Refuse an unmarked save before Minecraft can open or autosave it.
         if (smokeSave.exists() && !ownershipMarker.isFile()) throw new GradleException("Refusing unmarked client save: ${smokeSave}")
@@ -178,8 +181,8 @@ tasks.named('runClientSmoke') {
         def outcome = new groovy.json.JsonSlurper().parse(result)
         def requiredChecks = ['server_cursor_filter_packet','storage_filter_retained_after_inverter','inverter_tool_and_void_packets','absolute_priority_real_payload',
                 'backspace_at_typing_limit','io_capacity_card_packet','workbench_real_cell_and_partition_packets','vis_drain_color_real_client_sync',
-                'hidden_unfocused_window','sound_playback_blocked','aspect_palette_rendered']
-        if (outcome.automation_passed != true || outcome.screenshots.size() < 11
+                'hidden_unfocused_window','sound_playback_blocked','aspect_palette_rendered','linked_research_real_client_sync','imported_research_real_client_sync']
+        if (outcome.automation_passed != true || outcome.screenshots.size() < 16
                 || requiredChecks.any { outcome[it] != true }
                 || outcome.screenshots.any { !new File(it).isFile() || new File(it).length() < 100 }) {
             throw new GradleException("Client automation failed or screenshots missing: ${result}")

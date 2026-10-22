@@ -1,0 +1,40 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tecores",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:teresearch",
+    "thaumicenergistics:pseudo_distilessentia"
+  ],
+  "hidden_parents": [
+    "DISTILESSENTIA"
+  ],
+  "icon": "thaumicenergistics:coalescence_core",
+  "column": 0,
+  "row": -2,
+  "aspects": {
+    "limus": 3,
+    "praecantatio": 5,
+    "machina": 5,
+    "permutatio": 5
+  },
+  "complexity": 2,
+  "auto_unlock": false,
+  "concealed": false,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TECORES.1",
+    "thaumicenergistics.research_page.TECORES.2"
+  ],
+  "recipe_pages": [
+    "thaumicenergistics:coalescence_core",
+    "thaumicenergistics:diffusion_core"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TECORES.1",
+    "thaumicenergistics.research_page.TECORES.2",
+    "thaumicenergistics:coalescence_core",
+    "thaumicenergistics:diffusion_core"
+  ]
+}

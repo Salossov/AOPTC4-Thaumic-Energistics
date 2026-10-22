@@ -83,5 +83,13 @@
   "item.thaumicenergistics.diffusion_core": "Zersetzungskern",
   "item.thaumicenergistics.coalescence_core": "Zusammensetzungskern",
   "item.thaumicenergistics.essentia_import_bus": "ME-Essentia-Importbus",
-  "item.thaumicenergistics.essentia_export_bus": "ME-Essentia-Exportbus"
+  "item.thaumicenergistics.essentia_export_bus": "ME-Essentia-Exportbus",
+  "tc.research_name.thaumicenergistics:teresearch": "Thaumische Energistik",
+  "tc.research_text.thaumicenergistics:teresearch": "Thaumaturgie erreicht das digitale Zeitalter.",
+  "tc.research_name.thaumicenergistics:tecores": "Digi-sentia",
+  "tc.research_text.thaumicenergistics:tecores": "Digitale Essentia.",
+  "tc.research_name.thaumicenergistics:testorage": "Digi-sentia-Speicher",
+  "tc.research_text.thaumicenergistics:testorage": "Kann das Ding wirklich Essentia aufnehmen?",
+  "tc.research_name.thaumicenergistics:teio": "Digi-sentia-Transport",
+  "tc.research_text.thaumicenergistics:teio": "Essentia digital bewegen!"
 }

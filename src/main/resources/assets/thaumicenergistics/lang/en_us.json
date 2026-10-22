@@ -161,5 +161,13 @@
   "item.thaumicenergistics.diffusion_core": "Diffusion Core",
   "item.thaumicenergistics.coalescence_core": "Coalescence Core",
   "item.thaumicenergistics.essentia_import_bus": "Essentia Import Bus",
-  "item.thaumicenergistics.essentia_export_bus": "Essentia Export Bus"
+  "item.thaumicenergistics.essentia_export_bus": "Essentia Export Bus",
+  "tc.research_name.thaumicenergistics:teresearch": "Thaumic Energistics",
+  "tc.research_text.thaumicenergistics:teresearch": "Thaumaturgy Enters the Digital Age.",
+  "tc.research_name.thaumicenergistics:tecores": "Digi-sentia",
+  "tc.research_text.thaumicenergistics:tecores": "Digital Essentia.",
+  "tc.research_name.thaumicenergistics:testorage": "Digi-sentia Storage",
+  "tc.research_text.thaumicenergistics:testorage": "Can this thing really store essentia?",
+  "tc.research_name.thaumicenergistics:teio": "Digi-sentia Transportation",
+  "tc.research_text.thaumicenergistics:teio": "Moving Essentia Digitally!"
 }

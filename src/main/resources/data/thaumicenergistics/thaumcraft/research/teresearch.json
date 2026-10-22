@@ -1,0 +1,23 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:teresearch",
+  "category": "thaumicenergistics:main",
+  "parents": [],
+  "hidden_parents": [],
+  "icon": "thaumicenergistics:textures/research/tab.icon.png",
+  "column": 0,
+  "row": 0,
+  "aspects": {},
+  "complexity": 0,
+  "auto_unlock": true,
+  "concealed": false,
+  "round": true,
+  "text_pages": [
+    "thaumicenergistics.research_page.TERESEARCH.1"
+  ],
+  "recipe_pages": [],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TERESEARCH.1"
+  ]
+}

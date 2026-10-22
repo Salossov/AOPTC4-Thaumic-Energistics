@@ -1,0 +1,12 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:pseudo_distilessentia",
+  "category": "thaumicenergistics:main",
+  "linked_research": "DISTILESSENTIA",
+  "column": -2,
+  "row": 0,
+  "complexity": 1,
+  "stub": true,
+  "hidden": true,
+  "icon": "minecraft:air"
+}

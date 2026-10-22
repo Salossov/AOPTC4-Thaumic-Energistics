@@ -161,5 +161,13 @@
   "item.thaumicenergistics.diffusion_core": "扩散核心",
   "item.thaumicenergistics.coalescence_core": "聚集核心",
   "item.thaumicenergistics.essentia_import_bus": "源质输入总线",
-  "item.thaumicenergistics.essentia_export_bus": "源质输出总线"
+  "item.thaumicenergistics.essentia_export_bus": "源质输出总线",
+  "tc.research_name.thaumicenergistics:teresearch": "神秘能源",
+  "tc.research_text.thaumicenergistics:teresearch": "数字化时代也是可以用些魔法的",
+  "tc.research_name.thaumicenergistics:tecores": "源质数位化",
+  "tc.research_text.thaumicenergistics:tecores": "几位大小的源质液体",
+  "tc.research_name.thaumicenergistics:testorage": "数位化源质存储",
+  "tc.research_text.thaumicenergistics:testorage": "这货真的能储存源质?",
+  "tc.research_name.thaumicenergistics:teio": "数位化源质运输",
+  "tc.research_text.thaumicenergistics:teio": "即时运输源质."
 }

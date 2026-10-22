@@ -1,0 +1,8 @@
+{
+  "kind": "book_category",
+  "id": "thaumicenergistics:main",
+  "name": "tc.research_category.thaumicenergistics",
+  "icon": "thaumicenergistics:textures/research/tab.icon.png",
+  "background": "thaumicenergistics:textures/research/research.background.png",
+  "order": 100
+}

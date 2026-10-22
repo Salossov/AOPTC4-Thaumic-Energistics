@@ -37,6 +37,8 @@ import thaumcraft.api.aspects.AspectApi;
 import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.aspects.Aspects;
 import thaumcraft.api.aspects.EssentiaCapabilities;
+import thaumcraft.api.research.ResearchApi;
+import thaumcraft.api.research.ResearchLinks;
 import thaumicenergistics.ThaumicEnergistics;
 import thaumicenergistics.client.CellWorkbenchScreen;
 import thaumicenergistics.client.EssentiaBusScreen;
@@ -216,7 +218,84 @@ public final class ClientMenuSmoke {
                         EVIDENCE.put("aspect_palette_rendered",true); capture("aspect-palette");
                     }
                 }
-                case 30 -> finish(true,null);
+                case 30 -> {
+                    mc.setScreen(null);
+                    server(player -> {
+                        ResearchApi.grant(player,ResearchNativeTest.TARGET);
+                        var book=BuiltInRegistries.ITEM.get(ResourceLocation.parse("thaumcraft:thaumonomicon")).getDefaultInstance();
+                        player.getInventory().setItem(8,book);player.getInventory().selected=8;player.inventoryMenu.broadcastChanges();
+                        book.use(player.level(),player,InteractionHand.MAIN_HAND);
+                    });advance();
+                }
+                case 31 -> {
+                    if(mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> book
+                            &&mc.screen.getClass().getSimpleName().equals("ThaumonomiconScreen")
+                            &&ResearchApi.clientKnowledge().completedResearch().contains(ResearchNativeTest.ALIAS)) {
+                        var definitions=ResearchApi.definitions();var alias=definitions.get(ResearchNativeTest.ALIAS);var target=definitions.get(ResearchNativeTest.TARGET);
+                        if(alias==null||target==null||!alias.icon().equals(target.icon())||!alias.pageOrder().equals(target.pageOrder())
+                                ||!ResearchLinks.target(alias,definitions).key().equals(target.key()))throw new IllegalStateException("Native client alias display/catalog sync differs from target");
+                        var known=ResearchApi.clientKnowledge().completedResearch();
+                        var categories=ResearchApi.books().categories().values().stream().filter(c->c.requiredResearch().isEmpty()||known.contains(c.requiredResearch()))
+                                .sorted(java.util.Comparator.comparingInt(thaumcraft.api.book.BookCategory::order).thenComparing(thaumcraft.api.book.BookCategory::id)).toList();
+                        int index=-1;for(int i=0;i<categories.size();i++)if(categories.get(i).id().equals(alias.category()))index=i;
+                        if(index<0||index>=book.getYSize()/24)throw new IllegalStateException("Verification category must fit visible native tabs");
+                        mc.screen.mouseClicked(book.getGuiLeft()-12,book.getGuiTop()+index*24+12,0);
+                        EVIDENCE.put("linked_research_real_client_sync",true);advance();
+                    }
+                }
+                case 32 -> capture("linked-research-map");
+                case 33 -> {
+                    if(mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> book) {
+                        mc.screen.mouseClicked(book.getGuiLeft()+book.getXSize()/2,book.getGuiTop()+book.getYSize()/2-7,0);advance();
+                    }
+                }
+                case 34 -> capture("linked-research-pages");
+                case 35 -> {
+                    mc.setScreen(null);
+                    server(player -> {
+                        for(var key:List.of("DISTILESSENTIA","WARDEDARCANA","TUBEFILTER","thaumicenergistics:teresearch","thaumicenergistics:tecores","thaumicenergistics:testorage","thaumicenergistics:teio"))
+                            if(!ResearchApi.knows(player,key))ResearchApi.grant(player,key);
+                        player.getMainHandItem().use(player.level(),player,InteractionHand.MAIN_HAND);
+                    });advance();
+                }
+                case 36 -> {
+                    if(mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> book
+                            &&mc.screen.getClass().getSimpleName().equals("ThaumonomiconScreen")
+                            &&ResearchApi.clientKnowledge().completedResearch().contains("thaumicenergistics:testorage")) {
+                        var storage=ResearchApi.definitions().get("thaumicenergistics:testorage");
+                        if(storage==null||storage.pageOrder().size()!=8||storage.recipeGroups().size()!=3)throw new IllegalStateException("Original storage pages lost in client sync");
+                        if(!net.minecraft.client.resources.language.I18n.exists("tc.research_name."+storage.key()))throw new IllegalStateException("Missing namespaced research translation");
+                        var known=ResearchApi.clientKnowledge().completedResearch();
+                        var categories=ResearchApi.books().categories().values().stream().filter(category->category.requiredResearch().isEmpty()||known.contains(category.requiredResearch()))
+                                .sorted(java.util.Comparator.comparingInt(thaumcraft.api.book.BookCategory::order).thenComparing(thaumcraft.api.book.BookCategory::id)).toList();
+                        int index=-1;for(int categoryIndex=0;categoryIndex<categories.size();categoryIndex++)if(categories.get(categoryIndex).id().equals(storage.category()))index=categoryIndex;
+                        if(index<0||index>=book.getYSize()/24)throw new IllegalStateException("Addon category does not fit native tabs");
+                        mc.screen.mouseClicked(book.getGuiLeft()-12,book.getGuiTop()+index*24+12,0);
+                        EVIDENCE.put("imported_research_real_client_sync",true);advance();
+                    }
+                }
+                case 37 -> capture("original-research-map");
+                case 38 -> {
+                    if(mc.screen!=null&&mc.screen.getClass().getSimpleName().equals("ThaumonomiconScreen")) {
+                        var open=mc.screen.getClass().getDeclaredMethod("openResearch",String.class);open.setAccessible(true);open.invoke(mc.screen,"thaumicenergistics:testorage");
+                        var selected=mc.screen.getClass().getDeclaredField("selected");selected.setAccessible(true);
+                        if(!(selected.get(mc.screen) instanceof thaumcraft.api.research.ResearchDefinition research)||!research.key().equals("thaumicenergistics:testorage"))throw new IllegalStateException("Native book did not open original storage research");
+                        advance();
+                    }
+                }
+                case 39 -> capture("original-storage-research-text");
+                case 40 -> {
+                    var pages=mc.screen.getClass().getDeclaredMethod("pages");pages.setAccessible(true);
+                    var resolved=(List<?>)pages.invoke(mc.screen);int recipeIndex=-1;
+                    for(int index=0;index<resolved.size();index++) {
+                        var recipe=resolved.get(index).getClass().getDeclaredMethod("recipe");recipe.setAccessible(true);
+                        if(!((String)recipe.invoke(resolved.get(index))).isEmpty()){recipeIndex=index;break;}
+                    }
+                    if(recipeIndex<0)throw new IllegalStateException("Native book resolved no storage recipe pages");
+                    var spread=mc.screen.getClass().getDeclaredField("spread");spread.setAccessible(true);spread.setInt(mc.screen,recipeIndex/2);advance();
+                }
+                case 41 -> capture("original-storage-research-recipes");
+                case 42 -> finish(true,null);
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
             if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName()));

@@ -1,0 +1,12 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:pseudo_tubefilter",
+  "category": "thaumicenergistics:main",
+  "linked_research": "TUBEFILTER",
+  "column": -3,
+  "row": 0,
+  "complexity": 1,
+  "stub": true,
+  "hidden": true,
+  "icon": "minecraft:air"
+}

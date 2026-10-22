@@ -1,0 +1,42 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:teio",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:tecores",
+    "thaumicenergistics:pseudo_tubefilter"
+  ],
+  "hidden_parents": [
+    "TUBEFILTER"
+  ],
+  "icon": "thaumicenergistics:essentia_export_bus",
+  "column": -2,
+  "row": -2,
+  "aspects": {
+    "machina": 5,
+    "metallum": 3,
+    "vitreus": 3,
+    "aer": 3
+  },
+  "complexity": 2,
+  "auto_unlock": false,
+  "concealed": true,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEIO.1",
+    "thaumicenergistics.research_page.TEIO.2"
+  ],
+  "recipe_pages": [
+    "thaumicenergistics:essentia_import_bus",
+    "thaumicenergistics:essentia_export_bus",
+    "thaumicenergistics:essentia_storage_bus"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEIO.1",
+    "thaumicenergistics.research_page.TEIO.2",
+    "thaumicenergistics:essentia_import_bus",
+    "thaumicenergistics:essentia_export_bus",
+    "thaumicenergistics:essentia_storage_bus"
+  ]
+}
