@@ -58,6 +58,8 @@ def aopUiJar = file(providers.gradleProperty('aopUiJar')
         .getOrElse('../../../aopui/build/libs/aopui-1.21.1-0.7.0.jar'))
 dependencies {
     compileOnly files(apiJar)
+    compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.113.0'
+    compileOnly 'cc.tweaked:cc-tweaked-1.21.1-core-api:1.113.0'
     implementation "org.appliedenergistics:appliedenergistics2:${project.ae2_version}"
     runtimeOnly files(coreJar)
     runtimeOnly files(aopUiJar)
@@ -65,6 +67,7 @@ dependencies {
 }
 repositories {
     mavenCentral()
+    maven { url = 'https://maven.squiddev.cc' }
     exclusiveContent {
         forRepository { maven { url = 'https://maven.theillusivec4.top/' } }
         filter { includeGroup 'top.theillusivec4.curios' }
