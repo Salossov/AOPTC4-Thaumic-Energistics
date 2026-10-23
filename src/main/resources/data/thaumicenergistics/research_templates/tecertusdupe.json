@@ -1,0 +1,39 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tecertusdupe",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:pseudo_alchemicalduplication"
+  ],
+  "hidden_parents": [
+    "ALCHEMICALDUPLICATION"
+  ],
+  "icon": "ae2:certus_quartz_crystal",
+  "column": -5,
+  "row": -5,
+  "aspects": {
+    "vitreus": 5
+  },
+  "complexity": 1,
+  "auto_unlock": false,
+  "concealed": true,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TECERTUSDUPE.1"
+  ],
+  "secondary": true,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:certus_quartz_dupe",
+    "thaumicenergistics:nether_quartz_dupe"
+  ],
+  "recipe_groups": {},
+  "item_triggers": [
+    "ae2:certus_quartz_crystal"
+  ],
+  "page_order": [
+    "thaumicenergistics.research_page.TECERTUSDUPE.1",
+    "thaumicenergistics:certus_quartz_dupe",
+    "thaumicenergistics:nether_quartz_dupe"
+  ]
+}

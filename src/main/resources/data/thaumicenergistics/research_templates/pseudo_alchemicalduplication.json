@@ -1,0 +1,13 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:pseudo_alchemicalduplication",
+  "category": "thaumicenergistics:main",
+  "linked_research": "ALCHEMICALDUPLICATION",
+  "column": -5,
+  "row": -6,
+  "complexity": 1,
+  "stub": true,
+  "hidden": true,
+  "icon": "minecraft:air",
+  "aspects": {}
+}

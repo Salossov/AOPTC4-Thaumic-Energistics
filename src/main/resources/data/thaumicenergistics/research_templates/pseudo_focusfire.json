@@ -1,0 +1,13 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:pseudo_focusfire",
+  "category": "thaumicenergistics:main",
+  "linked_research": "FOCUSFIRE",
+  "column": -4,
+  "row": -7,
+  "complexity": 1,
+  "stub": true,
+  "hidden": true,
+  "icon": "minecraft:air",
+  "aspects": {}
+}
