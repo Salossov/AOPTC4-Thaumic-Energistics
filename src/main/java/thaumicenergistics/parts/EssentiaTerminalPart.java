@@ -27,7 +27,7 @@ import thaumicenergistics.menu.EssentiaTerminalMenu;
 import thaumicenergistics.storage.*;
 
 /** PartEssentiaTerminal: saved work slots and modes, transient selection, native AE2 crafting submenus. */
-public final class EssentiaTerminalPart extends AEBasePart implements ISubMenuHost {
+public final class EssentiaTerminalPart extends AEBasePart implements thaumicenergistics.menu.TerminalHost {
     private static final IPartModel[] OFF=new IPartModel[4],ON=new IPartModel[4];
     static{for(int i=0;i<4;i++){OFF[i]=model(i,false);ON[i]=model(i,true);}}
     private static IPartModel model(int rotation,boolean on){
@@ -41,6 +41,11 @@ public final class EssentiaTerminalPart extends AEBasePart implements ISubMenuHo
     public EssentiaTerminalPart(IPartItem<?> item){super(item);getMainNode().setIdlePowerUsage(.5).setFlags(GridFlags.REQUIRE_CHANNEL);}
     private void dirty(){if(getHost()!=null)getHost().markForSave();}
     public TerminalInventory inventory(){return inventory;}
+    @Override public boolean valid(Player player){return EssentiaTerminalMenu.partValid(this,player);}
+    @Override public appeng.api.storage.MEStorage rawStorage(){var grid=getMainNode().getGrid();return grid==null?null:grid.getStorageService().getInventory();}
+    @Override public appeng.api.networking.energy.IEnergySource transferEnergy(){var grid=getMainNode().getGrid();return grid==null?null:grid.getEnergyService();}
+    @Override public boolean supportsCrafting(){return true;}
+    @Override public appeng.menu.locator.MenuHostLocator craftingLocator(){return appeng.menu.locator.MenuLocators.forPart(this);}
     public int sort(){return sort;}
     public ViewItems view(){return view;}
     public Aspect selected(){return selected;}

@@ -62,6 +62,9 @@ public final class ThaumicEnergistics {
             COMPONENTS.register("cell_contents", () -> DataComponentType.<CellContents>builder()
                     .persistent(CellContents.CODEC)
                     .networkSynchronized(ByteBufCodecs.fromCodecWithRegistries(CellContents.CODEC)).build());
+    public static final DeferredHolder<DataComponentType<?>,DataComponentType<thaumicenergistics.storage.TerminalSettings>> TERMINAL_SETTINGS =
+            COMPONENTS.register("terminal_settings",()->DataComponentType.<thaumicenergistics.storage.TerminalSettings>builder()
+                    .persistent(thaumicenergistics.storage.TerminalSettings.CODEC).networkSynchronized(ByteBufCodecs.fromCodec(thaumicenergistics.storage.TerminalSettings.CODEC)).build());
     public static final Map<CellTier, DeferredHolder<Item, EssentiaCellItem>> CELLS = new EnumMap<>(CellTier.class);
     public static final Map<CellTier, DeferredHolder<Item, Item>> COMPONENT_ITEMS = new EnumMap<>(CellTier.class);
     public static final DeferredHolder<Item, Item> STORAGE_CASING = ITEMS.register("storage_casing", () -> new Item(new Item.Properties()));

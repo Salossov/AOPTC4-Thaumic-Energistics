@@ -36,8 +36,9 @@ def client_evidence(code_files: list[Path]) -> dict:
               "emitter_menu_real_packets", "emitter_world_flare_synced",
               "monitor_face_down", "monitor_face_up", "monitor_face_north", "monitor_face_south", "monitor_face_west", "monitor_face_east",
               "conversion_fill_real_packet", "conversion_batch_real_packets", "conversion_partial_phial_refused",
-              "terminal_menu_real_packets", "terminal_work_slots", "terminal_cursor_transfer", "terminal_native_craft_menu", "terminal_search_filter", "terminal_real_wrench_restore")
-    if not result.get("automation_passed") or len(screenshots) < 36 or not all(result.get(key) is True for key in checks):
+              "terminal_menu_real_packets", "terminal_work_slots", "terminal_cursor_transfer", "terminal_native_craft_menu", "terminal_search_filter", "terminal_real_wrench_restore",
+              "cell_chest_native_configuration", "cell_terminal_local_real_packets", "cell_terminal_work_transfer", "cell_terminal_close_conserves_work_items", "cell_terminal_modes_reopen", "cell_terminal_replacement_closes_menu")
+    if not result.get("automation_passed") or len(screenshots) < 40 or not all(result.get(key) is True for key in checks):
         raise SystemExit("Client smoke failed or screenshots missing")
     hashes = {str(Path(path).resolve()): sha256(Path(path)) for path in screenshots}
     review = json.loads(review_path.read_text(encoding="utf-8")) if review_path.is_file() else {}
@@ -52,7 +53,8 @@ def client_evidence(code_files: list[Path]) -> dict:
             "conversion_monitor_packets": all(result.get(key) for key in ("conversion_fill_real_packet", "conversion_batch_real_packets", "conversion_partial_phial_refused")),
             "essentia_terminal_packets": all(result.get(key) for key in ("terminal_menu_real_packets", "terminal_work_slots", "terminal_cursor_transfer", "terminal_native_craft_menu", "terminal_search_filter")),
             "essentia_terminal_wrench_restored": result["terminal_real_wrench_restore"],
-            "scope": "storage bus, priority editor, import/export menus, cell workbench, level emitter, six storage-monitor faces, conversion monitor, essentia terminal work/cursor/search/native-craft menus and wrench restore, Water Vis-interface and aspect palette at GUI scale 2"}
+            "cell_terminal_packets": all(result[key] for key in ("cell_chest_native_configuration", "cell_terminal_local_real_packets", "cell_terminal_work_transfer", "cell_terminal_close_conserves_work_items", "cell_terminal_modes_reopen", "cell_terminal_replacement_closes_menu")),
+            "scope": "storage bus, priority editor, import/export menus, cell workbench, level emitter, six storage-monitor faces, conversion monitor, essentia terminal work/cursor/search/native-craft menus and wrench restore, local ME Chest cell terminal, Water Vis-interface and aspect palette at GUI scale 2"}
 
 
 def main() -> None:

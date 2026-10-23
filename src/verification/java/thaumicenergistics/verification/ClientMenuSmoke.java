@@ -66,6 +66,7 @@ public final class ClientMenuSmoke {
     private static final BlockPos VIS_INPUT = new BlockPos(3,100,12), VIS_OUTPUT = new BlockPos(3,100,14);
     private static final BlockPos CONVERSION = new BlockPos(16,104,9);
     private static final BlockPos TERMINAL = new BlockPos(20,104,16);
+    private static final BlockPos CELL_CHEST = new BlockPos(28,104,16);
     private static final AtomicReference<Throwable> SERVER_ERROR = new AtomicReference<>();
     private static final java.util.concurrent.atomic.AtomicBoolean VIS_LINK_DRAINED = new java.util.concurrent.atomic.AtomicBoolean();
     private static final java.util.concurrent.atomic.AtomicBoolean TERMINAL_WRENCHED = new java.util.concurrent.atomic.AtomicBoolean();
@@ -607,7 +608,86 @@ public final class ClientMenuSmoke {
                         EVIDENCE.put("terminal_real_wrench_restore",true);capture("terminal-wrench-restored");
                     }
                 }
-                case 105 -> finish(true,null);
+                case 105 -> {
+                    mc.player.closeContainer();
+                    server(player->{
+                        var level=player.serverLevel();
+                        for(var pos:List.of(CELL_CHEST,CELL_CHEST.east(),CELL_CHEST.east(2),CELL_CHEST.west()))level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());
+                        level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(CELL_CHEST).inflate(4)).forEach(net.minecraft.world.entity.Entity::discard);
+                        level.setBlockAndUpdate(CELL_CHEST,block("ae2:chest"));
+                        level.setBlockAndUpdate(CELL_CHEST.west(),block("ae2:creative_energy_cell"));
+                        level.setBlockAndUpdate(CELL_CHEST.east(2),block("ae2:drive"));
+                        PartHelper.setPart(level,CELL_CHEST.east(),null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+                        var local=new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());
+                        new EssentiaCell(local,null).insert(EssentiaKey.of(Aspects.WATER),64,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        ((appeng.blockentity.storage.MEChestBlockEntity)level.getBlockEntity(CELL_CHEST)).setCell(local);
+                        var remote=new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());
+                        new EssentiaCell(remote,null).insert(EssentiaKey.of(Aspects.WATER),1000,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,CELL_CHEST.east(2),Direction.UP).insertItem(0,remote,false);
+                        player.getInventory().clearContent();player.getInventory().selected=0;player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(0));
+                        var empty=nativeItem("empty_phial");empty.setCount(4);player.getInventory().setItem(9,empty);player.inventoryMenu.broadcastChanges();
+                        player.teleportTo(level,28.5,106.6,16.5,0,90);
+                    });advance();
+                }
+                case 106 -> {
+                    if(mc.screen==null&&mc.level.getBlockEntity(CELL_CHEST) instanceof appeng.blockentity.storage.MEChestBlockEntity chest&&chest.isPowered()){
+                        mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(CELL_CHEST).add(0,0,.501),Direction.SOUTH,CELL_CHEST,false));advance();
+                    }
+                }
+                case 107 -> {
+                    if(mc.player.containerMenu instanceof appeng.menu.implementations.MEChestMenu){EVIDENCE.put("cell_chest_native_configuration",true);capture("cell-chest-native-configuration");}
+                }
+                case 108 -> {mc.player.closeContainer();cellChestUse(mc);advance();}
+                case 109 -> {
+                    if(mc.screen instanceof thaumicenergistics.client.EssentiaTerminalScreen&&mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.entries().size()==1&&terminalAmount(menu,Aspects.WATER)==64){
+                        EVIDENCE.put("cell_terminal_local_real_packets",true);capture("cell-terminal-local");
+                    }
+                }
+                case 110 -> {terminalClick(Aspects.WATER,0);advance();}
+                case 111 -> {click(11,ClickType.PICKUP);click(0,ClickType.PICKUP);advance();}
+                case 112 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.getSlot(0).getItem().isEmpty()&&menu.getSlot(1).getItem().getCount()==4&&terminalAmount(menu,Aspects.WATER)==32){
+                        EVIDENCE.put("cell_terminal_work_transfer",true);capture("cell-terminal-filled");
+                    }
+                }
+                case 113 -> {
+                    click(1,ClickType.QUICK_MOVE);var screen=(net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)mc.screen;
+                    mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+17,0);mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+37,0);advance();
+                }
+                case 114 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.sort()==1&&menu.view()==appeng.api.config.ViewItems.STORED){
+                        server(player->{
+                            var current=(thaumicenergistics.menu.EssentiaTerminalMenu)player.containerMenu;current.action(player,current.containerId,0,"");
+                            player.getInventory().clearContent();
+                            var empty=nativeItem("empty_phial");empty.setCount(2);current.getSlot(0).set(empty);
+                            current.getSlot(1).set(thaumcraft.api.aspects.EssentiaItemApi.configureLabel(nativeItem("jar_label"),Aspects.WATER).orElseThrow());current.broadcastChanges();
+                        });advance();
+                    }
+                }
+                case 115 -> {
+                    if(mc.player.containerMenu.getSlot(0).getItem().getCount()==2&&mc.player.containerMenu.getSlot(1).getItem().getCount()==1){mc.player.closeContainer();advance();}
+                }
+                case 116 -> {
+                    server(player->{
+                        int empty=0,labels=0;
+                        var stacks=new ArrayList<ItemStack>();for(int slot=0;slot<36;slot++)stacks.add(player.getInventory().getItem(slot));
+                        player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(CELL_CHEST).inflate(4)).forEach(entity->stacks.add(entity.getItem()));
+                        for(var stack:stacks){if(stack.is(nativeItem("empty_phial").getItem()))empty+=stack.getCount();if(stack.is(nativeItem("jar_label").getItem()))labels+=stack.getCount();}
+                        if(empty!=2||labels!=1)throw new IllegalStateException("Cell close lost or duplicated private work slots: "+empty+"/"+labels);
+                        var chest=(appeng.blockentity.storage.MEChestBlockEntity)player.level().getBlockEntity(CELL_CHEST);
+                        var remote=player.level().getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,CELL_CHEST.east(2),Direction.UP).getStackInSlot(0);
+                        if(new EssentiaCell(chest.getCell(),null).ledger().total()!=32||new EssentiaCell(remote,null).ledger().total()!=1000)throw new IllegalStateException("Cell terminal used remote network contents");
+                    });EVIDENCE.put("cell_terminal_close_conserves_work_items",true);advance();
+                }
+                case 117 -> {if(mc.screen==null){cellChestUse(mc);advance();}}
+                case 118 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.sort()==1&&menu.view()==appeng.api.config.ViewItems.STORED&&menu.selected()==null&&menu.getSlot(0).getItem().isEmpty()&&menu.getSlot(1).getItem().isEmpty()&&terminalAmount(menu,Aspects.WATER)==32){
+                        EVIDENCE.put("cell_terminal_modes_reopen",true);capture("cell-terminal-reopened");
+                    }
+                }
+                case 119 -> {server(player->((appeng.blockentity.storage.MEChestBlockEntity)player.level().getBlockEntity(CELL_CHEST)).setCell(new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K4).get())));advance();}
+                case 120 -> {if(mc.screen==null&&mc.player.containerMenu==mc.player.inventoryMenu){EVIDENCE.put("cell_terminal_replacement_closes_menu",true);advance();}}
+                case 121 -> finish(true,null);
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
             if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName())
@@ -617,6 +697,10 @@ public final class ClientMenuSmoke {
     }
     private static EssentiaLevelEmitterPart emitter(Minecraft mc) {
         var host=PartHelper.getPartHost(mc.level,CABLE);return host!=null&&host.getPart(Direction.UP) instanceof EssentiaLevelEmitterPart part?part:null;
+    }
+    private static void cellChestUse(Minecraft mc){
+        var chest=(appeng.blockentity.storage.MEChestBlockEntity)mc.level.getBlockEntity(CELL_CHEST);var face=chest.getTop();
+        mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(CELL_CHEST).add(Vec3.atLowerCornerOf(face.getNormal()).scale(.501)),face,CELL_CHEST,false));
     }
     private static thaumicenergistics.parts.EssentiaConversionMonitorPart conversion(Minecraft mc){
         var host=PartHelper.getPartHost(mc.level,CONVERSION);
