@@ -170,5 +170,6 @@
   "tc.research_text.thaumicenergistics:testorage": "Can this thing really store essentia?",
   "tc.research_name.thaumicenergistics:teio": "Digi-sentia Transportation",
   "tc.research_text.thaumicenergistics:teio": "Moving Essentia Digitally!",
-  "item.thaumicenergistics.essentia_level_emitter": "Essentia Level Emitter"
+  "item.thaumicenergistics.essentia_level_emitter": "Essentia Level Emitter",
+  "item.thaumicenergistics.essentia_storage_monitor": "Essentia Storage Monitor"
 }

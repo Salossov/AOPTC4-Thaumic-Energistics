@@ -336,7 +336,62 @@ public final class ClientMenuSmoke {
                     var part=emitter(mc);
                     if(mc.screen==null&&part!=null&&part.emitting()) {EVIDENCE.put("emitter_world_flare_synced",true);capture("emitter-world-active");}
                 }
-                case 52 -> finish(true,null);
+                case 52 -> {
+                    server(player -> {
+                        var level=player.serverLevel();var pos=new BlockPos(12,104,3);
+                        level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());
+                        level.setBlockAndUpdate(pos.west(),block("ae2:creative_energy_cell"));
+                        level.setBlockAndUpdate(pos.east(),block("ae2:drive"));
+                        var cell=new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());
+                        new EssentiaCell(cell,null).insert(EssentiaKey.of(Aspects.WATER),1234,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        var slot=level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,pos.east(),Direction.UP);
+                        if(!slot.getStackInSlot(0).isEmpty())slot.extractItem(0,1,false);
+                        slot.insertItem(0,cell,false);
+                        PartHelper.setPart(level,pos,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+                        // Six faces on separate vertically stacked hosts; energy uses the west side.
+                        for(int i=0;i<6;i++){
+                            var at=pos.above(i*3);
+                            if(i>0){level.setBlockAndUpdate(at,Blocks.AIR.defaultBlockState());level.setBlockAndUpdate(at.west(),Blocks.AIR.defaultBlockState());level.setBlockAndUpdate(at.east(),Blocks.AIR.defaultBlockState());}
+                            level.setBlockAndUpdate(Direction.values()[i]==Direction.WEST?at.east():at.west(),block("ae2:creative_energy_cell"));
+                            if(i>0)PartHelper.setPart(level,at,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+                            var part=PartHelper.setPart(level,at,Direction.values()[i],null,ThaumicEnergistics.STORAGE_MONITOR.get());
+                            if(part==null)throw new IllegalStateException("Monitor placement failed "+i);
+                        }
+                        player.setNoGravity(true);player.getAbilities().flying=true;player.onUpdateAbilities();
+                    });advance();
+                }
+                case 53 -> {
+                    server(player -> {
+                        var base=new BlockPos(12,104,3);
+                        for(int i=0;i<6;i++) {
+                            var part=(thaumicenergistics.parts.EssentiaStorageMonitorPart)PartHelper.getPartHost(player.level(),base.above(i*3)).getPart(Direction.values()[i]);
+                            if(!part.isActive())return;
+                        }
+                        for(int i=0;i<6;i++) {
+                            var part=(thaumicenergistics.parts.EssentiaStorageMonitorPart)PartHelper.getPartHost(player.level(),base.above(i*3)).getPart(Direction.values()[i]);
+                            part.onUseItemOn(AspectApi.wispEssence(Aspects.WATER),player,InteractionHand.MAIN_HAND,Vec3.atCenterOf(base));
+                            if(i==0)part.onUseItemOn(ae("nether_quartz_wrench"),player,InteractionHand.MAIN_HAND,Vec3.atCenterOf(base));
+                        }
+                    });advance();
+                }
+                case 54,56,58,60,62,64 -> {
+                    int i=(step-54)/2;var face=Direction.values()[i];var pos=new BlockPos(12,104+i*3,3);
+                    server(player -> {
+                        var eye=Vec3.atCenterOf(pos).add(face.getStepX()*2.4,face.getStepY()*2.4,face.getStepZ()*2.4);
+                        float yaw=switch(face){case NORTH->0;case SOUTH->180;case EAST->90;case WEST->-90;default->0;};
+                        float pitch=face==Direction.UP?90:face==Direction.DOWN?-90:0;
+                        player.teleportTo(player.serverLevel(),eye.x,eye.y-player.getEyeHeight(),eye.z,yaw,pitch);
+                    });advance();
+                }
+                case 55,57,59,61,63,65 -> {
+                    int i=(step-55)/2;var face=Direction.values()[i];var pos=new BlockPos(12,104+i*3,3);
+                    var host=PartHelper.getPartHost(mc.level,pos);
+                    if(host!=null&&host.getPart(face) instanceof thaumicenergistics.parts.EssentiaStorageMonitorPart part&&part.isActive()&&EssentiaKey.of(Aspects.WATER).equals(part.getDisplayed())){
+                        if(i==0&&(!part.isLocked()||part.getAmount()!=1234))throw new IllegalStateException("Monitor client lock/count differs from real drive");
+                        EVIDENCE.put("monitor_face_"+face.getName(),true);capture("monitor-world-"+face.getName());
+                    }
+                }
+                case 66 -> finish(true,null);
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
             if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName()));

@@ -23,6 +23,15 @@ import thaumicenergistics.storage.EssentiaKeyType;
 @EventBusSubscriber(modid = ThaumicEnergistics.ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> {
     @SubscribeEvent
+    public static void itemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
+        event.register((stack,tint)->switch(tint){
+            case 1 -> appeng.api.util.AEColor.TRANSPARENT.blackVariant;
+            case 2 -> appeng.api.util.AEColor.TRANSPARENT.mediumVariant;
+            case 3 -> appeng.api.util.AEColor.TRANSPARENT.whiteVariant;
+            default -> 0xffffff;
+        },ThaumicEnergistics.STORAGE_MONITOR.get());
+    }
+    @SubscribeEvent
     public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
         event.register(ThaumicEnergistics.BUS_MENU.get(), EssentiaBusScreen::new);
         event.register(ThaumicEnergistics.WORKBENCH_MENU.get(), CellWorkbenchScreen::new);

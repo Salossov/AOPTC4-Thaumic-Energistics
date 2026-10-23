@@ -182,8 +182,9 @@ tasks.named('runClientSmoke') {
         def requiredChecks = ['server_cursor_filter_packet','storage_filter_retained_after_inverter','inverter_tool_and_void_packets','absolute_priority_real_payload',
                 'backspace_at_typing_limit','io_capacity_card_packet','workbench_real_cell_and_partition_packets','vis_drain_color_real_client_sync',
                 'hidden_unfocused_window','sound_playback_blocked','aspect_palette_rendered','linked_research_real_client_sync','imported_research_real_client_sync',
-                'emitter_menu_real_packets','emitter_world_flare_synced']
-        if (outcome.automation_passed != true || outcome.screenshots.size() < 19
+                'emitter_menu_real_packets','emitter_world_flare_synced',
+                'monitor_face_down','monitor_face_up','monitor_face_north','monitor_face_south','monitor_face_west','monitor_face_east']
+        if (outcome.automation_passed != true || outcome.screenshots.size() < 25
                 || requiredChecks.any { outcome[it] != true }
                 || outcome.screenshots.any { !new File(it).isFile() || new File(it).length() < 100 }) {
             throw new GradleException("Client automation failed or screenshots missing: ${result}")

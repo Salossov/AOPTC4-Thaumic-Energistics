@@ -1,0 +1,6 @@
+{
+  "parent": "thaumicenergistics:part/essentia_storage_monitor_empty_off",
+  "textures": {
+    "side": "thaumicenergistics:blocks/parts/essentia.termina.border"
+  }
+}

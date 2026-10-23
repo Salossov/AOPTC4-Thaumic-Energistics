@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "thaumicenergistics:essentia_level_emitter"
+    },
+    {
+      "tag": "ae2:illuminated_panel"
+    }
+  ],
+  "result": {
+    "id": "thaumicenergistics:essentia_storage_monitor",
+    "count": 1
+  }
+}

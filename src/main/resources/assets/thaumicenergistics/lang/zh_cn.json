@@ -170,5 +170,6 @@
   "tc.research_text.thaumicenergistics:testorage": "这货真的能储存源质?",
   "tc.research_name.thaumicenergistics:teio": "数位化源质运输",
   "tc.research_text.thaumicenergistics:teio": "即时运输源质.",
-  "item.thaumicenergistics.essentia_level_emitter": "源质发信器"
+  "item.thaumicenergistics.essentia_level_emitter": "源质发信器",
+  "item.thaumicenergistics.essentia_storage_monitor": "源质储存监控器"
 }
