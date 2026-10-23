@@ -6,7 +6,6 @@ import appeng.client.gui.Icon;
 import appeng.client.gui.widgets.Scrollbar;
 import appeng.core.AEConfig;
 import appeng.items.storage.ViewCellItem;
-import appeng.integration.abstraction.ItemListMod;
 import appeng.api.stacks.AEItemKey;
 import java.util.*;
 import net.minecraft.client.gui.GuiGraphics;
@@ -94,9 +93,9 @@ public final class ArcaneTerminalScreen extends AbstractContainerScreen<ArcaneTe
     private void configureSearchFocus(){boolean automatic=AEConfig.instance().isAutoFocusSearch();search.setCanLoseFocus(!automatic);search.setFocused(automatic);}
     private void syncExternalSearch(){
         // Original NEI modes publish the terminal query; they do not import the viewer's filter.
-        if(search==null||!AEConfig.instance().isSyncWithExternalSearch()||!ItemListMod.isEnabled()){lastExternalSearch=null;return;}
+        if(search==null||!AEConfig.instance().isSyncWithExternalSearch()){lastExternalSearch=null;return;}
         String value=search.getValue().trim().toLowerCase(Locale.ROOT);
-        if(!value.equals(lastExternalSearch)){ItemListMod.setSearchText(value);lastExternalSearch=value;}
+        if(!value.equals(lastExternalSearch))lastExternalSearch=ExternalRecipeSearch.publish(value)?value:null;
     }
     private void changeSearchMode(boolean backwards){
         var config=AEConfig.instance();int mode=ArcaneTerminalViewRules.rotateSearchMode(ArcaneTerminalViewRules.searchMode(config.isAutoFocusSearch(),config.isSyncWithExternalSearch()),backwards);
