@@ -34,6 +34,7 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
     @SubscribeEvent
     public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
         event.register(ThaumicEnergistics.TERMINAL_MENU.get(),EssentiaTerminalScreen::new);
+        event.register(ThaumicEnergistics.VIBRATION_MENU.get(),VibrationChamberScreen::new);
         event.register(ThaumicEnergistics.BUS_MENU.get(), EssentiaBusScreen::new);
         event.register(ThaumicEnergistics.WORKBENCH_MENU.get(), CellWorkbenchScreen::new);
         event.register(ThaumicEnergistics.STORAGE_BUS_MENU.get(),StorageBusScreen::new);

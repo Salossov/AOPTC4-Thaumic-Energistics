@@ -151,5 +151,6 @@
   "item.thaumicenergistics.essentia_terminal": "Терминал эссенции",
   "item.thaumicenergistics.wireless_essentia_terminal": "Беспроводной терминал эссенции",
   "tc.research_name.thaumicenergistics:teessterm": "Мониторинг эссенции",
-  "tc.research_text.thaumicenergistics:teessterm": "Зная, сколько у Вас есть."
+  "tc.research_text.thaumicenergistics:teessterm": "Зная, сколько у Вас есть.",
+  "block.thaumicenergistics.essentia_vibration_chamber": "[WIP]Вибрационная камера эссенции"
 }

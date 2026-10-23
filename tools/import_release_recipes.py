@@ -105,6 +105,7 @@ def extract(path: Path) -> dict:
 
 
 def ingredient(symbol: str) -> dict:
+    if symbol == "cdi.WardedJar": return {"type": "thaumicenergistics:empty_jar"}
     value = ITEMS[symbol]
     return {"tag": value[1:]} if value.startswith("#") else {"item": value}
 
@@ -114,7 +115,7 @@ def main() -> None:
         raise ValueError("Wrong original release")
     report = {"recipes": [], "mappings": ITEMS, "replacements": {
         "PureCertusQuartz": "Removed modern AE2 item; regular certus is its analogue. Original group now contains only regular and charged certus.",
-        "IronIngot": "Forge ingotIron -> common c:ingots/iron tag", "research_keys": "Original TE names -> lowercase namespaced IDs; new worlds only."},
+        "IronIngot": "Forge ingotIron -> common c:ingots/iron tag", "WardedJar": "Old blockJar metadata0 -> empty unfiltered normal jar predicate through public EssentiaItemApi; modern filled and empty jars share one item ID.", "research_keys": "Original TE names -> lowercase namespaced IDs; new worlds only."},
         "research_status": "Research aliases approved; implementation pending. Vis arcane-terminal parent is still unported."}
     for feature, research in FEATURES.items():
         relative = f"thaumicenergistics/common/features/{feature}.java"

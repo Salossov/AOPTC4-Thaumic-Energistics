@@ -44,7 +44,7 @@ public final class EssentiaConversionMonitorPart extends EssentiaStorageMonitorP
         held.shrink(1);give(player,result.get().resultStack());sync(player);return true;
     }
     private boolean deposit(Player player,InteractionHand hand){
-        if(EssentiaItemApi.inspect(player.getItemInHand(hand)).isEmpty())return false;
+        if(thaumicenergistics.storage.PortableAspectItems.inspect(player.getItemInHand(hand)).isEmpty())return false;
         var batch=clicks.consume(player.getUUID(),getLevel().getServer().getTickCount());
         if(batch!=null){
             var inventory=player.getInventory();
@@ -61,7 +61,7 @@ public final class EssentiaConversionMonitorPart extends EssentiaStorageMonitorP
         clicks.deposited(player.getUUID(),getLevel().getServer().getTickCount(),aspect);sync(player);return true;
     }
     private Aspect drain(Player player,ItemStack held,Aspect required){
-        var contents=EssentiaItemApi.inspect(held);
+        var contents=thaumicenergistics.storage.PortableAspectItems.inspect(held);
         if(contents.isEmpty()||contents.get().amount()==0)return null;
         var grid=getMainNode().getGrid();
         var result=PortableEssentiaTransfers.deposit(held,required,PoweredEssentiaStorage.of(grid),grid.getStorageService().getInventory(),IActionSource.ofPlayer(player,this));

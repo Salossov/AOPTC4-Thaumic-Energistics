@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "thaumicenergistics:blocks/e.vibration.input",
+    "up": "thaumicenergistics:blocks/e.vibration.input",
+    "north": "thaumicenergistics:blocks/e.vibration.face.off",
+    "south": "thaumicenergistics:blocks/e.vibration.input",
+    "west": "thaumicenergistics:blocks/e.vibration.input",
+    "east": "thaumicenergistics:blocks/e.vibration.input",
+    "particle": "thaumicenergistics:blocks/e.vibration.input"
+  }
+}

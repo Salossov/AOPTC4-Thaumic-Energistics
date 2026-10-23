@@ -1,0 +1,334 @@
+{
+  "variants": {
+    "burning=0,facing=down,spin=0": {
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=down,spin=1": {
+      "ae2:z": 270,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=down,spin=2": {
+      "ae2:z": 180,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=down,spin=3": {
+      "ae2:z": 90,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=east,spin=0": {
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=east,spin=1": {
+      "ae2:z": 270,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=east,spin=2": {
+      "ae2:z": 180,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=east,spin=3": {
+      "ae2:z": 90,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=north,spin=0": {
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=north,spin=1": {
+      "ae2:z": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=north,spin=2": {
+      "ae2:z": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=north,spin=3": {
+      "ae2:z": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=south,spin=0": {
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=south,spin=1": {
+      "ae2:z": 90,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=south,spin=2": {
+      "ae2:z": 180,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=south,spin=3": {
+      "ae2:z": 270,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=up,spin=0": {
+      "ae2:z": 180,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=up,spin=1": {
+      "ae2:z": 90,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=up,spin=2": {
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=up,spin=3": {
+      "ae2:z": 270,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=west,spin=0": {
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=west,spin=1": {
+      "ae2:z": 270,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=west,spin=2": {
+      "ae2:z": 180,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=0,facing=west,spin=3": {
+      "ae2:z": 90,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_off"
+    },
+    "burning=1,facing=down,spin=0": {
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=down,spin=1": {
+      "ae2:z": 270,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=down,spin=2": {
+      "ae2:z": 180,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=down,spin=3": {
+      "ae2:z": 90,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=east,spin=0": {
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=east,spin=1": {
+      "ae2:z": 270,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=east,spin=2": {
+      "ae2:z": 180,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=east,spin=3": {
+      "ae2:z": 90,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=north,spin=0": {
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=north,spin=1": {
+      "ae2:z": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=north,spin=2": {
+      "ae2:z": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=north,spin=3": {
+      "ae2:z": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=south,spin=0": {
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=south,spin=1": {
+      "ae2:z": 90,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=south,spin=2": {
+      "ae2:z": 180,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=south,spin=3": {
+      "ae2:z": 270,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=up,spin=0": {
+      "ae2:z": 180,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=up,spin=1": {
+      "ae2:z": 90,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=up,spin=2": {
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=up,spin=3": {
+      "ae2:z": 270,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=west,spin=0": {
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=west,spin=1": {
+      "ae2:z": 270,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=west,spin=2": {
+      "ae2:z": 180,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=1,facing=west,spin=3": {
+      "ae2:z": 90,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_ignis"
+    },
+    "burning=2,facing=down,spin=0": {
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=down,spin=1": {
+      "ae2:z": 270,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=down,spin=2": {
+      "ae2:z": 180,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=down,spin=3": {
+      "ae2:z": 90,
+      "x": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=east,spin=0": {
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=east,spin=1": {
+      "ae2:z": 270,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=east,spin=2": {
+      "ae2:z": 180,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=east,spin=3": {
+      "ae2:z": 90,
+      "y": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=north,spin=0": {
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=north,spin=1": {
+      "ae2:z": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=north,spin=2": {
+      "ae2:z": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=north,spin=3": {
+      "ae2:z": 90,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=south,spin=0": {
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=south,spin=1": {
+      "ae2:z": 90,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=south,spin=2": {
+      "ae2:z": 180,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=south,spin=3": {
+      "ae2:z": 270,
+      "y": 180,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=up,spin=0": {
+      "ae2:z": 180,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=up,spin=1": {
+      "ae2:z": 90,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=up,spin=2": {
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=up,spin=3": {
+      "ae2:z": 270,
+      "x": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=west,spin=0": {
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=west,spin=1": {
+      "ae2:z": 270,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=west,spin=2": {
+      "ae2:z": 180,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    },
+    "burning=2,facing=west,spin=3": {
+      "ae2:z": 90,
+      "y": 270,
+      "model": "thaumicenergistics:block/essentia_vibration_chamber_potentia"
+    }
+  }
+}

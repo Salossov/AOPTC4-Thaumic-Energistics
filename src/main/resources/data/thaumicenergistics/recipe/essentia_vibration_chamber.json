@@ -1,0 +1,25 @@
+{
+  "type": "thaumcraft:arcane_shapeless",
+  "research": "thaumicenergistics:teessvibcmbr",
+  "vis": {
+    "aqua": 2,
+    "perditio": 4,
+    "ignis": 7,
+    "ordo": 4
+  },
+  "ingredients": [
+    {
+      "item": "ae2:vibration_chamber"
+    },
+    {
+      "item": "thaumicenergistics:diffusion_core"
+    },
+    {
+      "type": "thaumicenergistics:empty_jar"
+    }
+  ],
+  "result": {
+    "id": "thaumicenergistics:essentia_vibration_chamber",
+    "count": 1
+  }
+}

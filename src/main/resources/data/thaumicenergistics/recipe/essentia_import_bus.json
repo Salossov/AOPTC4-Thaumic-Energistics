@@ -12,7 +12,7 @@
   ],
   "key": {
     "J": {
-      "item": "thaumcraft:warded_jar"
+      "type": "thaumicenergistics:empty_jar"
     },
     "D": {
       "item": "thaumicenergistics:diffusion_core"

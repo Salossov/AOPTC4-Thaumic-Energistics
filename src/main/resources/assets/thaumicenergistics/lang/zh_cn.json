@@ -176,5 +176,8 @@
   "item.thaumicenergistics.essentia_terminal": "源质终端",
   "item.thaumicenergistics.wireless_essentia_terminal": "无线源质终端",
   "tc.research_name.thaumicenergistics:teessterm": "源质终端",
-  "tc.research_text.thaumicenergistics:teessterm": "已知你有多少源质."
+  "tc.research_text.thaumicenergistics:teessterm": "已知你有多少源质.",
+  "block.thaumicenergistics.essentia_vibration_chamber": "源质谐振仓",
+  "tc.research_name.thaumicenergistics:teessvibcmbr": "源质谐振仓",
+  "tc.research_text.thaumicenergistics:teessvibcmbr": "源质驱动网络"
 }

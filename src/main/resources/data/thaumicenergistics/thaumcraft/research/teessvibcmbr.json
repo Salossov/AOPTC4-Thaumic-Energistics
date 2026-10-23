@@ -1,0 +1,39 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:teessvibcmbr",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:tecores"
+  ],
+  "hidden_parents": [],
+  "icon": "thaumicenergistics:essentia_vibration_chamber",
+  "column": 1,
+  "row": -4,
+  "aspects": {
+    "machina": 5,
+    "praecantatio": 3,
+    "aqua": 1,
+    "motus": 3,
+    "potentia": 5
+  },
+  "complexity": 2,
+  "auto_unlock": false,
+  "concealed": true,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEESSVIBCMBR.1",
+    "thaumicenergistics.research_page.TEESSVIBCMBR.2",
+    "thaumicenergistics.research_page.TEESSVIBCMBR.3"
+  ],
+  "secondary": false,
+  "recipe_pages": [
+    "thaumicenergistics:essentia_vibration_chamber"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEESSVIBCMBR.1",
+    "thaumicenergistics:essentia_vibration_chamber",
+    "thaumicenergistics.research_page.TEESSVIBCMBR.2",
+    "thaumicenergistics.research_page.TEESSVIBCMBR.3"
+  ]
+}

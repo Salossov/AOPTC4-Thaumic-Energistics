@@ -17,7 +17,7 @@ public final class ConversionMonitorInteraction {
     @SubscribeEvent(priority=EventPriority.LOWEST)
     public static void portableContainerUse(PlayerInteractEvent.RightClickBlock event){
         if(!event.getEntity().isShiftKeyDown() || event.getUseBlock()==TriState.FALSE
-                || EssentiaItemApi.inspect(event.getItemStack()).isEmpty())return;
+                || thaumicenergistics.storage.PortableAspectItems.inspect(event.getItemStack()).isEmpty())return;
         var host=PartHelper.getPartHost(event.getLevel(),event.getPos());
         if(host==null)return;
         var selected=host.selectPartWorld(event.getHitVec().getLocation());

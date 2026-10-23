@@ -13,17 +13,19 @@ FEATURES = {
     "FeatureCells": ("TESTORAGE", "testorage", "thaumicenergistics:essentia_cell_64k"),
     "FeatureEssentiaIOBuses": ("TEIO", "teio", "thaumicenergistics:essentia_export_bus"),
     "FeatureEssentiaMonitoring": ("TEESSTERM", "teessterm", "thaumicenergistics:essentia_terminal"),
+    "FeatureEssentiaVibrationChamber": ("TEESSVIBCMBR", "teessvibcmbr", "thaumicenergistics:essentia_vibration_chamber"),
 }
 ASPECTS = {"SLIME": "limus", "MAGIC": "praecantatio", "MECHANISM": "machina", "EXCHANGE": "permutatio",
-           "VOID": "vacuos", "ENERGY": "potentia", "CRYSTAL": "vitreus", "METAL": "metallum", "AIR": "aer", "SENSES": "sensus", "WATER": "aqua"}
+           "VOID": "vacuos", "ENERGY": "potentia", "CRYSTAL": "vitreus", "METAL": "metallum", "AIR": "aer", "SENSES": "sensus", "WATER": "aqua", "MOTION": "motus"}
 PARENTS = {
     "teresearch": [],
     "tecores": ["thaumicenergistics:teresearch", "thaumicenergistics:pseudo_distilessentia"],
     "testorage": ["thaumicenergistics:teresearch", "thaumicenergistics:pseudo_distilessentia", "thaumicenergistics:pseudo_wardedarcana"],
     "teio": ["thaumicenergistics:tecores", "thaumicenergistics:pseudo_tubefilter"],
     "teessterm": ["thaumicenergistics:tecores"],
+    "teessvibcmbr": ["thaumicenergistics:tecores"],
 }
-HIDDEN_PARENTS = {"teresearch": [], "tecores": ["DISTILESSENTIA"], "testorage": ["DISTILESSENTIA"], "teio": ["TUBEFILTER"], "teessterm": []}
+HIDDEN_PARENTS = {"teresearch": [], "tecores": ["DISTILESSENTIA"], "testorage": ["DISTILESSENTIA"], "teio": ["TUBEFILTER"], "teessterm": [], "teessvibcmbr": []}
 
 
 def write(relative: str, value: object) -> None:
@@ -73,6 +75,7 @@ def main() -> None:
     for registry,name in {"PART_ESSENTIA_TERMINAL":"essentia_terminal", "ITEM_WIRELESS_ESSENTIA_TERMINAL":"wireless_essentia_terminal", "PART_ESSENTIA_LEVEL_EMITTER":"essentia_level_emitter", "PART_ESSENTIA_STORAGE_MONITOR":"essentia_storage_monitor", "PART_ESSENTIA_CONVERSION_MONITOR":"essentia_conversion_monitor"}.items():
         assert (ROOT/f"data/thaumicenergistics/recipe/{name}.json").is_file()
         recipes[registry]="thaumicenergistics:"+name
+    recipes["BLOCK_ESSENTIA_VIBRATION_CHAMBER"]="thaumicenergistics:essentia_vibration_chamber"
     source_registry = (ADDON / "source_code/src/main/java/thaumicenergistics/common/registries/ResearchRegistry.java").read_text(encoding="utf-8")
     release_registry = (ADDON / "decompiled/thaumicenergistics/common/registries/ResearchRegistry.java").read_text(encoding="utf-8")
     report = {"research": [], "monitoring_profile":{"wireless":True,"conversion":True}, "pending": "All remaining feature branches, config filtering, and Vis's original arcane-terminal parent"}
@@ -122,7 +125,7 @@ def main() -> None:
                 if key in values: values[f"tc.research_{kind}.thaumicenergistics:{modern}"] = values[key]
         language.write_text(json.dumps(values, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     (ADDON / "analysis/imported-research.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print("THE_RELEASE_RESEARCH_IMPORTED nodes=5 links=3 source_release_equivalent=true default_monitoring_branches=enabled")
+    print(f"THE_RELEASE_RESEARCH_IMPORTED nodes={len(FEATURES)} links=3 source_release_equivalent=true default_monitoring_branches=enabled")
 
 
 if __name__ == "__main__":

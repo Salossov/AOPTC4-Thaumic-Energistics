@@ -178,5 +178,8 @@
   "thaumicenergistics.gui.craft.large": "+",
   "item.thaumicenergistics.wireless_essentia_terminal": "Wireless Essentia Terminal",
   "tc.research_name.thaumicenergistics:teessterm": "Essentia Monitoring",
-  "tc.research_text.thaumicenergistics:teessterm": "Knowing how much you have."
+  "tc.research_text.thaumicenergistics:teessterm": "Knowing how much you have.",
+  "block.thaumicenergistics.essentia_vibration_chamber": "Essentia Vibration Chamber",
+  "tc.research_name.thaumicenergistics:teessvibcmbr": "Vibration Chamber",
+  "tc.research_text.thaumicenergistics:teessvibcmbr": "Essentia Powered Network"
 }

@@ -12,7 +12,7 @@
   ],
   "key": {
     "J": {
-      "item": "thaumcraft:warded_jar"
+      "type": "thaumicenergistics:empty_jar"
     },
     "C": {
       "item": "thaumicenergistics:coalescence_core"

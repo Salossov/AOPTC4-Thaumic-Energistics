@@ -95,7 +95,7 @@ public final class EssentiaTerminalMenu extends AbstractContainerMenu {
         var converted=TerminalInventory.convert(one,aspect,powered,raw,source);if(converted.isEmpty())return false;
         var result=converted.get().result();
         if(held.getCount()>1&&!canGive(result)){
-            var old=EssentiaItemApi.inspect(one).orElseThrow();var key=EssentiaKey.of(old.amount()>0?old.aspect():aspect);
+            var old=thaumicenergistics.storage.PortableAspectItems.inspect(one).orElseThrow();var key=EssentiaKey.of(old.amount()>0?old.aspect():aspect);
             long returned=old.amount()>0?raw.extract(key,converted.get().work(),appeng.api.config.Actionable.MODULATE,source):raw.insert(key,converted.get().work(),appeng.api.config.Actionable.MODULATE,source);
             if(returned!=converted.get().work())throw new IllegalStateException("Terminal cursor changed; rollback failed");return false;
         }

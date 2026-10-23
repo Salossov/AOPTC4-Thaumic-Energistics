@@ -41,6 +41,12 @@ public final class ThaumicEnergistics {
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<thaumicenergistics.blocks.CellWorkbenchBlockEntity>> CELL_WORKBENCH_ENTITY =
             BLOCK_ENTITIES.register("essentia_cell_workbench", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
                     thaumicenergistics.blocks.CellWorkbenchBlockEntity::new, CELL_WORKBENCH.get()).build(null));
+    public static final net.neoforged.neoforge.registries.DeferredBlock<thaumicenergistics.blocks.VibrationChamberBlock> VIBRATION_CHAMBER=
+            BLOCKS.register("essentia_vibration_chamber",thaumicenergistics.blocks.VibrationChamberBlock::new);
+    public static final net.neoforged.neoforge.registries.DeferredItem<thaumicenergistics.items.VibrationChamberItem> VIBRATION_ITEM=
+            ITEMS.register("essentia_vibration_chamber",()->new thaumicenergistics.items.VibrationChamberItem(VIBRATION_CHAMBER.get()));
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<thaumicenergistics.blocks.VibrationChamberBlockEntity>> VIBRATION_ENTITY=
+            BLOCK_ENTITIES.register("essentia_vibration_chamber",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(thaumicenergistics.blocks.VibrationChamberBlockEntity::new,VIBRATION_CHAMBER.get()).build(null));
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.StorageBusMenu>> STORAGE_BUS_MENU =
             MENUS.register("essentia_storage_bus", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(thaumicenergistics.menu.StorageBusMenu::fromNetwork));
@@ -52,12 +58,17 @@ public final class ThaumicEnergistics {
             MENUS.register("essentia_cell_workbench", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
                     (id, inventory, data) -> new thaumicenergistics.menu.CellWorkbenchMenu(id, inventory, null)));
     private static final DeferredRegister<AEKeyType> KEY_TYPES = DeferredRegister.create(AEKeyType.REGISTRY_KEY, ID);
+    private static final DeferredRegister<net.neoforged.neoforge.common.crafting.IngredientType<?>> INGREDIENT_TYPES=DeferredRegister.create(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES,ID);
+    public static final DeferredHolder<net.neoforged.neoforge.common.crafting.IngredientType<?>,net.neoforged.neoforge.common.crafting.IngredientType<thaumicenergistics.crafting.EmptyJarIngredient>> EMPTY_JAR_INGREDIENT=
+            INGREDIENT_TYPES.register("empty_jar",()->new net.neoforged.neoforge.common.crafting.IngredientType<>(com.mojang.serialization.MapCodec.unit(new thaumicenergistics.crafting.EmptyJarIngredient())));
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaLevelEmitterMenu>> EMITTER_MENU =
             MENUS.register("essentia_level_emitter", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
                     (id, inventory, data) -> new thaumicenergistics.menu.EssentiaLevelEmitterMenu(id,inventory,null)));
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>,net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaTerminalMenu>> TERMINAL_MENU =
             MENUS.register("essentia_terminal",()->net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create((id,inventory,data)->new thaumicenergistics.menu.EssentiaTerminalMenu(id,inventory,null)));
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>,net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.VibrationChamberMenu>> VIBRATION_MENU=
+            MENUS.register("essentia_vibration_chamber",()->net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create((id,inventory,data)->new thaumicenergistics.menu.VibrationChamberMenu(id,inventory,null)));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CellContents>> CELL_CONTENTS =
             COMPONENTS.register("cell_contents", () -> DataComponentType.<CellContents>builder()
                     .persistent(CellContents.CODEC)
@@ -65,6 +76,8 @@ public final class ThaumicEnergistics {
     public static final DeferredHolder<DataComponentType<?>,DataComponentType<thaumicenergistics.storage.TerminalSettings>> TERMINAL_SETTINGS =
             COMPONENTS.register("terminal_settings",()->DataComponentType.<thaumicenergistics.storage.TerminalSettings>builder()
                     .persistent(thaumicenergistics.storage.TerminalSettings.CODEC).networkSynchronized(ByteBufCodecs.fromCodec(thaumicenergistics.storage.TerminalSettings.CODEC)).build());
+    public static final DeferredHolder<DataComponentType<?>,DataComponentType<thaumicenergistics.storage.ChamberContents>> CHAMBER_CONTENTS=
+            COMPONENTS.register("chamber_contents",()->DataComponentType.<thaumicenergistics.storage.ChamberContents>builder().persistent(thaumicenergistics.storage.ChamberContents.CODEC).networkSynchronized(ByteBufCodecs.fromCodec(thaumicenergistics.storage.ChamberContents.CODEC)).build());
     public static final Map<CellTier, DeferredHolder<Item, EssentiaCellItem>> CELLS = new EnumMap<>(CellTier.class);
     public static final Map<CellTier, DeferredHolder<Item, Item>> COMPONENT_ITEMS = new EnumMap<>(CellTier.class);
     public static final DeferredHolder<Item, Item> STORAGE_CASING = ITEMS.register("storage_casing", () -> new Item(new Item.Properties()));
@@ -101,6 +114,7 @@ public final class ThaumicEnergistics {
                     output.accept(CONVERSION_MONITOR.get());
                     output.accept(ESSENTIA_TERMINAL.get());
                     output.accept(WIRELESS_TERMINAL.get());
+                    output.accept(VIBRATION_ITEM.get());
                     for (var tier : CellTier.values()) {
                         if (!tier.creative()) output.accept(COMPONENT_ITEMS.get(tier).get());
                         output.accept(CELLS.get(tier).get());
@@ -114,6 +128,7 @@ public final class ThaumicEnergistics {
         BLOCKS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         MENUS.register(modBus);
+        INGREDIENT_TYPES.register(modBus);
         TABS.register(modBus);
         // AE2 creates its registry after mod constructors; register on the NeoForge registry event.
         KEY_TYPES.register(modBus);
@@ -125,15 +140,23 @@ public final class ThaumicEnergistics {
         PartModels.registerModels(id("part/essentia_storage_monitor_off"),id("part/essentia_storage_monitor_on"),id("part/essentia_storage_monitor_empty_off"),id("part/essentia_storage_monitor_empty_on"));
         PartModels.registerModels(id("part/essentia_conversion_monitor_off"),id("part/essentia_conversion_monitor_on"),id("part/essentia_conversion_monitor_empty_off"),id("part/essentia_conversion_monitor_empty_on"));
         for(int rotation=0;rotation<4;rotation++)PartModels.registerModels(id("part/essentia_terminal_"+rotation+"_off"),id("part/essentia_terminal_"+rotation+"_on"));
-        modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) ->
+        modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) -> {
                 event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
-                        CELL_WORKBENCH_ENTITY.get(), (workbench, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(workbench.inventory())));
+                        CELL_WORKBENCH_ENTITY.get(), (workbench, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(workbench.inventory()));
+                event.registerBlockEntity(appeng.api.AECapabilities.IN_WORLD_GRID_NODE_HOST,VIBRATION_ENTITY.get(),(chamber,context)->chamber);
+                event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.TRANSPORT,VIBRATION_ENTITY.get(),(chamber,side)->chamber);
+                event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.CONTAINER,VIBRATION_ENTITY.get(),(chamber,context)->chamber);
+                event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.SOURCE,VIBRATION_ENTITY.get(),(chamber,context)->chamber);
+        });
     }
 
     private static void setup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             StorageCells.addCellHandler(EssentiaCell.HANDLER);
             ContainerPermissions.registerDefaults();
+            ContainerPermissions.register(id("essentia_vibration_chamber"),false,true,64);
+            VIBRATION_CHAMBER.get().setBlockEntity(thaumicenergistics.blocks.VibrationChamberBlockEntity.class,VIBRATION_ENTITY.get(),null,null);
+            appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(VIBRATION_ENTITY.get(),VIBRATION_ITEM.get());
             appeng.api.features.GridLinkables.register(WIRELESS_TERMINAL.get(),appeng.items.tools.powered.WirelessTerminalItem.LINKABLE_HANDLER);
             for (var item : List.of(IMPORT_BUS.get(), EXPORT_BUS.get())) {
                 Upgrades.add(BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:speed_card")), item, 4);
