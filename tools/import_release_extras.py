@@ -194,7 +194,9 @@ def main():
                                                           "N": {"item": "minecraft:quartz"}, "W": {"item": "ae2:certus_quartz_wrench"}}, str(data.get("key")))
         check("focus_ae_wrench whole-vis aer 10 / ignis 10", data.get("vis") == {"aer": 10, "ignis": 10}, str(data.get("vis")))
         check("focus_ae_wrench result", data.get("result") == {"id": "thaumicenergistics:focus_ae_wrench", "count": 1}, str(data.get("result")))
-        check("focus_ae_wrench extras condition", data.get("neoforge:conditions") == [{"type": "thaumicenergistics:extras_feature", "feature": "wrench_focus"}], str(data.get("neoforge:conditions")))
+        conditions = data.get("neoforge:conditions", [])
+        check("focus_ae_wrench extras condition", any(c.get("type") == "thaumicenergistics:extras_feature" and c.get("feature") == "wrench_focus" for c in conditions), str(conditions))
+        check("focus_ae_wrench item condition", any(c.get("type") == "neoforge:item_exists" and c.get("item") == "ae2:certus_quartz_wrench" for c in conditions), str(conditions))
 
     data = load_json("certus_quartz_dupe.json", ROOT / "data/thaumicenergistics/recipe/certus_quartz_dupe.json")
     if data is not None:
@@ -202,7 +204,10 @@ def main():
         check("certus_quartz_dupe result count 2", data.get("result") == {"id": "ae2:certus_quartz_crystal", "count": 2}, str(data.get("result")))
         check("certus_quartz_dupe catalyst tag", data.get("catalyst") == {"tag": "thaumicenergistics:cell_certus_quartz"}, str(data.get("catalyst")))
         check("certus_quartz_dupe aspects vitreus 4 / aqua 2", data.get("aspects") == {"vitreus": 4, "aqua": 2}, str(data.get("aspects")))
-        check("certus_quartz_dupe extras condition", data.get("neoforge:conditions") == [{"type": "thaumicenergistics:extras_feature", "feature": "certus_dupe"}], str(data.get("neoforge:conditions")))
+        conditions = data.get("neoforge:conditions", [])
+        check("certus_quartz_dupe extras condition", any(c.get("type") == "thaumicenergistics:extras_feature" and c.get("feature") == "certus_dupe" for c in conditions), str(conditions))
+        check("certus_quartz_dupe tag condition", any(c.get("type") == "neoforge:not" and c.get("value", {}).get("tag") == "thaumicenergistics:cell_certus_quartz" for c in conditions), str(conditions))
+        check("certus_quartz_dupe item condition", any(c.get("type") == "neoforge:item_exists" and c.get("item") == "ae2:certus_quartz_crystal" for c in conditions), str(conditions))
 
     data = load_json("nether_quartz_dupe.json", ROOT / "data/thaumicenergistics/recipe/nether_quartz_dupe.json")
     if data is not None:
@@ -210,9 +215,13 @@ def main():
         check("nether_quartz_dupe result count 2", data.get("result") == {"id": "minecraft:quartz", "count": 2}, str(data.get("result")))
         check("nether_quartz_dupe catalyst tag", data.get("catalyst") == {"tag": "c:gems/quartz"}, str(data.get("catalyst")))
         check("nether_quartz_dupe aspects vitreus 4 / aqua 2 / potentia 2", data.get("aspects") == {"vitreus": 4, "aqua": 2, "potentia": 2}, str(data.get("aspects")))
-        check("nether_quartz_dupe extras condition", data.get("neoforge:conditions") == [{"type": "thaumicenergistics:extras_feature", "feature": "certus_dupe"}], str(data.get("neoforge:conditions")))
+        conditions = data.get("neoforge:conditions", [])
+        check("nether_quartz_dupe extras condition", any(c.get("type") == "thaumicenergistics:extras_feature" and c.get("feature") == "certus_dupe" for c in conditions), str(conditions))
+        check("nether_quartz_dupe tag condition", any(c.get("type") == "neoforge:not" and c.get("value", {}).get("tag") == "c:gems/quartz" for c in conditions), str(conditions))
+        check("nether_quartz_dupe item condition", any(c.get("type") == "neoforge:item_exists" and c.get("item") == "minecraft:quartz" for c in conditions), str(conditions))
 
-    whitelisted = ["thaumcraft:amber_block", "thaumcraft:amber_bricks", "thaumcraft:obsidian_tile", "thaumcraft:tallow_block",
+    whitelisted = ["thaumcraft:amber_block", "thaumcraft:amber_bricks", "thaumcraft:warded_glass",
+                   "thaumcraft:obsidian_tile", "thaumcraft:tallow_block",
                    "thaumcraft:thaumium_block", "thaumcraft:arcane_stone", "thaumcraft:arcane_stone_bricks",
                    "thaumcraft:ancient_stone", "thaumcraft:greatwood_planks", "thaumcraft:silverwood_planks",
                    "thaumcraft:fibrous_taint", "thaumcraft:tainted_flesh"]
@@ -220,10 +229,9 @@ def main():
     if data is not None:
         check("facades tag replace false", data.get("replace") is False, str(data.get("replace")))
         check("facades tag values exact whitelist", data.get("values") == whitelisted, f"{len(data.get('values', []))} values")
-        check("facades tag excludes warded glass (allowMirrors gate kept as open question)", "thaumcraft:warded_glass" not in data.get("values", []))
-        NOTES.append("OPEN QUESTION: blockCosmeticOpaque meta 2 (Warded Glass) stays behind the original Config.allowMirrors gate and is not"
-                     " whitelisted; blockCosmeticSolid meta 4 (Thaumium Block) IS whitelisted because the modern port ships thaumium_block"
-                     " (registered as the TC4 BlockCosmeticSolid meta 4 successor).")
+        check("facades tag includes warded glass with active allowMirrors", "thaumcraft:warded_glass" in data.get("values", []))
+        NOTES.append("FACADES: blockCosmeticOpaque meta 2 (Warded Glass) is whitelisted corresponding to active allowMirrors;"
+                     " blockCosmeticSolid meta 4 (Thaumium Block) is whitelisted as thaumium_block.")
 
     data = load_json("focus_ae_wrench model", ROOT / "assets/thaumicenergistics/models/item/focus_ae_wrench.json")
     if data is not None:

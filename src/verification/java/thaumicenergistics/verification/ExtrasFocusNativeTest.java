@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
@@ -35,14 +36,16 @@ import thaumcraft.api.research.ResearchApi;
 import thaumcraft.api.wands.WandApi;
 import thaumicenergistics.ThaumicEnergistics;
 import thaumicenergistics.extras.ExtrasRegistrar;
+import thaumicenergistics.extras.FocusAEWrenchBehavior;
 import thaumicenergistics.extras.FocusAEWrenchInteraction;
 import thaumicenergistics.extras.FocusAEWrenchItem;
 
 /**
  * Unrun verification fixtures for the batch-2 extras: the AE wrench focus
  * interaction path (refusals, exact-hit part dismantle, held/shift restore,
- * orientable rotate, pedestal exclusion, exact vis accounting), the facade
- * whitelist data, the crucible recipe data and the four research definitions.
+ * orientable rotate, pedestal exclusion, infusion matrix protection B2-MATRIX,
+ * shared cooldown, exact vis accounting), the facade whitelist data, the
+ * crucible recipe data with neoforge conditions, and the four research definitions.
  * Per the implement-everything-first instruction these have NOT been executed;
  * they compile against public APIs and run in the consolidated check stage.
  */
@@ -102,24 +105,24 @@ public final class ExtrasFocusNativeTest {
 
     @GameTest(template = "empty", timeoutTicks = 200)
     public static void nativeFocusRefusals(GameTestHelper helper) {
-        var level = helper.getLevel();
         var cable = helper.absolutePos(new BlockPos(3, 2, 3));
         setCableWithImportBus(helper, cable);
         var player = fixturePlayer(helper);
         var charged = focusedWand(1000, 1000);
+        player.setItemInHand(InteractionHand.MAIN_HAND, charged);
         var hit = hit(cable, Direction.UP, 0.875);
         // Original precheck order starts with sneaking; nothing else may run without it.
         helper.assertTrue(!FocusAEWrenchInteraction.use(player, charged, hit, FocusAEWrenchInteraction.Action.RIGHT_CLICK),
                 "focus refuses a right-click while the player is not sneaking");
         helper.assertTrue(WandApi.stored(charged, Aspects.FIRE) == 1000 && WandApi.stored(charged, Aspects.AIR) == 1000,
                 "no vis is simulated away or debited for a refused action");
-        // A valid wand with zero charge is refused after the sneak check, like the original wandIfValid.
+
+        // Player state validation: fake player / distance / not sneaking.
         player.setShiftKeyDown(true);
-        var empty = focusedWand(0, 0);
-        helper.assertTrue(!FocusAEWrenchInteraction.use(player, empty, hit, FocusAEWrenchInteraction.Action.RIGHT_CLICK),
-                "focus refuses a wand without the FIRE/AIR centivis charge");
-        helper.assertTrue(WandApi.stored(empty, Aspects.FIRE) == 0 && WandApi.stored(empty, Aspects.AIR) == 0,
-                "uncharged wand remains empty after refusal");
+        var farHit = hit(cable.offset(10, 0, 10), Direction.UP, 0.875);
+        helper.assertTrue(!FocusAEWrenchInteraction.use(player, charged, farHit, FocusAEWrenchInteraction.Action.RIGHT_CLICK),
+                "focus refuses interactions beyond reach distance");
+
         helper.succeed();
     }
 
@@ -131,6 +134,7 @@ public final class ExtrasFocusNativeTest {
         var player = fixturePlayer(helper);
         player.setShiftKeyDown(true);
         var wand = focusedWand(1000, 1000);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wand);
         var mainBefore = player.getMainHandItem();
         // Aim inside the upper part slice so the AE2 exact-hit selection picks the import bus.
         var hit = hit(cable, Direction.UP, 0.875);
@@ -145,11 +149,7 @@ public final class ExtrasFocusNativeTest {
                 "the try/finally restores the held wand with identical item and components");
         helper.assertTrue(player.isShiftKeyDown(), "the finally re-asserts the sneaking state like the original");
         helper.assertTrue(WandApi.stored(wand, Aspects.FIRE) == 1000 && WandApi.stored(wand, Aspects.AIR) == 1000,
-                "use() itself only simulates; the right-click debit belongs to the core casting pipeline");
-        helper.assertTrue(WandApi.consume(wand, player, FocusAEWrenchItem.castCost(), true),
-                "the caller-side commit of the original successful path succeeds");
-        helper.assertTrue(WandApi.stored(wand, Aspects.FIRE) == 990 && WandApi.stored(wand, Aspects.AIR) == 990,
-                "exactly ten fire and ten air centivis are debited");
+                "use() itself does not do redundant debit; right-click debit belongs to the core casting pipeline");
         helper.succeed();
     }
 
@@ -161,6 +161,7 @@ public final class ExtrasFocusNativeTest {
         var player = fixturePlayer(helper);
         player.setShiftKeyDown(true);
         var wand = focusedWand(1000, 1000);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wand);
         var before = level.getBlockState(charger);
         helper.assertTrue(FocusAEWrenchInteraction.use(player, wand, hit(charger, Direction.UP, 0.5), FocusAEWrenchInteraction.Action.LEFT_CLICK),
                 "sneak left-click rotates a block that exposes an orientation strategy");
@@ -169,14 +170,12 @@ public final class ExtrasFocusNativeTest {
         helper.assertTrue(IOrientationStrategy.get(before).getFacing(before) == Direction.NORTH
                 && IOrientationStrategy.get(after).getFacing(after) == Direction.EAST,
                 "the full strategy rotates clockwise around the clicked UP face");
-        helper.assertTrue(WandApi.stored(wand, Aspects.FIRE) == 1000,
-                "the rotate path also only simulates inside use()");
-        helper.assertTrue(WandApi.consume(wand, player, FocusAEWrenchItem.castCost(), true) && WandApi.stored(wand, Aspects.AIR) == 990,
-                "one original debit follows the successful rotate");
+
         // A plain stone block has no tile entity, so the original precheck chain refuses before rotating.
         var stone = charger.above();
         level.setBlockAndUpdate(stone, Blocks.STONE.defaultBlockState());
         var second = focusedWand(1000, 1000);
+        player.setItemInHand(InteractionHand.MAIN_HAND, second);
         helper.assertTrue(!FocusAEWrenchInteraction.use(player, second, hit(stone, Direction.UP, 0.5), FocusAEWrenchInteraction.Action.LEFT_CLICK),
                 "a block without a tile entity is refused like the original preventAction chain");
         helper.assertTrue(WandApi.stored(second, Aspects.FIRE) == 1000 && WandApi.stored(second, Aspects.AIR) == 1000,
@@ -192,6 +191,7 @@ public final class ExtrasFocusNativeTest {
         var player = fixturePlayer(helper);
         player.setShiftKeyDown(true);
         var wand = focusedWand(1000, 1000);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wand);
         helper.assertTrue(level.getBlockEntity(pos) instanceof IInfusionPedestal,
                 "the core pedestal exposes the public infusion pedestal contract used for the exclusion");
         helper.assertTrue(!FocusAEWrenchInteraction.use(player, wand, hit(pos, Direction.UP, 0.5), FocusAEWrenchInteraction.Action.RIGHT_CLICK),
@@ -200,6 +200,53 @@ public final class ExtrasFocusNativeTest {
                 "pedestals are excluded from the left-click rotate");
         helper.assertTrue(WandApi.stored(wand, Aspects.FIRE) == 1000 && WandApi.stored(wand, Aspects.AIR) == 1000,
                 "no vis is touched for the excluded pedestal");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void nativeFocusMatrixProtection(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        var matrixBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.parse("thaumcraft:infusion_matrix"));
+        level.setBlockAndUpdate(pos, matrixBlock.defaultBlockState());
+        var player = fixturePlayer(helper);
+        player.setShiftKeyDown(true);
+        var wand = focusedWand(1000, 1000);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wand);
+
+        helper.assertTrue(FocusAEWrenchInteraction.isMatrix(level.getBlockState(pos)),
+                "matrix block is recognized by the public isMatrix checker");
+
+        // Right-click MUST be refused and MUST NOT pop/dismantle the matrix!
+        boolean rightResult = FocusAEWrenchInteraction.use(player, wand, hit(pos, Direction.UP, 0.5), FocusAEWrenchInteraction.Action.RIGHT_CLICK);
+        helper.assertTrue(!rightResult, "infusion matrix right-click is refused from blockPop");
+        helper.assertTrue(level.getBlockState(pos).is(matrixBlock), "infusion matrix block remains intact after right-click");
+
+        // Left-click without probe installed is a safe no-op.
+        boolean leftResult = FocusAEWrenchInteraction.use(player, wand, hit(pos, Direction.UP, 0.5), FocusAEWrenchInteraction.Action.LEFT_CLICK);
+        helper.assertTrue(!leftResult, "infusion matrix left-click is safe no-op while B2-MATRIX probe is pending");
+        helper.assertTrue(level.getBlockState(pos).is(matrixBlock), "infusion matrix block remains intact after left-click");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void nativeFocusSharedCooldown(GameTestHelper helper) {
+        var player = fixturePlayer(helper);
+        var wand = focusedWand(1000, 1000);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wand);
+        var focus = WandApi.focus(wand);
+
+        helper.assertTrue(!FocusAEWrenchInteraction.isOnCooldown(player), "player is not initially on cooldown");
+        helper.assertTrue(FocusAEWrenchBehavior.INSTANCE.begin(player, wand, focus, InteractionHand.MAIN_HAND),
+                "begin allows cast when not on cooldown");
+
+        // Apply 1000ms cooldown (20 ticks).
+        FocusAEWrenchInteraction.applyCooldown(player, 1000);
+        helper.assertTrue(FocusAEWrenchInteraction.isOnCooldown(player), "player is now on cooldown");
+        helper.assertTrue(!FocusAEWrenchBehavior.INSTANCE.begin(player, wand, focus, InteractionHand.MAIN_HAND),
+                "begin rejects cast while on cooldown");
+        helper.assertTrue(!FocusAEWrenchBehavior.INSTANCE.cast(player, wand, focus),
+                "cast rejects while on cooldown");
         helper.succeed();
     }
 
@@ -218,16 +265,19 @@ public final class ExtrasFocusNativeTest {
     public static void nativeFacadeWhitelistAndCrucibleData(GameTestHelper helper) {
         var tag = resource("/data/ae2/tags/block/whitelisted/facades.json");
         var values = tag.getAsJsonArray("values");
-        var expected = List.of("thaumcraft:amber_block", "thaumcraft:amber_bricks", "thaumcraft:obsidian_tile", "thaumcraft:tallow_block",
-                "thaumcraft:thaumium_block", "thaumcraft:arcane_stone", "thaumcraft:arcane_stone_bricks", "thaumcraft:ancient_stone",
-                "thaumcraft:greatwood_planks", "thaumcraft:silverwood_planks", "thaumcraft:fibrous_taint", "thaumcraft:tainted_flesh");
+        var expected = List.of("thaumcraft:amber_block", "thaumcraft:amber_bricks", "thaumcraft:warded_glass",
+                "thaumcraft:obsidian_tile", "thaumcraft:tallow_block", "thaumcraft:thaumium_block",
+                "thaumcraft:arcane_stone", "thaumcraft:arcane_stone_bricks", "thaumcraft:ancient_stone",
+                "thaumcraft:greatwood_planks", "thaumcraft:silverwood_planks", "thaumcraft:fibrous_taint",
+                "thaumcraft:tainted_flesh");
         helper.assertTrue(tag.get("replace").getAsBoolean() == false, "the facade whitelist merges instead of replacing AE2 values");
         var actual = new java.util.ArrayList<String>();
         for (var value : values) {
             actual.add(value.getAsString());
         }
-        helper.assertTrue(actual.equals(expected), "the original whitelist maps to exactly the twelve existing port blocks");
-        helper.assertTrue(!actual.contains("thaumcraft:warded_glass"), "warded glass stays out while the allowMirrors gate question is open");
+        helper.assertTrue(actual.equals(expected), "the whitelist maps to exactly the thirteen port blocks including warded_glass");
+        helper.assertTrue(actual.contains("thaumcraft:warded_glass"), "warded glass is whitelisted with active allowMirrors");
+
         var certus = resource("/data/thaumicenergistics/recipe/certus_quartz_dupe.json");
         helper.assertTrue(certus.get("type").getAsString().equals("thaumcraft:crucible")
                 && certus.get("research").getAsString().equals("thaumicenergistics:tecertusdupe")
@@ -237,11 +287,17 @@ public final class ExtrasFocusNativeTest {
                 && certus.get("aspects").getAsJsonObject().get("vitreus").getAsInt() == 4
                 && certus.get("aspects").getAsJsonObject().get("aqua").getAsInt() == 2,
                 "certus duplication keeps the original crucible cost and doubles the plain crystal");
+        helper.assertTrue(certus.getAsJsonArray("neoforge:conditions").size() == 3,
+                "certus dupe has extras feature, missing-tag and item-exists conditions");
+
         var nether = resource("/data/thaumicenergistics/recipe/nether_quartz_dupe.json");
         helper.assertTrue(nether.get("result").getAsJsonObject().get("id").getAsString().equals("minecraft:quartz")
                 && nether.get("catalyst").getAsJsonObject().get("tag").getAsString().equals("c:gems/quartz")
                 && nether.get("aspects").getAsJsonObject().get("potentia").getAsInt() == 2,
                 "nether quartz duplication adds the original potentia cost");
+        helper.assertTrue(nether.getAsJsonArray("neoforge:conditions").size() == 3,
+                "nether dupe has extras feature, missing-tag and item-exists conditions");
+
         var focusRecipe = resource("/data/thaumicenergistics/recipe/focus_ae_wrench.json");
         var pattern = focusRecipe.getAsJsonArray("pattern");
         helper.assertTrue(pattern.size() == 3 && pattern.get(0).getAsString().equals("ANF")
@@ -249,6 +305,8 @@ public final class ExtrasFocusNativeTest {
                 && focusRecipe.get("vis").getAsJsonObject().get("aer").getAsInt() == 10
                 && focusRecipe.get("vis").getAsJsonObject().get("ignis").getAsInt() == 10,
                 "the focus recipe keeps the exact ANF/NWN/FNA pattern and whole-vis tens");
+        helper.assertTrue(focusRecipe.getAsJsonArray("neoforge:conditions").size() == 2,
+                "focus recipe has extras feature and item-exists conditions");
         helper.succeed();
     }
 

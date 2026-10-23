@@ -5,6 +5,17 @@
     {
       "type": "thaumicenergistics:extras_feature",
       "feature": "certus_dupe"
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:gems/quartz"
+      }
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "minecraft:quartz"
     }
   ],
   "result": {

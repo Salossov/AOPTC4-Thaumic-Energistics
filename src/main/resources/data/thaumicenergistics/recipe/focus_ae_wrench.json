@@ -5,6 +5,10 @@
     {
       "type": "thaumicenergistics:extras_feature",
       "feature": "wrench_focus"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "ae2:certus_quartz_wrench"
     }
   ],
   "pattern": [

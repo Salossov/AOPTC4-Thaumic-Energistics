@@ -5,14 +5,10 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import thaumcraft.api.client.WandBeamApi;
-import thaumcraft.api.aspects.Aspects;
 
 /**
  * Scoped port of Packet_R_ParticleFX mode WRENCH_FX: the server broadcasts the
@@ -22,6 +18,9 @@ import thaumcraft.api.aspects.Aspects;
  * color, width 0.2, reverse=false, texture type 0, six-tick lifetime (the core
  * renderer owns its own eight-tick fade - recorded adaptation), skipped when
  * the client particle setting is minimal.
+ *
+ * Client rendering is isolated in {@link thaumicenergistics.extras.client.WrenchFocusBeamClientHandler}
+ * to prevent dedicated-server classloading issues.
  */
 public record WrenchFocusBeamPayload(int sourceId, double targetX, double targetY, double targetZ)
         implements CustomPacketPayload {
@@ -57,21 +56,8 @@ public record WrenchFocusBeamPayload(int sourceId, double targetX, double target
     public static final class Registration {
         @SubscribeEvent
         public static void register(RegisterPayloadHandlersEvent event) {
-            event.registrar("1").playToClient(TYPE, CODEC, (payload, context) -> context.enqueueWork(() -> render(payload, context.player())));
-        }
-
-        private static void render(WrenchFocusBeamPayload payload, Player player) {
-            var minecraft = net.minecraft.client.Minecraft.getInstance();
-            var level = minecraft.level;
-            if (level == null || !(level.getEntity(payload.sourceId()) instanceof Player source)) {
-                return;
-            }
-            // Original client gate: gameSettings.particleSetting != 2 (minimal).
-            if (minecraft.options.particles().get() == net.minecraft.client.ParticleStatus.MINIMAL) {
-                return;
-            }
-            WandBeamApi.emit(source, new WandBeamApi.Beam(new Vec3(payload.targetX(), payload.targetY(), payload.targetZ()),
-                    0, Aspects.ENERGY.getColor(), false, 0.2f));
+            event.registrar("1").playToClient(TYPE, CODEC, (payload, context) ->
+                    context.enqueueWork(() -> thaumicenergistics.extras.client.WrenchFocusBeamClientHandler.render(payload)));
         }
 
         private Registration() {}
