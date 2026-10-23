@@ -11,6 +11,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import thaumicenergistics.ThaumicEnergistics;
 
 /**
@@ -25,6 +27,11 @@ public final class GolemsClientRegistrar {
             ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "golem_backpack"), "main");
 
     private GolemsClientRegistrar() {}
+
+    @SubscribeEvent
+    public static void onReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener((ResourceManagerReloadListener) resources -> GearboxItemRenderer.invalidateModels());
+    }
 
     @SubscribeEvent
     public static void onRegisterLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {

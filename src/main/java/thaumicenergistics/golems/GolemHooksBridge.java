@@ -12,6 +12,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -85,6 +87,16 @@ public final class GolemHooksBridge {
     }
 
     @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event) {
+        if (event.getEntity() instanceof ServerPlayer player && event.getTarget() instanceof LivingEntity golem) {
+            var connection = GolemBackpackManager.getConnection(golem);
+            if (connection != null) {
+                PacketDistributor.sendToPlayer(player, GolemWirelessStatusPayload.of(golem, connection.isInRange));
+            }
+        }
+    }
+
+    @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Post event) {
         if (event.getEntity() instanceof LivingEntity living && GolemBackpackManager.hasBackpack(living)) {
             GolemBackpackManager.tickGolem(living);
@@ -93,12 +105,18 @@ public final class GolemHooksBridge {
 
     @SubscribeEvent
     public static void onEntityDeath(LivingDeathEvent event) {
-        GolemBackpackManager.onEntityDeath(event.getEntity());
+        if (!event.getEntity().level().isClientSide) {
+            GolemBackpackManager.onEntityDeath(event.getEntity());
+        }
     }
 
     @SubscribeEvent
     public static void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
-        GolemBackpackManager.onEntityLeave(event.getEntity());
+        if (event.getLevel().isClientSide) {
+            GolemWirelessStatusPayload.forget(event.getEntity());
+        } else {
+            GolemBackpackManager.onEntityLeave(event.getEntity());
+        }
     }
 
     @SubscribeEvent

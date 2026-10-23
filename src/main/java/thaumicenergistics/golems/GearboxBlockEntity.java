@@ -114,8 +114,8 @@ public class GearboxBlockEntity extends BlockEntity {
 
     /**
      * Calculates power transferred to each turning shaft (6 / count).
-     * Note: Explicitly resets canTurn[i] to false when neighbor cannot turn,
-     * adapting 1.7.10's omission to prevent stale power distribution.
+     * Keeps the release's latched canTurn flags. Clearing a previously ready
+     * neighbor here would change original gameplay and needs separate approval.
      */
     public int calculateTransferPower() {
         int powerDivisor = 0;
@@ -135,7 +135,6 @@ public class GearboxBlockEntity extends BlockEntity {
                     continue;
                 }
             }
-            this.canTurn[i] = false;
         }
 
         if (powerDivisor == 0) {

@@ -64,12 +64,22 @@ def main():
             'layer0': 'thaumicenergistics:items/golem.wifi.backpack'
         }
     })
-    write('assets/thaumicenergistics/models/item/iron_gear_box.json', {
-        'parent': 'thaumicenergistics:block/iron_gear_box'
-    })
-    write('assets/thaumicenergistics/models/item/thaumium_gear_box.json', {
-        'parent': 'thaumicenergistics:block/thaumium_gear_box'
-    })
+    # A cube_all parent silently bypasses GearboxItemRenderer.
+    for name, particle in [('iron_gear_box', 'gear.box.fallback'),
+                           ('thaumium_gear_box', 'golem.gear.box.fallback')]:
+        write(f'assets/thaumicenergistics/models/item/{name}.json', {
+            'parent': 'minecraft:builtin/entity',
+            'textures': {'particle': f'thaumicenergistics:blocks/{particle}'},
+            'display': {
+                'gui': {'rotation': [30, 225, 0], 'scale': [0.625] * 3},
+                'ground': {'translation': [0, 3, 0], 'scale': [0.25] * 3},
+                'fixed': {'scale': [0.5] * 3},
+                'thirdperson_righthand': {'rotation': [75, 45, 0], 'translation': [0, 2.5, 0], 'scale': [0.375] * 3},
+                'thirdperson_lefthand': {'rotation': [75, 45, 0], 'translation': [0, 2.5, 0], 'scale': [0.375] * 3},
+                'firstperson_righthand': {'rotation': [0, 45, 0], 'scale': [0.4] * 3},
+                'firstperson_lefthand': {'rotation': [0, 225, 0], 'scale': [0.4] * 3}
+            }
+        })
 
     # Models - Blocks
     write('assets/thaumicenergistics/models/block/iron_gear_box.json', {

@@ -82,6 +82,8 @@ public final class GolemsRegistrar {
     @SubscribeEvent
     public static void onPayloads(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
+        registrar.playToClient(GolemWirelessStatusPayload.TYPE, GolemWirelessStatusPayload.CODEC,
+                (payload, context) -> context.enqueueWork(() -> GolemWirelessStatusPayload.handle(payload, context.player())));
         registrar.playToClient(
                 GearboxSyncPayload.TYPE,
                 GearboxSyncPayload.CODEC,

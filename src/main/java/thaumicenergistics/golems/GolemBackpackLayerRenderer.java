@@ -3,12 +3,15 @@ package thaumicenergistics.golems;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import java.util.Map;
+import java.util.WeakHashMap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -22,6 +25,13 @@ import thaumcraft.api.entities.IControllableGolem;
  */
 public class GolemBackpackLayerRenderer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
     private final GolemBackpackModel backpackModel;
+    private final Map<LivingEntity, PearlAnimation> animations = new WeakHashMap<>();
+
+    private static final class PearlAnimation {
+        float lastAge;
+        float rotation;
+        boolean wasInRange;
+    }
 
     public GolemBackpackLayerRenderer(RenderLayerParent<T, M> renderer, GolemBackpackModel backpackModel) {
         super(renderer);
@@ -42,9 +52,13 @@ public class GolemBackpackLayerRenderer<T extends LivingEntity, M extends Entity
 
         poseStack.pushPose();
 
-        // 1.7.10 attachment offset: Y + 0.64, offset behind golem: Z - 0.16, scale 0.8F
-        poseStack.translate(0.0D, 0.64D, -0.16D);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+        // LivingEntityRenderer has already applied RY(180-bodyYaw), S(-1,-1,1)
+        // and T(0,-1.501,0). Undo its model flip, keeping the inherited body yaw:
+        // the source attachment is world Y+0.64, RY(270-bodyYaw), local X-0.16.
+        poseStack.translate(0.0D, 1.501D - 0.64D, 0.0D);
+        poseStack.scale(-1.0F, -1.0F, 1.0F);
+        poseStack.mulPose(Axis.YP.rotationDegrees(90.0F));
+        poseStack.translate(-0.16D, 0.0D, 0.0D);
         poseStack.scale(0.8F, 0.8F, 0.8F);
 
         GolemBackpackSkin skin = WirelessGolemBackpackItem.getSkin(backpack);
@@ -58,9 +72,19 @@ public class GolemBackpackLayerRenderer<T extends LivingEntity, M extends Entity
         ResourceLocation texture = skin.getTextureLocation();
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(texture));
 
-        float pearlRotation = (ageInTicks * 2.0F) % 360.0F;
-        boolean inRange = WirelessGolemBackpackItem.isLinked(backpack);
-        this.backpackModel.renderBackpack(poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, pearlRotation, inRange);
+        boolean inRange = GolemWirelessStatusPayload.inRange(entity);
+        var animation = animations.computeIfAbsent(entity, ignored -> {
+            var state = new PearlAnimation();
+            state.lastAge = ageInTicks;
+            return state;
+        });
+        if (inRange && animation.wasInRange && !Minecraft.getInstance().isPaused()) {
+            animation.rotation = (animation.rotation + Math.max(0, ageInTicks - animation.lastAge) * 2.0F) % 360.0F;
+        }
+        animation.lastAge = ageInTicks;
+        animation.wasInRange = inRange;
+        this.backpackModel.renderBackpack(poseStack, buffer, packedLight,
+                LivingEntityRenderer.getOverlayCoords(entity, 0), animation.rotation, inRange);
 
         poseStack.popPose();
     }

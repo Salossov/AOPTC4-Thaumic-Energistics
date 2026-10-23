@@ -16,6 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.neoforged.neoforge.network.PacketDistributor;
 import thaumcraft.api.entities.GolemEquipmentApi;
 import thaumcraft.api.entities.IControllableGolem;
 
@@ -57,7 +58,18 @@ public final class GolemBackpackManager {
     }
 
     public static GolemConnection getConnection(Entity golem) {
-        if (!(golem instanceof LivingEntity living) || !hasBackpack(living)) {
+        GolemConnection connection = resolveConnection(golem);
+        return connection == null ? null : snapshot(connection);
+    }
+
+    private static GolemConnection resolveConnection(Entity golem) {
+        if (!(golem instanceof LivingEntity living) || !(living.level() instanceof ServerLevel level)
+                || !level.getServer().isSameThread() || living.isRemoved()
+                || !level.hasChunkAt(living.blockPosition()) || level.getEntity(living.getUUID()) != living) {
+            return null;
+        }
+        if (!hasBackpack(living)) {
+            CONNECTIONS.remove(living.getUUID());
             return null;
         }
 
@@ -77,11 +89,23 @@ public final class GolemBackpackManager {
     }
 
     public static GolemConnection getConnection(UUID uuid) {
-        return uuid != null ? CONNECTIONS.get(uuid) : null;
+        GolemConnection connection = uuid != null ? CONNECTIONS.get(uuid) : null;
+        return connection == null ? null : snapshot(connection);
     }
 
     public static Map<UUID, GolemConnection> getAllConnections() {
-        return Map.copyOf(CONNECTIONS);
+        var result = new java.util.HashMap<UUID, GolemConnection>();
+        CONNECTIONS.forEach((uuid, connection) -> result.put(uuid, snapshot(connection)));
+        return Map.copyOf(result);
+    }
+
+    private static GolemConnection snapshot(GolemConnection connection) {
+        var result = new GolemConnection(connection.golemUUID, connection.backpackStack, connection.skin);
+        result.grid = connection.grid;
+        result.accessPoint = connection.accessPoint;
+        result.isInRange = connection.isInRange;
+        result.tickCounter = connection.tickCounter;
+        return result;
     }
 
     /**
@@ -201,11 +225,11 @@ public final class GolemBackpackManager {
         return true;
     }
 
-    private static int squaredDistance(IWirelessAccessPoint point, Entity golem) {
+    private static double squaredDistance(IWirelessAccessPoint point, Entity golem) {
         var pos = point.getLocation().getPos();
-        int dx = pos.getX() - (int) golem.getX();
-        int dy = pos.getY() - (int) golem.getY();
-        int dz = pos.getZ() - (int) golem.getZ();
+        double dx = pos.getX() - golem.getX();
+        double dy = pos.getY() - golem.getY();
+        double dz = pos.getZ() - golem.getZ();
         return dx * dx + dy * dy + dz * dz;
     }
 
@@ -222,6 +246,15 @@ public final class GolemBackpackManager {
     }
 
     private static void updateAccessPoint(GolemConnection conn, Entity golem) {
+        boolean previouslyInRange = conn.isInRange;
+        resolveAccessPoint(conn, golem);
+        if (previouslyInRange != conn.isInRange) {
+            PacketDistributor.sendToPlayersTrackingEntity(golem,
+                    GolemWirelessStatusPayload.of(golem, conn.isInRange));
+        }
+    }
+
+    private static void resolveAccessPoint(GolemConnection conn, Entity golem) {
         conn.grid = WirelessGolemBackpackItem.getLinkedGrid(conn.backpackStack, golem.level(), null);
         if (conn.grid == null) {
             conn.accessPoint = null;
@@ -235,10 +268,10 @@ public final class GolemBackpackManager {
         }
 
         conn.accessPoint = null;
-        int nearestDist = Integer.MAX_VALUE;
+        double nearestDist = Double.POSITIVE_INFINITY;
         for (var node : conn.grid.getNodes()) {
             if (node.getOwner() instanceof IWirelessAccessPoint candidate && isUsable(candidate, conn.grid, golem)) {
-                int dist = squaredDistance(candidate, golem);
+                double dist = squaredDistance(candidate, golem);
                 if (dist < nearestDist) {
                     nearestDist = dist;
                     conn.accessPoint = candidate;
@@ -257,7 +290,7 @@ public final class GolemBackpackManager {
             return;
         }
 
-        GolemConnection conn = getConnection(golem);
+        GolemConnection conn = resolveConnection(golem);
         if (conn == null) {
             return;
         }

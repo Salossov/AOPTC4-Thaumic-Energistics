@@ -70,19 +70,19 @@ public class GearboxModel extends Model {
 
         // Transmission box 7x7x7, centered at -3.5, -3.5, -3.5
         root.addOrReplaceChild("transmission",
-                CubeListBuilder.create().texOffs(1, 0)
+                CubeListBuilder.create().texOffs(1, 0).mirror()
                         .addBox(-3.5F, -3.5F, -3.5F, 7.0F, 7.0F, 7.0F),
                 PartPose.ZERO);
 
         // Shaft 3x1x1
         root.addOrReplaceChild("shaft",
-                CubeListBuilder.create().texOffs(1, 15)
+                CubeListBuilder.create().texOffs(1, 15).mirror()
                         .addBox(-1.5F, -0.5F, -0.5F, 3.0F, 1.0F, 1.0F),
                 PartPose.ZERO);
 
         // Spoke 1x7x1
         root.addOrReplaceChild("spoke",
-                CubeListBuilder.create().texOffs(1, 18)
+                CubeListBuilder.create().texOffs(1, 18).mirror()
                         .addBox(-0.5F, -3.5F, -0.5F, 1.0F, 7.0F, 1.0F),
                 PartPose.ZERO);
 
@@ -117,19 +117,24 @@ public class GearboxModel extends Model {
 
             // Render shaft
             this.shaft.render(poseStack, buffer, packedLight, packedOverlay, color);
+            poseStack.popPose();
 
             // Render 4-spoke gear if not connected to a crankable
             if (withGear) {
                 poseStack.pushPose();
-                poseStack.translate(transform.spokeX - transform.shaftX, transform.spokeY - transform.shaftY, transform.spokeZ - transform.shaftZ);
+                // ModelRenderer.offset* was applied before rotation in 1.7.10.
+                // Translating a world-space difference after the shaft rotation
+                // moves north/south/up/down gears onto the wrong axis.
+                poseStack.translate(transform.spokeX, transform.spokeY, transform.spokeZ);
+                if (transform.rotY != 0) poseStack.mulPose(Axis.YP.rotation(transform.rotY));
+                if (transform.rotZ != 0) poseStack.mulPose(Axis.ZP.rotation(transform.rotZ));
+                poseStack.mulPose(Axis.XP.rotation(rotationAngle));
                 for (int sp = 0; sp < 4; sp++) {
                     poseStack.mulPose(Axis.XP.rotation(QUARTER_TURN));
                     this.spoke.render(poseStack, buffer, packedLight, packedOverlay, color);
                 }
                 poseStack.popPose();
             }
-
-            poseStack.popPose();
         }
     }
 }
