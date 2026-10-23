@@ -1,0 +1,52 @@
+{
+  "type": "thaumcraft:infusion",
+  "research": "thaumicenergistics:teinfprov",
+  "result": {
+    "id": "thaumicenergistics:infusion_provider",
+    "count": 1
+  },
+  "instability": 4,
+  "aspects": {
+    "machina": 64,
+    "praecantatio": 32,
+    "ordo": 32,
+    "permutatio": 16
+  },
+  "input": {
+    "item": "ae2:interface"
+  },
+  "components": [
+    {
+      "type": "thaumicenergistics:empty_jar"
+    },
+    {
+      "item": "thaumcraft:salis_mundus"
+    },
+    {
+      "item": "thaumicenergistics:coalescence_core"
+    },
+    {
+      "item": "thaumcraft:air_shard"
+    },
+    {
+      "type": "thaumicenergistics:empty_jar"
+    },
+    {
+      "item": "thaumcraft:salis_mundus"
+    },
+    {
+      "item": "thaumicenergistics:coalescence_core"
+    },
+    {
+      "item": "thaumcraft:air_shard"
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "thaumcraft:mirrors_enabled"
+      }
+    }
+  ]
+}

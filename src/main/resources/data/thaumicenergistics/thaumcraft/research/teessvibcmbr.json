@@ -26,6 +26,7 @@
     "thaumicenergistics.research_page.TEESSVIBCMBR.3"
   ],
   "secondary": false,
+  "special": false,
   "recipe_pages": [
     "thaumicenergistics:essentia_vibration_chamber"
   ],

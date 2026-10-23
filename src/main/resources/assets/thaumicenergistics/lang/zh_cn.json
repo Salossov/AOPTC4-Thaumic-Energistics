@@ -179,5 +179,11 @@
   "tc.research_text.thaumicenergistics:teessterm": "已知你有多少源质.",
   "block.thaumicenergistics.essentia_vibration_chamber": "源质谐振仓",
   "tc.research_name.thaumicenergistics:teessvibcmbr": "源质谐振仓",
-  "tc.research_text.thaumicenergistics:teessvibcmbr": "源质驱动网络"
+  "tc.research_text.thaumicenergistics:teessvibcmbr": "源质驱动网络",
+  "block.thaumicenergistics.essentia_provider": "源质供应器",
+  "block.thaumicenergistics.infusion_provider": "注魔供应器",
+  "tc.research_name.thaumicenergistics:teessprov": "源质供应器",
+  "tc.research_text.thaumicenergistics:teessprov": "应汝所呼.",
+  "tc.research_name.thaumicenergistics:teinfprov": "注魔供应器",
+  "tc.research_text.thaumicenergistics:teinfprov": "注魔更易."
 }

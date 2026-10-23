@@ -119,5 +119,11 @@
   "item.thaumicenergistics.essentia_terminal": "에센시아 단말기",
   "item.thaumicenergistics.wireless_essentia_terminal": "무선 에센시아 단말기",
   "tc.research_name.thaumicenergistics:teessterm": "[TE]에센시아 단말기",
-  "tc.research_text.thaumicenergistics:teessterm": "당신이 얼마나 가지고 있는지를 알라."
+  "tc.research_text.thaumicenergistics:teessterm": "당신이 얼마나 가지고 있는지를 알라.",
+  "block.thaumicenergistics.essentia_provider": "에센시아 공급기",
+  "block.thaumicenergistics.infusion_provider": "주입용 공급기",
+  "tc.research_name.thaumicenergistics:teessprov": "에센시아 공급기",
+  "tc.research_text.thaumicenergistics:teessprov": "요구하면 반드시 받을 것이다.",
+  "tc.research_name.thaumicenergistics:teinfprov": "주입용 공급기",
+  "tc.research_text.thaumicenergistics:teinfprov": "이제 더 이상 주입(Infusion)은 어렵지 않다!"
 }

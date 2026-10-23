@@ -1,0 +1,44 @@
+{
+  "type": "thaumcraft:infusion",
+  "research": "thaumicenergistics:teessprov",
+  "result": {
+    "id": "thaumicenergistics:essentia_provider",
+    "count": 1
+  },
+  "instability": 3,
+  "aspects": {
+    "machina": 64,
+    "praecantatio": 32,
+    "ordo": 32,
+    "permutatio": 16
+  },
+  "input": {
+    "item": "ae2:interface"
+  },
+  "components": [
+    {
+      "item": "thaumcraft:filtered_essentia_tube"
+    },
+    {
+      "item": "thaumcraft:salis_mundus"
+    },
+    {
+      "item": "thaumicenergistics:coalescence_core"
+    },
+    {
+      "item": "thaumcraft:water_shard"
+    },
+    {
+      "item": "thaumcraft:filtered_essentia_tube"
+    },
+    {
+      "item": "thaumcraft:salis_mundus"
+    },
+    {
+      "item": "thaumicenergistics:diffusion_core"
+    },
+    {
+      "item": "thaumcraft:water_shard"
+    }
+  ]
+}

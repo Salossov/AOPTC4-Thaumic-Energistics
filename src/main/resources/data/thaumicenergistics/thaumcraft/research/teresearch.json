@@ -16,6 +16,7 @@
     "thaumicenergistics.research_page.TERESEARCH.1"
   ],
   "secondary": false,
+  "special": false,
   "recipe_pages": [],
   "recipe_groups": {},
   "page_order": [

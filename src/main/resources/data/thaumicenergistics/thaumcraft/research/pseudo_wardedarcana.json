@@ -8,5 +8,6 @@
   "complexity": 1,
   "stub": true,
   "hidden": true,
-  "icon": "minecraft:air"
+  "icon": "minecraft:air",
+  "aspects": {}
 }

@@ -27,6 +27,7 @@
     "thaumicenergistics.research_page.TECORES.2"
   ],
   "secondary": false,
+  "special": false,
   "recipe_pages": [
     "thaumicenergistics:coalescence_core",
     "thaumicenergistics:diffusion_core"

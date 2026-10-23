@@ -26,6 +26,7 @@
     "thaumicenergistics.research_page.TEESSTERM.4"
   ],
   "secondary": true,
+  "special": false,
   "recipe_pages": [
     "thaumicenergistics:essentia_terminal",
     "thaumicenergistics:wireless_essentia_terminal",

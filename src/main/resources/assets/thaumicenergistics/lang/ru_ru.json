@@ -152,5 +152,11 @@
   "item.thaumicenergistics.wireless_essentia_terminal": "Беспроводной терминал эссенции",
   "tc.research_name.thaumicenergistics:teessterm": "Мониторинг эссенции",
   "tc.research_text.thaumicenergistics:teessterm": "Зная, сколько у Вас есть.",
-  "block.thaumicenergistics.essentia_vibration_chamber": "[WIP]Вибрационная камера эссенции"
+  "block.thaumicenergistics.essentia_vibration_chamber": "[WIP]Вибрационная камера эссенции",
+  "block.thaumicenergistics.essentia_provider": "Поставщик эссенции",
+  "block.thaumicenergistics.infusion_provider": "Поставщик наполнения",
+  "tc.research_name.thaumicenergistics:teessprov": "Поставщик эссенции",
+  "tc.research_text.thaumicenergistics:teessprov": "Спросите и Вы получите.",
+  "tc.research_name.thaumicenergistics:teinfprov": "Поставщик наполнения",
+  "tc.research_text.thaumicenergistics:teinfprov": "Упрощает наполнение."
 }

@@ -14,9 +14,11 @@ FEATURES = {
     "FeatureEssentiaIOBuses": ("TEIO", "teio", "thaumicenergistics:essentia_export_bus"),
     "FeatureEssentiaMonitoring": ("TEESSTERM", "teessterm", "thaumicenergistics:essentia_terminal"),
     "FeatureEssentiaVibrationChamber": ("TEESSVIBCMBR", "teessvibcmbr", "thaumicenergistics:essentia_vibration_chamber"),
+    "FeatureEssentiaProvider": ("TEESSPROV", "teessprov", "thaumicenergistics:essentia_provider"),
+    "FeatureInfusionProvider": ("TEINFPROV", "teinfprov", "thaumicenergistics:infusion_provider"),
 }
 ASPECTS = {"SLIME": "limus", "MAGIC": "praecantatio", "MECHANISM": "machina", "EXCHANGE": "permutatio",
-           "VOID": "vacuos", "ENERGY": "potentia", "CRYSTAL": "vitreus", "METAL": "metallum", "AIR": "aer", "SENSES": "sensus", "WATER": "aqua", "MOTION": "motus"}
+           "VOID": "vacuos", "ENERGY": "potentia", "CRYSTAL": "vitreus", "METAL": "metallum", "AIR": "aer", "SENSES": "sensus", "WATER": "aqua", "MOTION": "motus", "ORDER": "ordo"}
 PARENTS = {
     "teresearch": [],
     "tecores": ["thaumicenergistics:teresearch", "thaumicenergistics:pseudo_distilessentia"],
@@ -24,8 +26,10 @@ PARENTS = {
     "teio": ["thaumicenergistics:tecores", "thaumicenergistics:pseudo_tubefilter"],
     "teessterm": ["thaumicenergistics:tecores"],
     "teessvibcmbr": ["thaumicenergistics:tecores"],
+    "teessprov": ["thaumicenergistics:teio"],
+    "teinfprov": ["thaumicenergistics:teio", "thaumicenergistics:pseudo_mirror", "thaumicenergistics:pseudo_infusion"],
 }
-HIDDEN_PARENTS = {"teresearch": [], "tecores": ["DISTILESSENTIA"], "testorage": ["DISTILESSENTIA"], "teio": ["TUBEFILTER"], "teessterm": [], "teessvibcmbr": []}
+HIDDEN_PARENTS = {"teresearch": [], "tecores": ["DISTILESSENTIA"], "testorage": ["DISTILESSENTIA"], "teio": ["TUBEFILTER"], "teessterm": [], "teessvibcmbr": [], "teessprov": ["INFUSION", "TUBEFILTER"], "teinfprov": ["MIRROR", "INFUSION"]}
 
 
 def write(relative: str, value: object) -> None:
@@ -63,6 +67,7 @@ def extract(path: Path, original: str) -> dict:
     result = {"aspects": costs, "complexity": level,
               "pages": pages, "concealed": ".setConcealed(" in text, "round": ".setRound(" in text,
               "auto_unlock": ".setAutoUnlock(" in text, "secondary": ".setSecondary(" in text}
+    result["special"] = ".setSpecial(" in text
     if not pages: raise ValueError(f"No original pages: {path}")
     return result
 
@@ -76,6 +81,8 @@ def main() -> None:
         assert (ROOT/f"data/thaumicenergistics/recipe/{name}.json").is_file()
         recipes[registry]="thaumicenergistics:"+name
     recipes["BLOCK_ESSENTIA_VIBRATION_CHAMBER"]="thaumicenergistics:essentia_vibration_chamber"
+    recipes["BLOCK_ESSENTIA_PROVIDER"]="thaumicenergistics:essentia_provider"
+    recipes["BLOCK_INFUSION_PROVIDER"]="thaumicenergistics:infusion_provider"
     source_registry = (ADDON / "source_code/src/main/java/thaumicenergistics/common/registries/ResearchRegistry.java").read_text(encoding="utf-8")
     release_registry = (ADDON / "decompiled/thaumicenergistics/common/registries/ResearchRegistry.java").read_text(encoding="utf-8")
     report = {"research": [], "monitoring_profile":{"wireless":True,"conversion":True}, "pending": "All remaining feature branches, config filtering, and Vis's original arcane-terminal parent"}
@@ -96,6 +103,7 @@ def main() -> None:
                  "complexity": extracted["complexity"], "auto_unlock": extracted["auto_unlock"],
                  "concealed": extracted["concealed"], "round": extracted["round"], "text_pages": [],
                  "secondary": extracted["secondary"],
+                 "special": extracted["special"],
                  "recipe_pages": [], "recipe_groups": {}, "page_order": []}
         for index, page in enumerate(extracted["pages"]):
             if "text" in page:
@@ -109,14 +117,26 @@ def main() -> None:
                     group = f"thaumicenergistics:{modern}_recipes_{index}"
                     value["recipe_groups"][group] = variants
                     value["page_order"].append(group)
-        write(f"data/thaumicenergistics/thaumcraft/research/{modern}.json", value)
+        if modern == "teinfprov":
+            # Startup content rules are public API; the existing addon registration
+            # bus selects exactly one template before the registry freezes.
+            write(f"data/thaumicenergistics/research_templates/{modern}.json", value)
+            alternate=json.loads(json.dumps(value))
+            alternate["parents"]=[parent.replace("pseudo_mirror","pseudo_jarlabel") for parent in alternate["parents"]]
+            alternate["hidden_parents"]=["JARLABEL" if parent=="MIRROR" else parent for parent in alternate["hidden_parents"]]
+            for field in ("recipe_pages","page_order"):
+                alternate[field]=[entry.replace("thaumicenergistics:infusion_provider","thaumicenergistics:infusion_provider_no_mirrors") for entry in alternate[field]]
+            write("data/thaumicenergistics/research_templates/teinfprov_nomirrors.json",alternate)
+        else:
+            write(f"data/thaumicenergistics/thaumcraft/research/{modern}.json", value)
         report["research"].append({"key": value["key"], "original_key": "thaumicenergistics." + original,
             "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "release_sha256": hashlib.sha256(release.read_bytes()).hexdigest(),
             "extracted": extracted})
-    for target, column, row in (("DISTILESSENTIA", -2, 0), ("TUBEFILTER", -3, 0), ("WARDEDARCANA", 1, 2)):
-        write(f"data/thaumicenergistics/thaumcraft/research/pseudo_{target.lower()}.json", {
+    for target, column, row in (("DISTILESSENTIA", -2, 0), ("TUBEFILTER", -3, 0), ("WARDEDARCANA", 1, 2), ("INFUSION", -6, 0), ("MIRROR", -4, 0), ("JARLABEL", -4, 0)):
+        directory="research_templates" if target in ("MIRROR","JARLABEL") else "thaumcraft/research"
+        write(f"data/thaumicenergistics/{directory}/pseudo_{target.lower()}.json", {
             "kind": "research", "key": f"thaumicenergistics:pseudo_{target.lower()}", "category": "thaumicenergistics:main",
-            "linked_research": target, "column": column, "row": row, "complexity": 1, "stub": True, "hidden": True, "icon": "minecraft:air"})
+            "linked_research": target, "column": column, "row": row, "complexity": 1, "stub": True, "hidden": True, "icon": "minecraft:air", "aspects": {}})
     for language in (ROOT / "assets/thaumicenergistics/lang").glob("*.json"):
         values = json.loads(language.read_text(encoding="utf-8"))
         for original, modern, icon in FEATURES.values():
@@ -125,7 +145,7 @@ def main() -> None:
                 if key in values: values[f"tc.research_{kind}.thaumicenergistics:{modern}"] = values[key]
         language.write_text(json.dumps(values, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     (ADDON / "analysis/imported-research.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print(f"THE_RELEASE_RESEARCH_IMPORTED nodes={len(FEATURES)} links=3 source_release_equivalent=true default_monitoring_branches=enabled")
+    print(f"THE_RELEASE_RESEARCH_AUTHORED nodes={len(FEATURES)} links=5 mirror_or_jar_startup_selection=true verification_deferred=true")
 
 
 if __name__ == "__main__":

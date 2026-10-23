@@ -95,5 +95,11 @@
   "item.thaumicenergistics.essentia_level_emitter": "ME-Essentia-Füllstandsemitter",
   "item.thaumicenergistics.essentia_terminal": "Essentia-Konsole",
   "tc.research_name.thaumicenergistics:teessterm": "Essentia-Überwachung",
-  "tc.research_text.thaumicenergistics:teessterm": "Wissen, wie viel du hast."
+  "tc.research_text.thaumicenergistics:teessterm": "Wissen, wie viel du hast.",
+  "block.thaumicenergistics.essentia_provider": "Essentia-Versorger",
+  "block.thaumicenergistics.infusion_provider": "Infusions-Versorger",
+  "tc.research_name.thaumicenergistics:teessprov": "Essentia-Versorger",
+  "tc.research_text.thaumicenergistics:teessprov": "Deine Wünsche werden erhört.",
+  "tc.research_name.thaumicenergistics:teinfprov": "Infusions-Versorger",
+  "tc.research_text.thaumicenergistics:teinfprov": "Infusion vereinfacht."
 }

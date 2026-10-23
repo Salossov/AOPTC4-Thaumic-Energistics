@@ -181,5 +181,11 @@
   "tc.research_text.thaumicenergistics:teessterm": "Knowing how much you have.",
   "block.thaumicenergistics.essentia_vibration_chamber": "Essentia Vibration Chamber",
   "tc.research_name.thaumicenergistics:teessvibcmbr": "Vibration Chamber",
-  "tc.research_text.thaumicenergistics:teessvibcmbr": "Essentia Powered Network"
+  "tc.research_text.thaumicenergistics:teessvibcmbr": "Essentia Powered Network",
+  "block.thaumicenergistics.essentia_provider": "Essentia Provider",
+  "block.thaumicenergistics.infusion_provider": "Infusion Provider",
+  "tc.research_name.thaumicenergistics:teessprov": "Essentia Provider",
+  "tc.research_text.thaumicenergistics:teessprov": "Ask and you shall receive.",
+  "tc.research_name.thaumicenergistics:teinfprov": "Infusion Provider",
+  "tc.research_text.thaumicenergistics:teinfprov": "Infusion made easier."
 }

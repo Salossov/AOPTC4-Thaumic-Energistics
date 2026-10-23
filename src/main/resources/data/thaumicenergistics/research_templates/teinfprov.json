@@ -1,0 +1,41 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:teinfprov",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:teio",
+    "thaumicenergistics:pseudo_mirror",
+    "thaumicenergistics:pseudo_infusion"
+  ],
+  "hidden_parents": [
+    "MIRROR",
+    "INFUSION"
+  ],
+  "icon": "thaumicenergistics:infusion_provider",
+  "column": -5,
+  "row": -2,
+  "aspects": {
+    "machina": 3,
+    "praecantatio": 3,
+    "permutatio": 7,
+    "motus": 7,
+    "sensus": 5
+  },
+  "complexity": 3,
+  "auto_unlock": false,
+  "concealed": true,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEINFPROV.1"
+  ],
+  "secondary": false,
+  "special": true,
+  "recipe_pages": [
+    "thaumicenergistics:infusion_provider"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEINFPROV.1",
+    "thaumicenergistics:infusion_provider"
+  ]
+}

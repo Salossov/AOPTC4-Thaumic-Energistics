@@ -1,0 +1,38 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:teessprov",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:teio"
+  ],
+  "hidden_parents": [
+    "INFUSION",
+    "TUBEFILTER"
+  ],
+  "icon": "thaumicenergistics:essentia_provider",
+  "column": -2,
+  "row": -4,
+  "aspects": {
+    "machina": 3,
+    "praecantatio": 5,
+    "ordo": 3,
+    "sensus": 7
+  },
+  "complexity": 3,
+  "auto_unlock": false,
+  "concealed": true,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEESSPROV.1"
+  ],
+  "secondary": false,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:essentia_provider"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEESSPROV.1",
+    "thaumicenergistics:essentia_provider"
+  ]
+}

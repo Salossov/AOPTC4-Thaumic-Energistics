@@ -47,6 +47,18 @@ public final class ThaumicEnergistics {
             ITEMS.register("essentia_vibration_chamber",()->new thaumicenergistics.items.VibrationChamberItem(VIBRATION_CHAMBER.get()));
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<thaumicenergistics.blocks.VibrationChamberBlockEntity>> VIBRATION_ENTITY=
             BLOCK_ENTITIES.register("essentia_vibration_chamber",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(thaumicenergistics.blocks.VibrationChamberBlockEntity::new,VIBRATION_CHAMBER.get()).build(null));
+    public static final net.neoforged.neoforge.registries.DeferredBlock<thaumicenergistics.blocks.ProviderBlock<thaumicenergistics.blocks.EssentiaProviderBlockEntity>> ESSENTIA_PROVIDER=
+            BLOCKS.register("essentia_provider",()->new thaumicenergistics.blocks.ProviderBlock<thaumicenergistics.blocks.EssentiaProviderBlockEntity>());
+    public static final net.neoforged.neoforge.registries.DeferredBlock<thaumicenergistics.blocks.ProviderBlock<thaumicenergistics.blocks.InfusionProviderBlockEntity>> INFUSION_PROVIDER=
+            BLOCKS.register("infusion_provider",()->new thaumicenergistics.blocks.ProviderBlock<thaumicenergistics.blocks.InfusionProviderBlockEntity>());
+    public static final net.neoforged.neoforge.registries.DeferredItem<thaumicenergistics.items.ProviderItem> ESSENTIA_PROVIDER_ITEM=
+            ITEMS.register("essentia_provider",()->new thaumicenergistics.items.ProviderItem(ESSENTIA_PROVIDER.get()));
+    public static final net.neoforged.neoforge.registries.DeferredItem<thaumicenergistics.items.ProviderItem> INFUSION_PROVIDER_ITEM=
+            ITEMS.register("infusion_provider",()->new thaumicenergistics.items.ProviderItem(INFUSION_PROVIDER.get()));
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<thaumicenergistics.blocks.EssentiaProviderBlockEntity>> ESSENTIA_PROVIDER_ENTITY=
+            BLOCK_ENTITIES.register("essentia_provider",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(thaumicenergistics.blocks.EssentiaProviderBlockEntity::new,ESSENTIA_PROVIDER.get()).build(null));
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<thaumicenergistics.blocks.InfusionProviderBlockEntity>> INFUSION_PROVIDER_ENTITY=
+            BLOCK_ENTITIES.register("infusion_provider",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(thaumicenergistics.blocks.InfusionProviderBlockEntity::new,INFUSION_PROVIDER.get()).build(null));
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.StorageBusMenu>> STORAGE_BUS_MENU =
             MENUS.register("essentia_storage_bus", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(thaumicenergistics.menu.StorageBusMenu::fromNetwork));
@@ -115,6 +127,7 @@ public final class ThaumicEnergistics {
                     output.accept(ESSENTIA_TERMINAL.get());
                     output.accept(WIRELESS_TERMINAL.get());
                     output.accept(VIBRATION_ITEM.get());
+                    output.accept(ESSENTIA_PROVIDER_ITEM.get());output.accept(INFUSION_PROVIDER_ITEM.get());
                     for (var tier : CellTier.values()) {
                         if (!tier.creative()) output.accept(COMPONENT_ITEMS.get(tier).get());
                         output.accept(CELLS.get(tier).get());
@@ -123,6 +136,7 @@ public final class ThaumicEnergistics {
     }
 
     public ThaumicEnergistics(IEventBus modBus) {
+        thaumicenergistics.crafting.ProviderResearchRegistration.initialize();
         COMPONENTS.register(modBus);
         ITEMS.register(modBus);
         BLOCKS.register(modBus);
@@ -147,6 +161,11 @@ public final class ThaumicEnergistics {
                 event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.TRANSPORT,VIBRATION_ENTITY.get(),(chamber,side)->chamber);
                 event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.CONTAINER,VIBRATION_ENTITY.get(),(chamber,context)->chamber);
                 event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.SOURCE,VIBRATION_ENTITY.get(),(chamber,context)->chamber);
+                event.registerBlockEntity(appeng.api.AECapabilities.IN_WORLD_GRID_NODE_HOST,ESSENTIA_PROVIDER_ENTITY.get(),(provider,context)->provider);
+                event.registerBlockEntity(appeng.api.AECapabilities.IN_WORLD_GRID_NODE_HOST,INFUSION_PROVIDER_ENTITY.get(),(provider,context)->provider);
+                event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.TRANSPORT,ESSENTIA_PROVIDER_ENTITY.get(),(provider,side)->provider);
+                event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.CONTAINER,INFUSION_PROVIDER_ENTITY.get(),(provider,context)->provider);
+                event.registerBlockEntity(thaumcraft.api.aspects.EssentiaCapabilities.SOURCE,INFUSION_PROVIDER_ENTITY.get(),(provider,context)->provider);
         });
     }
 
@@ -157,6 +176,10 @@ public final class ThaumicEnergistics {
             ContainerPermissions.register(id("essentia_vibration_chamber"),false,true,64);
             VIBRATION_CHAMBER.get().setBlockEntity(thaumicenergistics.blocks.VibrationChamberBlockEntity.class,VIBRATION_ENTITY.get(),null,null);
             appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(VIBRATION_ENTITY.get(),VIBRATION_ITEM.get());
+            ESSENTIA_PROVIDER.get().setBlockEntity(thaumicenergistics.blocks.EssentiaProviderBlockEntity.class,ESSENTIA_PROVIDER_ENTITY.get(),(level,pos,state,provider)->provider.serverTick(),null);
+            INFUSION_PROVIDER.get().setBlockEntity(thaumicenergistics.blocks.InfusionProviderBlockEntity.class,INFUSION_PROVIDER_ENTITY.get(),null,null);
+            appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(ESSENTIA_PROVIDER_ENTITY.get(),ESSENTIA_PROVIDER_ITEM.get());
+            appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(INFUSION_PROVIDER_ENTITY.get(),INFUSION_PROVIDER_ITEM.get());
             appeng.api.features.GridLinkables.register(WIRELESS_TERMINAL.get(),appeng.items.tools.powered.WirelessTerminalItem.LINKABLE_HANDLER);
             for (var item : List.of(IMPORT_BUS.get(), EXPORT_BUS.get())) {
                 Upgrades.add(BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:speed_card")), item, 4);
