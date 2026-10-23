@@ -66,10 +66,8 @@ public final class EssentiaConversionMonitorPart extends EssentiaStorageMonitorP
         var grid=getMainNode().getGrid();
         var result=PortableEssentiaTransfers.deposit(held,required,PoweredEssentiaStorage.of(grid),grid.getStorageService().getInventory(),IActionSource.ofPlayer(player,this));
         if(result.isEmpty())return null;
-        held.shrink(1);
-        // Release drainEssentiaContainer ignores an inventory remainder. Changing
-        // that separate full-inventory quirk awaits the user's recorded decision.
-        player.getInventory().add(result.get().resultStack());
+        // User-approved fix: do not discard the empty result when the inventory is full.
+        held.shrink(1);give(player,result.get().resultStack());
         return contents.get().aspect();
     }
     private void give(Player player,ItemStack result){

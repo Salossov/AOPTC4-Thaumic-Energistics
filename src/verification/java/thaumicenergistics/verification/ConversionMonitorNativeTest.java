@@ -84,6 +84,11 @@ public final class ConversionMonitorNativeTest {
             var drops=level.getEntitiesOfClass(ItemEntity.class,new AABB(cable).inflate(2));
             h.assertTrue(drops.stream().anyMatch(entity->EssentiaItemApi.inspect(entity.getItem()).map(c->c.aspect()==Aspects.WATER&&c.amount()==8).orElse(false)),"unaccepted filled result drops beside monitor");
             for(var drop:drops)drop.discard();
+            var filledPair=phials(Aspects.WATER,2);player.setItemInHand(InteractionHand.MAIN_HAND,filledPair);player.setShiftKeyDown(true);
+            h.assertTrue(part.onUseItemOn(filledPair,player,InteractionHand.MAIN_HAND,hit)&&player.getMainHandItem().getCount()==1&&raw.extract(water,100,Actionable.SIMULATE,SOURCE)==57,"full inventory deposit transfers only one whole phial");
+            var emptiesDropped=level.getEntitiesOfClass(ItemEntity.class,new AABB(cable).inflate(2));
+            h.assertTrue(emptiesDropped.stream().anyMatch(entity->entity.getItem().is(nativeItem("empty_phial").getItem())&&entity.getItem().getCount()==1),"approved fix: unaccepted empty deposit result drops beside monitor");
+            for(var drop:emptiesDropped)drop.discard();player.setShiftKeyDown(false);
             var recipe=level.getRecipeManager().byKey(ThaumicEnergistics.id("essentia_conversion_monitor")).orElseThrow().value();
             @SuppressWarnings("unchecked") var crafting=(Recipe<CraftingInput>)recipe;
             var input=CraftingInput.of(3,1,List.of(new ItemStack(ThaumicEnergistics.DIFFUSION_CORE.get()),new ItemStack(ThaumicEnergistics.COALESCENCE_CORE.get()),new ItemStack(ThaumicEnergistics.STORAGE_MONITOR.get())));

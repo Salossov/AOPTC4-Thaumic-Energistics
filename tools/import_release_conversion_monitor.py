@@ -51,7 +51,7 @@ def main():
         'references': refs, 'idle_ae': .0625, 'double_click_ticks': 40,
         'approved_fix': 'Phial deposits require all eight units before consuming one phial.',
         'adaptations': ['Modern AE2 removed separate legacy INJECT/EXTRACT security; use Platform.hasPermissions (Level.mayInteract) and player action source.',
-                        'Fill results drop beside the part on full inventory as in the release. Changing the separate deposit-result loss is awaiting user approval.',
+                        'Fill results drop beside the part as in the release; user also approved dropping unaccepted deposit-result containers on full inventory.',
                         'Modern frame textures use the storage-monitor replacement set with the original dark/light swap.']}, indent=2) + '\n', encoding='utf-8')
     print('THE_RELEASE_CONVERSION_MONITOR_IMPORTED')
 
