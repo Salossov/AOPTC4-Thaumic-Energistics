@@ -46,6 +46,7 @@ public final class WorkbenchNativeTest {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         player.setPos(pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5);
         var menu = new CellWorkbenchMenu(1, player.getInventory(), workbench);
+        player.containerMenu = menu;
         var anotherViewer = new CellWorkbenchMenu(2, player.getInventory(), workbench);
         helper.assertTrue(menu.stillValid(player) && menu.slots.size() == 100, "native workbench menu has 63 ghosts, one cell and 36 player slots");
         var stack = new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());
@@ -117,6 +118,7 @@ public final class WorkbenchNativeTest {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         player.setPos(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5);
         var menu = new CellWorkbenchMenu(1,player.getInventory(),workbench);
+        player.containerMenu = menu;
         var expected = workbench.inventory().getItem(0).copy();
         var saved = workbench.saveWithFullMetadata(level.registryAccess());
         level.removeBlockEntity(pos);
@@ -163,6 +165,7 @@ public final class WorkbenchNativeTest {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         player.setPos(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5);
         var menu = new CellWorkbenchMenu(1,player.getInventory(),workbench);
+        player.containerMenu = menu;
         helper.assertTrue(menu.clickMenuButton(player,CellWorkbenchMenu.PARTITION_CONTENTS) && workbench.cell().ledger().contents().partitions().isEmpty(),
                 "original workbench partitions creative cell from empty real contents, clearing its virtual sources");
         cell.partitions(java.util.stream.IntStream.range(0,63).mapToObj(i -> "test:a"+i).toList());

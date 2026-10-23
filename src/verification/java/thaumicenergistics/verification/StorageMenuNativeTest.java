@@ -36,6 +36,7 @@ public final class StorageMenuNativeTest {
         var player = helper.makeMockPlayer(GameType.SURVIVAL); player.setPos(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5);
         player.getInventory().setItem(0,item("network_tool",1)); var tool = player.getInventory().getItem(0);
         var menu = new StorageBusMenu(7,player.getInventory(),part);
+        player.containerMenu = menu;
         helper.assertTrue(menu.stillValid(player) && menu.hasNetworkTool() && menu.slots.size() == 55, "native storage menu has nine ghosts, one upgrade, player inventory and tool");
         var water = AspectApi.wispEssence(Aspects.WATER); menu.setCarried(water.copy()); menu.clicked(8,0,ClickType.PICKUP,player);
         helper.assertTrue(part.filter(8).equals("aqua") && ItemStack.matches(menu.getCarried(),water), "all nine filter positions work without capacity cards or cursor consumption");
