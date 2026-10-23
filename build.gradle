@@ -104,6 +104,12 @@ tasks.register('conversionClickRulesTest', JavaExec) {
     mainClass = 'thaumicenergistics.parts.ConversionClickTrackerTest'
 }
 tasks.named('check') { dependsOn 'conversionClickRulesTest' }
+tasks.register('arcaneTerminalViewRulesTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'thaumicenergistics.client.ArcaneTerminalViewRulesTest'
+}
+tasks.named('check') { dependsOn 'arcaneTerminalViewRulesTest' }
 
 tasks.register('prepareQuietClient') {
     def earlyConfig = file('runs/client/config/fml.toml')

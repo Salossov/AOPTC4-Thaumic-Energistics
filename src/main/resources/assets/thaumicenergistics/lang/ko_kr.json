@@ -125,5 +125,10 @@
   "tc.research_name.thaumicenergistics:teessprov": "에센시아 공급기",
   "tc.research_text.thaumicenergistics:teessprov": "요구하면 반드시 받을 것이다.",
   "tc.research_name.thaumicenergistics:teinfprov": "주입용 공급기",
-  "tc.research_text.thaumicenergistics:teinfprov": "이제 더 이상 주입(Infusion)은 어렵지 않다!"
+  "tc.research_text.thaumicenergistics:teinfprov": "이제 더 이상 주입(Infusion)은 어렵지 않다!",
+  "item.thaumicenergistics.arcane_crafting_terminal": "아케인 조합 단말기",
+  "tc.research_name.thaumicenergistics:tearcaneterm": "[TE]아케인 조합 단말기",
+  "tc.research_text.thaumicenergistics:tearcaneterm": "마법과§o기술을 이용한 조합§r",
+  "tc.research_name.thaumicenergistics:tevisint": "비스 중계 인터페이스",
+  "tc.research_text.thaumicenergistics:tevisint": "디지털방식의 비스 사용"
 }

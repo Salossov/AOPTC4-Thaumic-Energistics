@@ -1,0 +1,189 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "side": "thaumicenergistics:blocks/parts/arcane.crafting.side",
+    "particle": "thaumicenergistics:blocks/parts/arcane.crafting.side",
+    "base": "thaumicenergistics:blocks/parts/arcane.crafting.overlay1",
+    "dark": "thaumicenergistics:blocks/parts/arcane.crafting.overlay3",
+    "medium": "thaumicenergistics:blocks/parts/arcane.crafting.overlay2",
+    "runes": "thaumicenergistics:blocks/parts/arcane.crafting.overlay4",
+    "status": "thaumicenergistics:blocks/parts/bus.color.light"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        0
+      ],
+      "to": [
+        14,
+        14,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base",
+          "rotation": 0
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        2
+      ],
+      "to": [
+        11,
+        11,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "up": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        -0.001
+      ],
+      "to": [
+        14,
+        14,
+        -0.001
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "tintindex": 1,
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "rotation": 0,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        -0.002
+      ],
+      "to": [
+        14,
+        14,
+        -0.002
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#medium",
+          "tintindex": 2,
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "rotation": 0,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        -0.003
+      ],
+      "to": [
+        14,
+        14,
+        -0.003
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#runes",
+          "tintindex": 4,
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "rotation": 0,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    }
+  ]
+}

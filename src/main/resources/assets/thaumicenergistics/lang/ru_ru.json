@@ -165,5 +165,15 @@
   "tc.research_text.thaumicenergistics.TEDISTILLATIONPATTERNENCODER": "Заказ добавки",
   "tc.research_name.thaumicenergistics:tedistillationpatternencoder": "Кодировщик шаблонов дистилляции",
   "tc.research_text.thaumicenergistics:tedistillationpatternencoder": "Заказ добавки",
-  "thaumicenergistics.research_page.TEDISTILLATIONPATTERNENCODER.1": "Развивая принципы системы автокрафта AE, вы разработали способ закодировать процесс дистилляции эссенции в §lЗакодированный шаблон§r.<BR>Помещение предмета в слот таумометра раскроет известную вам информацию о его составе. Выбрав нужный аспект, его можно закодировать в имеющийся или чистый шаблон."
+  "thaumicenergistics.research_page.TEDISTILLATIONPATTERNENCODER.1": "Развивая принципы системы автокрафта AE, вы разработали способ закодировать процесс дистилляции эссенции в §lЗакодированный шаблон§r.<BR>Помещение предмета в слот таумометра раскроет известную вам информацию о его составе. Выбрав нужный аспект, его можно закодировать в имеющийся или чистый шаблон.",
+  "item.thaumicenergistics.arcane_crafting_terminal": "Магический терминал создания",
+  "tc.research_name.thaumicenergistics:tearcaneterm": "Магический терминал создания",
+  "tc.research_text.thaumicenergistics:tearcaneterm": "Создание с помощью магии §oи технологии.§r",
+  "tc.research_name.thaumicenergistics:tevisint": "Интерфейс Вис-реле",
+  "tc.research_text.thaumicenergistics:tevisint": "Цифровое использование Вис",
+  "thaumicenergistics.gui.search_mode": "Режим поиска",
+  "thaumicenergistics.gui.search_mode.0": "Автоматический фокус",
+  "thaumicenergistics.gui.search_mode.1": "Ручной фокус",
+  "thaumicenergistics.gui.search_mode.2": "Автоматический фокус + просмотр рецептов",
+  "thaumicenergistics.gui.search_mode.3": "Ручной фокус + просмотр рецептов"
 }

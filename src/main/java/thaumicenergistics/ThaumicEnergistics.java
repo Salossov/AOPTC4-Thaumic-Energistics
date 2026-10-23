@@ -79,6 +79,8 @@ public final class ThaumicEnergistics {
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>,net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaTerminalMenu>> TERMINAL_MENU =
             MENUS.register("essentia_terminal",()->net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create((id,inventory,data)->new thaumicenergistics.menu.EssentiaTerminalMenu(id,inventory,null)));
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>,net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.ArcaneTerminalMenu>> ARCANE_TERMINAL_MENU=
+            MENUS.register("arcane_crafting_terminal",()->net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create((id,inventory,data)->new thaumicenergistics.menu.ArcaneTerminalMenu(id,inventory,null)));
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>,net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.VibrationChamberMenu>> VIBRATION_MENU=
             MENUS.register("essentia_vibration_chamber",()->net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create((id,inventory,data)->new thaumicenergistics.menu.VibrationChamberMenu(id,inventory,null)));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CellContents>> CELL_CONTENTS =
@@ -105,6 +107,7 @@ public final class ThaumicEnergistics {
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaConversionMonitorItem> CONVERSION_MONITOR = ITEMS.register("essentia_conversion_monitor",thaumicenergistics.parts.EssentiaConversionMonitorItem::new);
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaTerminalItem> ESSENTIA_TERMINAL = ITEMS.register("essentia_terminal",thaumicenergistics.parts.EssentiaTerminalItem::new);
     public static final DeferredHolder<Item,thaumicenergistics.items.WirelessEssentiaTerminalItem> WIRELESS_TERMINAL=ITEMS.register("wireless_essentia_terminal",thaumicenergistics.items.WirelessEssentiaTerminalItem::new);
+    public static final DeferredHolder<Item,thaumicenergistics.parts.ArcaneTerminalItem> ARCANE_TERMINAL=ITEMS.register("arcane_crafting_terminal",thaumicenergistics.parts.ArcaneTerminalItem::new);
 
     static {
         KEY_TYPES.register("essentia", () -> EssentiaKeyType.INSTANCE);
@@ -125,6 +128,7 @@ public final class ThaumicEnergistics {
                     output.accept(STORAGE_MONITOR.get());
                     output.accept(CONVERSION_MONITOR.get());
                     output.accept(ESSENTIA_TERMINAL.get());
+                    output.accept(ARCANE_TERMINAL.get());
                     output.accept(WIRELESS_TERMINAL.get());
                     output.accept(VIBRATION_ITEM.get());
                     output.accept(ESSENTIA_PROVIDER_ITEM.get());output.accept(INFUSION_PROVIDER_ITEM.get());
@@ -154,6 +158,7 @@ public final class ThaumicEnergistics {
         PartModels.registerModels(id("part/essentia_storage_monitor_off"),id("part/essentia_storage_monitor_on"),id("part/essentia_storage_monitor_empty_off"),id("part/essentia_storage_monitor_empty_on"));
         PartModels.registerModels(id("part/essentia_conversion_monitor_off"),id("part/essentia_conversion_monitor_on"),id("part/essentia_conversion_monitor_empty_off"),id("part/essentia_conversion_monitor_empty_on"));
         for(int rotation=0;rotation<4;rotation++)PartModels.registerModels(id("part/essentia_terminal_"+rotation+"_off"),id("part/essentia_terminal_"+rotation+"_on"));
+        for(int rotation=0;rotation<4;rotation++)PartModels.registerModels(id("part/arcane_crafting_terminal_"+rotation+"_off"),id("part/arcane_crafting_terminal_"+rotation+"_on"));
         modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) -> {
                 event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
                         CELL_WORKBENCH_ENTITY.get(), (workbench, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(workbench.inventory()));

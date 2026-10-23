@@ -1,0 +1,35 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tearcaneterm",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:teresearch"
+  ],
+  "hidden_parents": [],
+  "icon": "thaumicenergistics:arcane_crafting_terminal",
+  "column": 2,
+  "row": -1,
+  "aspects": {
+    "fabrico": 5,
+    "potentia": 3,
+    "machina": 3,
+    "vacuos": 3
+  },
+  "complexity": 1,
+  "auto_unlock": false,
+  "concealed": false,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEARCANETERM.1"
+  ],
+  "secondary": false,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:arcane_crafting_terminal"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEARCANETERM.1",
+    "thaumicenergistics:arcane_crafting_terminal"
+  ]
+}

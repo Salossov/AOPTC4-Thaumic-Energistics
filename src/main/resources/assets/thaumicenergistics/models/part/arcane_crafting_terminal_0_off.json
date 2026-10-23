@@ -1,0 +1,83 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "side": "thaumicenergistics:blocks/parts/arcane.crafting.side",
+    "particle": "thaumicenergistics:blocks/parts/arcane.crafting.side",
+    "base": "thaumicenergistics:blocks/parts/arcane.crafting.overlay1",
+    "dark": "thaumicenergistics:blocks/parts/arcane.crafting.overlay3",
+    "medium": "thaumicenergistics:blocks/parts/arcane.crafting.overlay2",
+    "runes": "thaumicenergistics:blocks/parts/arcane.crafting.overlay4",
+    "status": "thaumicenergistics:blocks/parts/bus.color.dark"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        0
+      ],
+      "to": [
+        14,
+        14,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base",
+          "rotation": 0
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        2
+      ],
+      "to": [
+        11,
+        11,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#status",
+          "tintindex": 2
+        },
+        "west": {
+          "texture": "#status",
+          "tintindex": 2
+        },
+        "up": {
+          "texture": "#status",
+          "tintindex": 2
+        },
+        "down": {
+          "texture": "#status",
+          "tintindex": 2
+        }
+      }
+    }
+  ]
+}

@@ -185,5 +185,10 @@
   "tc.research_name.thaumicenergistics:teessprov": "源质供应器",
   "tc.research_text.thaumicenergistics:teessprov": "应汝所呼.",
   "tc.research_name.thaumicenergistics:teinfprov": "注魔供应器",
-  "tc.research_text.thaumicenergistics:teinfprov": "注魔更易."
+  "tc.research_text.thaumicenergistics:teinfprov": "注魔更易.",
+  "item.thaumicenergistics.arcane_crafting_terminal": "奥术合成终端",
+  "tc.research_name.thaumicenergistics:tearcaneterm": "奥术合成终端",
+  "tc.research_text.thaumicenergistics:tearcaneterm": "利用魔法§o与科技§r来合成",
+  "tc.research_name.thaumicenergistics:tevisint": "要素中继接口",
+  "tc.research_text.thaumicenergistics:tevisint": "数位化使用要素魔力"
 }

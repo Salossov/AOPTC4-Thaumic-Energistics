@@ -190,5 +190,15 @@
   "tc.research_text.thaumicenergistics:teinfprov": "Infusion made easier.",
   "block.thaumicenergistics.distillation_pattern_encoder": "Distillation Pattern Encoder",
   "tc.research_name.thaumicenergistics:tedistillationpatternencoder": "Distillation Pattern Encoder",
-  "tc.research_text.thaumicenergistics:tedistillationpatternencoder": "Ordering More"
+  "tc.research_text.thaumicenergistics:tedistillationpatternencoder": "Ordering More",
+  "item.thaumicenergistics.arcane_crafting_terminal": "Arcane Crafting Terminal",
+  "tc.research_name.thaumicenergistics:tearcaneterm": "Arcane Crafting Terminal",
+  "tc.research_text.thaumicenergistics:tearcaneterm": "Crafting with magic §oand technology.§r",
+  "tc.research_name.thaumicenergistics:tevisint": "Vis Relay Interface",
+  "tc.research_text.thaumicenergistics:tevisint": "Using Vis Digitally",
+  "thaumicenergistics.gui.search_mode": "Search mode",
+  "thaumicenergistics.gui.search_mode.0": "Automatic focus",
+  "thaumicenergistics.gui.search_mode.1": "Manual focus",
+  "thaumicenergistics.gui.search_mode.2": "Automatic focus + recipe viewer",
+  "thaumicenergistics.gui.search_mode.3": "Manual focus + recipe viewer"
 }

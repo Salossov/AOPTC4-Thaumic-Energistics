@@ -1,0 +1,42 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tevisint",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:tearcaneterm",
+    "thaumicenergistics:pseudo_vispower"
+  ],
+  "hidden_parents": [
+    "VISPOWER"
+  ],
+  "icon": "thaumicenergistics:vis_interface",
+  "column": 4,
+  "row": -1,
+  "aspects": {
+    "auram": 5,
+    "potentia": 4,
+    "vacuos": 3,
+    "machina": 2
+  },
+  "complexity": 2,
+  "auto_unlock": false,
+  "concealed": false,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEVISINT.1",
+    "thaumicenergistics.research_page.TEVISINT.2",
+    "thaumicenergistics.research_page.TEVISINT.3"
+  ],
+  "secondary": false,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:vis_interface"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEVISINT.1",
+    "thaumicenergistics:vis_interface",
+    "thaumicenergistics.research_page.TEVISINT.2",
+    "thaumicenergistics.research_page.TEVISINT.3"
+  ]
+}

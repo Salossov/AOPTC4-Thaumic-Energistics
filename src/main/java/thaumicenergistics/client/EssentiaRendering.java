@@ -29,11 +29,12 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
             case 2 -> appeng.api.util.AEColor.TRANSPARENT.mediumVariant;
             case 3 -> appeng.api.util.AEColor.TRANSPARENT.whiteVariant;
             default -> 0xffffff;
-        },ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get(),ThaumicEnergistics.ESSENTIA_TERMINAL.get());
+        },ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get(),ThaumicEnergistics.ESSENTIA_TERMINAL.get(),ThaumicEnergistics.ARCANE_TERMINAL.get());
     }
     @SubscribeEvent
     public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
         event.register(ThaumicEnergistics.TERMINAL_MENU.get(),EssentiaTerminalScreen::new);
+        event.register(ThaumicEnergistics.ARCANE_TERMINAL_MENU.get(),ArcaneTerminalScreen::new);
         event.register(ThaumicEnergistics.VIBRATION_MENU.get(),VibrationChamberScreen::new);
         event.register(ThaumicEnergistics.BUS_MENU.get(), EssentiaBusScreen::new);
         event.register(ThaumicEnergistics.WORKBENCH_MENU.get(), CellWorkbenchScreen::new);
@@ -55,16 +56,22 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
     @Override public void drawInGui(Minecraft minecraft, GuiGraphics graphics, int x, int y, EssentiaKey key) {
         drawInGui(graphics,x,y,key,texture(key));
     }
+    public void drawInGui(Minecraft minecraft,GuiGraphics graphics,int x,int y,EssentiaKey key,float alpha){
+        drawInGui(graphics,x,y,key,texture(key),alpha);
+    }
     public void drawUnknownInGui(GuiGraphics graphics,int x,int y,EssentiaKey key){
         drawInGui(graphics,x,y,key,ResourceLocation.parse("thaumcraft:textures/aspects/_unknown.png"));
     }
     private void drawInGui(GuiGraphics graphics,int x,int y,EssentiaKey key,ResourceLocation texture){
+        drawInGui(graphics,x,y,key,texture,1);
+    }
+    private void drawInGui(GuiGraphics graphics,int x,int y,EssentiaKey key,ResourceLocation texture,float alpha){
         int color = key.aspect() == null ? 0xffffff : key.aspect().getColor();
         float[] previous = com.mojang.blaze3d.systems.RenderSystem.getShaderColor().clone();
         graphics.flush();
         com.mojang.blaze3d.systems.RenderSystem.enableBlend();
         com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
-        graphics.setColor(((color >> 16) & 255) / 255f, ((color >> 8) & 255) / 255f, (color & 255) / 255f, 1);
+        graphics.setColor(((color >> 16) & 255) / 255f, ((color >> 8) & 255) / 255f, (color & 255) / 255f, Math.clamp(alpha,0,1));
         // flush() enables depth testing even when the container disabled it for slots.
         com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
         graphics.blit(texture, x, y, 16, 16, 0, 0, 32, 32, 32, 32);

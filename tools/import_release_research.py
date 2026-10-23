@@ -16,9 +16,11 @@ FEATURES = {
     "FeatureEssentiaVibrationChamber": ("TEESSVIBCMBR", "teessvibcmbr", "thaumicenergistics:essentia_vibration_chamber"),
     "FeatureEssentiaProvider": ("TEESSPROV", "teessprov", "thaumicenergistics:essentia_provider"),
     "FeatureInfusionProvider": ("TEINFPROV", "teinfprov", "thaumicenergistics:infusion_provider"),
+    "FeatureACT": ("TEARCANETERM", "tearcaneterm", "thaumicenergistics:arcane_crafting_terminal"),
+    "FeatureVisRelayInterface": ("TEVISINT", "tevisint", "thaumicenergistics:vis_interface"),
 }
 ASPECTS = {"SLIME": "limus", "MAGIC": "praecantatio", "MECHANISM": "machina", "EXCHANGE": "permutatio",
-           "VOID": "vacuos", "ENERGY": "potentia", "CRYSTAL": "vitreus", "METAL": "metallum", "AIR": "aer", "SENSES": "sensus", "WATER": "aqua", "MOTION": "motus", "ORDER": "ordo"}
+           "VOID": "vacuos", "ENERGY": "potentia", "CRYSTAL": "vitreus", "METAL": "metallum", "AIR": "aer", "SENSES": "sensus", "WATER": "aqua", "MOTION": "motus", "ORDER": "ordo", "CRAFT": "fabrico", "AURA": "auram"}
 PARENTS = {
     "teresearch": [],
     "tecores": ["thaumicenergistics:teresearch", "thaumicenergistics:pseudo_distilessentia"],
@@ -28,8 +30,11 @@ PARENTS = {
     "teessvibcmbr": ["thaumicenergistics:tecores"],
     "teessprov": ["thaumicenergistics:teio"],
     "teinfprov": ["thaumicenergistics:teio", "thaumicenergistics:pseudo_mirror", "thaumicenergistics:pseudo_infusion"],
+    "tearcaneterm": ["thaumicenergistics:teresearch"],
+    "tevisint": ["thaumicenergistics:tearcaneterm", "thaumicenergistics:pseudo_vispower"],
 }
 HIDDEN_PARENTS = {"teresearch": [], "tecores": ["DISTILESSENTIA"], "testorage": ["DISTILESSENTIA"], "teio": ["TUBEFILTER"], "teessterm": [], "teessvibcmbr": [], "teessprov": ["INFUSION", "TUBEFILTER"], "teinfprov": ["MIRROR", "INFUSION"]}
+HIDDEN_PARENTS.update(tearcaneterm=[],tevisint=["VISPOWER"])
 
 
 def write(relative: str, value: object) -> None:
@@ -83,6 +88,7 @@ def main() -> None:
     recipes["BLOCK_ESSENTIA_VIBRATION_CHAMBER"]="thaumicenergistics:essentia_vibration_chamber"
     recipes["BLOCK_ESSENTIA_PROVIDER"]="thaumicenergistics:essentia_provider"
     recipes["BLOCK_INFUSION_PROVIDER"]="thaumicenergistics:infusion_provider"
+    recipes["PART_ARCANE_TERMINAL"]="thaumicenergistics:arcane_crafting_terminal"
     source_registry = (ADDON / "source_code/src/main/java/thaumicenergistics/common/registries/ResearchRegistry.java").read_text(encoding="utf-8")
     release_registry = (ADDON / "decompiled/thaumicenergistics/common/registries/ResearchRegistry.java").read_text(encoding="utf-8")
     report = {"research": [], "monitoring_profile":{"wireless":True,"conversion":True}, "pending": "All remaining feature branches, config filtering, and Vis's original arcane-terminal parent"}
@@ -132,7 +138,7 @@ def main() -> None:
         report["research"].append({"key": value["key"], "original_key": "thaumicenergistics." + original,
             "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "release_sha256": hashlib.sha256(release.read_bytes()).hexdigest(),
             "extracted": extracted})
-    for target, column, row in (("DISTILESSENTIA", -2, 0), ("TUBEFILTER", -3, 0), ("WARDEDARCANA", 1, 2), ("INFUSION", -6, 0), ("MIRROR", -4, 0), ("JARLABEL", -4, 0)):
+    for target, column, row in (("DISTILESSENTIA", -2, 0), ("TUBEFILTER", -3, 0), ("WARDEDARCANA", 1, 2), ("INFUSION", -6, 0), ("MIRROR", -4, 0), ("JARLABEL", -4, 0), ("VISPOWER", 4, 0)):
         directory="research_templates" if target in ("MIRROR","JARLABEL") else "thaumcraft/research"
         write(f"data/thaumicenergistics/{directory}/pseudo_{target.lower()}.json", {
             "kind": "research", "key": f"thaumicenergistics:pseudo_{target.lower()}", "category": "thaumicenergistics:main",
@@ -145,7 +151,7 @@ def main() -> None:
                 if key in values: values[f"tc.research_{kind}.thaumicenergistics:{modern}"] = values[key]
         language.write_text(json.dumps(values, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     (ADDON / "analysis/imported-research.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print(f"THE_RELEASE_RESEARCH_AUTHORED nodes={len(FEATURES)} links=5 mirror_or_jar_startup_selection=true verification_deferred=true")
+    print(f"THE_RELEASE_RESEARCH_AUTHORED nodes={len(FEATURES)} links=6 mirror_or_jar_startup_selection=true verification_deferred=true")
 
 
 if __name__ == "__main__":

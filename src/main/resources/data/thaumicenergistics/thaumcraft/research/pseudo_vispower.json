@@ -1,0 +1,13 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:pseudo_vispower",
+  "category": "thaumicenergistics:main",
+  "linked_research": "VISPOWER",
+  "column": 4,
+  "row": 0,
+  "complexity": 1,
+  "stub": true,
+  "hidden": true,
+  "icon": "minecraft:air",
+  "aspects": {}
+}

@@ -101,5 +101,8 @@
   "tc.research_name.thaumicenergistics:teessprov": "Essentia-Versorger",
   "tc.research_text.thaumicenergistics:teessprov": "Deine Wünsche werden erhört.",
   "tc.research_name.thaumicenergistics:teinfprov": "Infusions-Versorger",
-  "tc.research_text.thaumicenergistics:teinfprov": "Infusion vereinfacht."
+  "tc.research_text.thaumicenergistics:teinfprov": "Infusion vereinfacht.",
+  "item.thaumicenergistics.arcane_crafting_terminal": "Arkane Fertigungs-Konsole",
+  "tc.research_name.thaumicenergistics:tearcaneterm": "Arkane Fertigungskonsole",
+  "tc.research_text.thaumicenergistics:tearcaneterm": "Herstellung mit Magie §ound Technik.§r"
 }
