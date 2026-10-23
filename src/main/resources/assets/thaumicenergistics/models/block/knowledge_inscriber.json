@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "thaumicenergistics:blocks/knowledge.inscriber.top",
+    "down": "thaumicenergistics:blocks/knowledge.inscriber.bottom",
+    "up": "thaumicenergistics:blocks/knowledge.inscriber.bottom",
+    "north": "thaumicenergistics:blocks/knowledge.inscriber.top",
+    "east": "thaumicenergistics:blocks/knowledge.inscriber.side",
+    "south": "thaumicenergistics:blocks/knowledge.inscriber.side",
+    "west": "thaumicenergistics:blocks/knowledge.inscriber.side"
+  }
+}

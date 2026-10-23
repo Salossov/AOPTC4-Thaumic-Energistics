@@ -1,0 +1,35 @@
+{
+  "type": "thaumcraft:arcane",
+  "research": "thaumicenergistics:tearcaneassembler",
+  "vis": {
+    "aer": 5,
+    "terra": 5,
+    "ignis": 5,
+    "aqua": 5,
+    "ordo": 5,
+    "perditio": 5
+  },
+  "pattern": [
+    "IPI",
+    " T ",
+    "ILI"
+  ],
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "P": {
+      "tag": "ae2:illuminated_panel"
+    },
+    "T": {
+      "item": "thaumcraft:thaumonomicon"
+    },
+    "L": {
+      "item": "ae2:logic_processor"
+    }
+  },
+  "result": {
+    "id": "thaumicenergistics:knowledge_inscriber",
+    "count": 1
+  }
+}

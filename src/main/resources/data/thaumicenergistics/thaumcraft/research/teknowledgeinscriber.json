@@ -1,0 +1,39 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:teknowledgeinscriber",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:tearcaneassembler"
+  ],
+  "hidden_parents": [],
+  "icon": "thaumicenergistics:knowledge_inscriber",
+  "column": 6,
+  "row": 0,
+  "aspects": {
+    "cognitio": 5,
+    "machina": 3,
+    "fabrico": 3,
+    "permutatio": 1
+  },
+  "complexity": 1,
+  "auto_unlock": false,
+  "concealed": true,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEKNOWLEDGEINSCRIBER.1",
+    "thaumicenergistics.research_page.TEKNOWLEDGEINSCRIBER.2"
+  ],
+  "secondary": true,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:knowledge_core",
+    "thaumicenergistics:knowledge_inscriber"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEKNOWLEDGEINSCRIBER.1",
+    "thaumicenergistics:knowledge_core",
+    "thaumicenergistics:knowledge_inscriber",
+    "thaumicenergistics.research_page.TEKNOWLEDGEINSCRIBER.2"
+  ]
+}
