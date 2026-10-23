@@ -1,0 +1,12 @@
+Applied Energistics 2 RV3 texture attribution
+
+File: assets/thaumicenergistics/textures/gui/ae2_rv3_states.png
+Unmodified original: src/main/resources/assets/appliedenergistics2/textures/guis/states.png
+Source: https://github.com/AppliedEnergistics/Applied-Energistics-2/tree/rv3-1.7.10
+Copyright (c) 2013-2015 AlgorithmX2 et al.
+License: Creative Commons Attribution-NonCommercial-ShareAlike 3.0
+https://creativecommons.org/licenses/by-nc-sa/3.0/
+
+Upstream texture license notice:
+https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/rv3-1.7.10/README.md#license
+This notice applies to the named texture separately from the Java source license.

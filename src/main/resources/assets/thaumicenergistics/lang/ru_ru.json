@@ -175,5 +175,9 @@
   "thaumicenergistics.gui.search_mode.0": "Автоматический фокус",
   "thaumicenergistics.gui.search_mode.1": "Ручной фокус",
   "thaumicenergistics.gui.search_mode.2": "Автоматический фокус + просмотр рецептов",
-  "thaumicenergistics.gui.search_mode.3": "Ручной фокус + просмотр рецептов"
+  "thaumicenergistics.gui.search_mode.3": "Ручной фокус + просмотр рецептов",
+  "block.thaumicenergistics.knowledge_inscriber": "Высекатель знаний",
+  "item.thaumicenergistics.knowledge_core": "Ядро знаний",
+  "tc.research_name.thaumicenergistics:teknowledgeinscriber": "Высечение знаний",
+  "tc.research_text.thaumicenergistics:teknowledgeinscriber": "Магические шаблоны"
 }

@@ -190,5 +190,9 @@
   "tc.research_name.thaumicenergistics:tearcaneterm": "奥术合成终端",
   "tc.research_text.thaumicenergistics:tearcaneterm": "利用魔法§o与科技§r来合成",
   "tc.research_name.thaumicenergistics:tevisint": "要素中继接口",
-  "tc.research_text.thaumicenergistics:tevisint": "数位化使用要素魔力"
+  "tc.research_text.thaumicenergistics:tevisint": "数位化使用要素魔力",
+  "block.thaumicenergistics.knowledge_inscriber": "知识记录仪",
+  "item.thaumicenergistics.knowledge_core": "知识核心",
+  "tc.research_name.thaumicenergistics:teknowledgeinscriber": "知识记录仪",
+  "tc.research_text.thaumicenergistics:teknowledgeinscriber": "魔力模板"
 }
