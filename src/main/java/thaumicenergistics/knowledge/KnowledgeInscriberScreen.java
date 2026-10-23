@@ -1,6 +1,5 @@
 package thaumicenergistics.knowledge;
 
-import appeng.client.gui.Icon;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -20,6 +19,8 @@ import thaumicenergistics.ThaumicEnergistics;
 public class KnowledgeInscriberScreen extends AbstractContainerScreen<KnowledgeInscriberMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "textures/gui/knowledge.inscriber.png");
     private static final ResourceLocation RESEARCH_BG = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "textures/research/research.background.png");
+    private static final ResourceLocation BUTTONS = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "textures/gui/ae2_rv3_states.png");
+    private static final ResourceLocation KNOWLEDGE_PARTICLES = ResourceLocation.parse("thaumcraft:textures/misc/particles.png");
 
     private static final int BUTTON_SAVE_X = 141;
     private static final int BUTTON_SAVE_Y = 109;
@@ -27,6 +28,8 @@ public class KnowledgeInscriberScreen extends AbstractContainerScreen<KnowledgeI
     private static final int BUTTON_CLEAR_Y = 89;
 
     private KnowledgeInscriberMenu.CoreSaveState saveState = KnowledgeInscriberMenu.CoreSaveState.Disabled_MissingCore;
+    private int savedSequence;
+    private long savedAt = -1;
 
     public KnowledgeInscriberScreen(KnowledgeInscriberMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -43,10 +46,6 @@ public class KnowledgeInscriberScreen extends AbstractContainerScreen<KnowledgeI
         PacketDistributor.sendToServer(new KnowledgeInscriberActionPayload(this.menu.containerId, KnowledgeInscriberActionPayload.ACTION_FULL_UPDATE, 0));
     }
 
-    public void onReceiveSaveState(KnowledgeInscriberMenu.CoreSaveState state, boolean justSaved) {
-        this.saveState = state != null ? state : KnowledgeInscriberMenu.CoreSaveState.Disabled_MissingCore;
-    }
-
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         // Render pulsating research background behind the result slot at (80, 106), size 35x20
@@ -55,35 +54,63 @@ public class KnowledgeInscriberScreen extends AbstractContainerScreen<KnowledgeI
         float greenBounce = 1.0F - redBounce;
 
         RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        graphics.flush();
         graphics.setColor(redBounce, greenBounce, 1.0F, 1.0F);
         int xpos = (int) (slowTime % 10);
         graphics.blit(RESEARCH_BG, leftPos + 80, topPos + 106, 55 - xpos, 25, 35, 20);
+        graphics.flush();
         graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         // Render main GUI texture
         graphics.blit(GUI_TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
 
         // Render Clear button at (80, 89)
-        Icon.CLEAR.getBlitter().dest(leftPos + BUTTON_CLEAR_X, topPos + BUTTON_CLEAR_Y, 8, 8).blit(graphics);
+        graphics.blit(BUTTONS, leftPos + BUTTON_CLEAR_X, topPos + BUTTON_CLEAR_Y, 8, 8, 96, 0, 16, 16, 256, 256);
 
         // Render Save/Delete button at (141, 109)
-        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos + BUTTON_SAVE_X, topPos + BUTTON_SAVE_Y, 16, 16).blit(graphics);
+        graphics.blit(BUTTONS, leftPos + BUTTON_SAVE_X, topPos + BUTTON_SAVE_Y, 240, 240, 16, 16);
         if (saveState == KnowledgeInscriberMenu.CoreSaveState.Enabled_Save) {
             // Save icon from AE2 states texture
-            graphics.blit(Icon.TEXTURE, leftPos + BUTTON_SAVE_X, topPos + BUTTON_SAVE_Y, 0, 176, 16, 16);
+            graphics.blit(BUTTONS, leftPos + BUTTON_SAVE_X, topPos + BUTTON_SAVE_Y, 0, 176, 16, 16);
         } else if (saveState == KnowledgeInscriberMenu.CoreSaveState.Enabled_Delete) {
             // Delete icon from AE2 states texture
-            graphics.blit(Icon.TEXTURE, leftPos + BUTTON_SAVE_X, topPos + BUTTON_SAVE_Y, 0, 192, 16, 16);
+            graphics.blit(BUTTONS, leftPos + BUTTON_SAVE_X, topPos + BUTTON_SAVE_Y, 0, 192, 16, 16);
         }
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0x404040, false);
+        graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0, false);
+        long now = System.currentTimeMillis();
+        if (savedAt < 0 || now - savedAt > 800) return;
+        graphics.flush();
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA,
+                com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
+        graphics.setColor(.2F, .5F, 1F, .9F);
+        for (int i = 0; i < 9; i++) {
+            long elapsed = now - savedAt - i * 50L;
+            if (elapsed < 0 || elapsed > 400) continue;
+            double progress = elapsed / 400.0;
+            int startX = 26 + (i % 3) * 18;
+            int startY = 90 + (i / 3) * 18;
+            int x = startX + (int) ((186 - startX) * progress);
+            int y = startY + (int) ((8 - startY) * progress);
+            graphics.blit(KNOWLEDGE_PARTICLES, x, y, (int) ((now / 1000) % 4) * 16, 64, 16, 16);
+        }
+        graphics.flush();
+        graphics.setColor(1, 1, 1, 1);
+        RenderSystem.defaultBlendFunc();
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        saveState = menu.getSaveState();
+        if (savedSequence != menu.savedSequence()) {
+            savedSequence = menu.savedSequence();
+            savedAt = System.currentTimeMillis();
+        }
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
 
@@ -107,6 +134,7 @@ public class KnowledgeInscriberScreen extends AbstractContainerScreen<KnowledgeI
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        saveState = menu.getSaveState();
         if (button == 0) {
             if (isHovering(BUTTON_CLEAR_X, BUTTON_CLEAR_Y, 8, 8, mouseX, mouseY)) {
                 if (minecraft != null && minecraft.getSoundManager() != null) {

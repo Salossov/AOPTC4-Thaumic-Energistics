@@ -190,5 +190,9 @@
   "tc.research_text.thaumicenergistics:teinfprov": "Infusion made easier.",
   "block.thaumicenergistics.distillation_pattern_encoder": "Distillation Pattern Encoder",
   "tc.research_name.thaumicenergistics:tedistillationpatternencoder": "Distillation Pattern Encoder",
-  "tc.research_text.thaumicenergistics:tedistillationpatternencoder": "Ordering More"
+  "tc.research_text.thaumicenergistics:tedistillationpatternencoder": "Ordering More",
+  "block.thaumicenergistics.knowledge_inscriber": "Knowledge Inscriber",
+  "item.thaumicenergistics.knowledge_core": "Knowledge Core",
+  "tc.research_name.thaumicenergistics:teknowledgeinscriber": "Knowledge Inscription",
+  "tc.research_text.thaumicenergistics:teknowledgeinscriber": "Magical Patterns"
 }

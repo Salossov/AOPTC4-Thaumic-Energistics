@@ -165,5 +165,9 @@
   "tc.research_text.thaumicenergistics.TEDISTILLATIONPATTERNENCODER": "Заказ добавки",
   "tc.research_name.thaumicenergistics:tedistillationpatternencoder": "Кодировщик шаблонов дистилляции",
   "tc.research_text.thaumicenergistics:tedistillationpatternencoder": "Заказ добавки",
-  "thaumicenergistics.research_page.TEDISTILLATIONPATTERNENCODER.1": "Развивая принципы системы автокрафта AE, вы разработали способ закодировать процесс дистилляции эссенции в §lЗакодированный шаблон§r.<BR>Помещение предмета в слот таумометра раскроет известную вам информацию о его составе. Выбрав нужный аспект, его можно закодировать в имеющийся или чистый шаблон."
+  "thaumicenergistics.research_page.TEDISTILLATIONPATTERNENCODER.1": "Развивая принципы системы автокрафта AE, вы разработали способ закодировать процесс дистилляции эссенции в §lЗакодированный шаблон§r.<BR>Помещение предмета в слот таумометра раскроет известную вам информацию о его составе. Выбрав нужный аспект, его можно закодировать в имеющийся или чистый шаблон.",
+  "block.thaumicenergistics.knowledge_inscriber": "Высекатель знаний",
+  "item.thaumicenergistics.knowledge_core": "Ядро знаний",
+  "tc.research_name.thaumicenergistics:teknowledgeinscriber": "Высечение знаний",
+  "tc.research_text.thaumicenergistics:teknowledgeinscriber": "Магические шаблоны"
 }

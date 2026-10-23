@@ -47,30 +47,31 @@ public class ArcaneCraftingPattern implements IPatternDetails {
         this.result = result == null ? ItemStack.EMPTY : result.copy();
         if (wholeVis != null) {
             for (Map.Entry<Aspect, Integer> entry : wholeVis.entrySet()) {
-                if (entry.getKey() != null && entry.getValue() != null && entry.getValue() > 0) {
-                    this.aspects.put(entry.getKey(), entry.getValue());
-                }
+                if (entry.getKey() == null || !entry.getKey().isPrimal() || entry.getValue() == null || entry.getValue() <= 0) return;
+                this.aspects.put(entry.getKey(), entry.getValue());
             }
         }
         boolean hasAtLeastOneInput = false;
         if (inputIngredients != null) {
+            if (inputIngredients.length > GRID_SIZE) return;
             for (int i = 0; i < GRID_SIZE && i < inputIngredients.length; i++) {
                 Object ing = inputIngredients[i];
                 if (ing instanceof ItemStack stack && !stack.isEmpty()) {
                     this.ingredients[i] = stack.copy();
                     hasAtLeastOneInput = true;
                 } else if (ing instanceof List<?> list && !list.isEmpty()) {
+                    if (list.size() > 256) return;
                     List<ItemStack> copiedList = new ArrayList<>();
                     for (Object obj : list) {
                         if (obj instanceof ItemStack st && !st.isEmpty()) {
                             copiedList.add(st.copy());
-                        }
+                        } else return;
                     }
                     if (!copiedList.isEmpty()) {
                         this.ingredients[i] = Collections.unmodifiableList(copiedList);
                         hasAtLeastOneInput = true;
                     }
-                }
+                } else if (ing != null && !(ing instanceof ItemStack stack && stack.isEmpty())) return;
             }
         }
         this.valid = !this.aspects.isEmpty() && !this.result.isEmpty() && hasAtLeastOneInput;

@@ -12,7 +12,7 @@ import net.minecraft.world.item.TooltipFlag;
  */
 public class ItemKnowledgeCore extends Item {
     public ItemKnowledgeCore() {
-        super(new Item.Properties().stacksTo(1).durability(0));
+        super(new Item.Properties().stacksTo(1));
     }
 
     @Override

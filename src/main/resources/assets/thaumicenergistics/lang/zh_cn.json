@@ -185,5 +185,9 @@
   "tc.research_name.thaumicenergistics:teessprov": "源质供应器",
   "tc.research_text.thaumicenergistics:teessprov": "应汝所呼.",
   "tc.research_name.thaumicenergistics:teinfprov": "注魔供应器",
-  "tc.research_text.thaumicenergistics:teinfprov": "注魔更易."
+  "tc.research_text.thaumicenergistics:teinfprov": "注魔更易.",
+  "block.thaumicenergistics.knowledge_inscriber": "知识记录仪",
+  "item.thaumicenergistics.knowledge_core": "知识核心",
+  "tc.research_name.thaumicenergistics:teknowledgeinscriber": "知识记录仪",
+  "tc.research_text.thaumicenergistics:teknowledgeinscriber": "魔力模板"
 }
