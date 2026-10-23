@@ -18,20 +18,21 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectApi;
-import thaumcraft.api.aspects.IObjectAspectItem;
 import thaumcraft.api.knowledge.PlayerKnowledge;
 import thaumcraft.api.research.ResearchApi;
 import thaumicenergistics.storage.EssentiaKey;
 
 /**
  * Menu for Distillation Pattern Encoder.
- * - 0: Ghost source item
+ * - 0: Ghost source item (never dropped)
  * - 1: Blank patterns (real items)
  * - 2: Encoded pattern (real item)
  * - 3..8: 6 source aspect widgets (read-only, click to select)
- * - 9: Selected aspect widget (read-only)
+ * - 9: Selected aspect widget (read-only display, authoritatively synced)
  * - 10..36: Player main inventory
  * - 37..45: Player hotbar
  */
@@ -62,9 +63,9 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     }
 
     private static DistillationPatternEncoderBlockEntity getBlockEntityFromBuf(Player player, FriendlyByteBuf data) {
-        if (data != null && data.readableBytes() >= 8) {
+        if (player != null && player.level() != null && data != null && data.readableBytes() >= 8) {
             BlockPos pos = data.readBlockPos();
-            if (player.level().getBlockEntity(pos) instanceof DistillationPatternEncoderBlockEntity be) {
+            if (player.level().hasChunkAt(pos) && player.level().getBlockEntity(pos) instanceof DistillationPatternEncoderBlockEntity be) {
                 return be;
             }
         }
@@ -82,7 +83,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
         addSlot(new Slot(inv, DistillationPatternEncoderBlockEntity.SLOT_SOURCE_ITEM, 15, 69) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return false; // Handled via custom click
+                return false;
             }
 
             @Override
@@ -172,10 +173,24 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     }
 
     public Aspect getSelectedAspect() {
+        ItemStack slotStack = getSlot(SLOT_SELECTED_ASPECT).getItem();
+        if (!slotStack.isEmpty()) {
+            var generic = GenericStack.unwrapItemStack(slotStack);
+            if (generic != null && generic.what() instanceof EssentiaKey essentiaKey) {
+                return essentiaKey.aspect();
+            }
+        }
         return selectedAspect;
     }
 
     public int getSelectedAmount() {
+        ItemStack slotStack = getSlot(SLOT_SELECTED_ASPECT).getItem();
+        if (!slotStack.isEmpty()) {
+            var generic = GenericStack.unwrapItemStack(slotStack);
+            if (generic != null && generic.what() instanceof EssentiaKey) {
+                return (int) generic.amount();
+            }
+        }
         return selectedAmount;
     }
 
@@ -184,14 +199,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
         if (player instanceof ServerPlayer sp) {
             PlayerKnowledge pk = ResearchApi.knowledge(sp);
             String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
-            boolean scanned = pk.scanned(PlayerKnowledge.ScanKind.OBJECT).contains(id);
-            if (!scanned && stack.getItem() instanceof IObjectAspectItem oai) {
-                String variant = oai.scanVariant(stack);
-                if (!variant.isEmpty()) {
-                    scanned = pk.scanned(PlayerKnowledge.ScanKind.OBJECT).contains(id + "/" + variant);
-                }
-            }
-            return scanned;
+            return pk.scanned(PlayerKnowledge.ScanKind.OBJECT).contains(id);
         } else {
             return AspectApi.scanned(stack);
         }
@@ -260,6 +268,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
         int count = Math.min(SLOT_SOURCE_ASPECTS_COUNT, sorted.size());
         Aspect firstKnown = null;
         int firstAmount = 0;
+        boolean currentSelectionStillValid = false;
 
         for (int i = 0; i < count; i++) {
             var entry = sorted.get(i);
@@ -271,6 +280,12 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
                     firstKnown = aspect;
                     firstAmount = amount;
                 }
+                if (selectedAspect != null && selectedAspect.equals(aspect)) {
+                    currentSelectionStillValid = true;
+                    if (selectedAmount != amount) {
+                        setSelectedAspect(aspect, amount);
+                    }
+                }
             } else {
                 aspectContainer.setItem(i, GenericStack.wrapInItemStack(EssentiaKey.ofTag("unknown"), 1));
             }
@@ -281,6 +296,8 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
 
         if (autoSelectFirst && firstKnown != null && selectedAspect == null) {
             setSelectedAspect(firstKnown, firstAmount);
+        } else if (!currentSelectionStillValid && !autoSelectFirst) {
+            clearSelectedAspect();
         }
     }
 
@@ -320,7 +337,14 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     public boolean canEncode() {
         ItemStack source = getSlot(SLOT_SOURCE_ITEM).getItem();
         if (source.isEmpty() || !isScanned(owner, source)) return false;
-        if (selectedAspect == null || selectedAmount <= 0 || !knowsAspect(owner, selectedAspect)) return false;
+        Aspect aspect = getSelectedAspect();
+        int amount = getSelectedAmount();
+        if (aspect == null || amount <= 0 || !knowsAspect(owner, aspect)) return false;
+
+        Map<String, Integer> rawAspects = AspectApi.aspects(owner.level(), source);
+        Integer sourceAmount = rawAspects.get(aspect.getTag());
+        if (sourceAmount == null || sourceAmount != amount) return false;
+
         ItemStack encoded = getSlot(SLOT_ENCODED_PATTERN).getItem();
         ItemStack blank = getSlot(SLOT_BLANK_PATTERNS).getItem();
         return !encoded.isEmpty() || (!blank.isEmpty() && DistillationPatternHelper.isBlankPattern(blank));
@@ -329,12 +353,22 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     public void onEncodePattern() {
         ItemStack source = getSlot(SLOT_SOURCE_ITEM).getItem();
         if (source.isEmpty() || !isScanned(owner, source)) return;
-        if (selectedAspect == null || selectedAmount <= 0 || !knowsAspect(owner, selectedAspect)) return;
+        Aspect aspect = getSelectedAspect();
+        int amount = getSelectedAmount();
+        if (aspect == null || amount <= 0 || !knowsAspect(owner, aspect)) return;
+
+        Map<String, Integer> rawAspects = AspectApi.aspects(owner.level(), source);
+        Integer sourceAmount = rawAspects.get(aspect.getTag());
+        if (sourceAmount == null || sourceAmount != amount) {
+            clearSelectedAspect();
+            broadcastChanges();
+            return;
+        }
 
         ItemStack encodedSlot = getSlot(SLOT_ENCODED_PATTERN).getItem();
         ItemStack blankSlot = getSlot(SLOT_BLANK_PATTERNS).getItem();
 
-        ItemStack newPattern = DistillationPatternHelper.encodePattern(source, selectedAspect, selectedAmount);
+        ItemStack newPattern = DistillationPatternHelper.encodePattern(source, aspect, amount);
         if (newPattern.isEmpty()) return;
 
         if (!encodedSlot.isEmpty()) {
@@ -369,43 +403,49 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
+        if (!stillValid(player) || player instanceof FakePlayer) {
+            return;
+        }
+
         if (slotId < 0 || slotId >= slots.size()) {
             super.clicked(slotId, button, clickType, player);
             return;
         }
 
-        // Guard against any throw / swap / clone / quick-move on ghost & display slots
+        // Guard against any throw / swap / clone / quick-move / drag on ghost and display slots
         if (slotId == SLOT_SOURCE_ITEM || (slotId >= SLOT_SOURCE_ASPECTS_START && slotId <= SLOT_SELECTED_ASPECT)) {
-            if (clickType == ClickType.THROW || clickType == ClickType.SWAP || clickType == ClickType.CLONE) {
-                return;
-            }
-            if (clickType == ClickType.QUICK_MOVE) {
+            if (clickType == ClickType.THROW || clickType == ClickType.SWAP || clickType == ClickType.CLONE
+                    || clickType == ClickType.QUICK_MOVE || clickType == ClickType.QUICK_CRAFT || clickType == ClickType.PICKUP_ALL) {
                 return;
             }
         }
 
-        // Ghost source slot click handling
+        // Ghost source slot click handling (Slot 0)
         if (slotId == SLOT_SOURCE_ITEM) {
-            ItemStack carried = getCarried();
-            if (carried.isEmpty()) {
-                getSlot(SLOT_SOURCE_ITEM).set(ItemStack.EMPTY);
-            } else {
-                getSlot(SLOT_SOURCE_ITEM).set(carried.copyWithCount(1));
+            if (clickType == ClickType.PICKUP) {
+                ItemStack carried = getCarried();
+                if (carried.isEmpty()) {
+                    getSlot(SLOT_SOURCE_ITEM).set(ItemStack.EMPTY);
+                } else {
+                    getSlot(SLOT_SOURCE_ITEM).set(carried.copyWithCount(1));
+                }
+                cachedSource = getSlot(SLOT_SOURCE_ITEM).getItem().copy();
+                scanSourceItem(true);
+                broadcastChanges();
             }
-            cachedSource = getSlot(SLOT_SOURCE_ITEM).getItem().copy();
-            scanSourceItem(true);
-            broadcastChanges();
             return;
         }
 
-        // Source aspect widget clicks: select the aspect
+        // Source aspect widget clicks: select the aspect (Slots 3..8)
         if (slotId >= SLOT_SOURCE_ASPECTS_START && slotId < SLOT_SOURCE_ASPECTS_START + SLOT_SOURCE_ASPECTS_COUNT) {
-            int aspectIndex = slotId - SLOT_SOURCE_ASPECTS_START;
-            onSelectAspectAction(aspectIndex);
+            if (clickType == ClickType.PICKUP) {
+                int aspectIndex = slotId - SLOT_SOURCE_ASPECTS_START;
+                onSelectAspectAction(aspectIndex);
+            }
             return;
         }
 
-        // Selected aspect slot is purely display
+        // Selected aspect slot is purely display (Slot 9)
         if (slotId == SLOT_SELECTED_ASPECT) {
             return;
         }
@@ -444,7 +484,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
                     return ItemStack.EMPTY;
                 }
             } else {
-                // In 1.7.10: Shift-clicking an ordinary item copies it into the ghost source slot!
+                // In 1.7.10: Shift-clicking an ordinary item copies it into the ghost source slot without consumption
                 getSlot(SLOT_SOURCE_ITEM).set(stack.copyWithCount(1));
                 cachedSource = getSlot(SLOT_SOURCE_ITEM).getItem().copy();
                 scanSourceItem(true);
@@ -469,11 +509,20 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
 
     @Override
     public boolean stillValid(Player player) {
-        if (owner != player) return false;
-        if (blockEntity == null) return true;
-        return !blockEntity.isRemoved()
-                && Platform.hasPermissions(new DimensionalBlockPos(blockEntity.getLevel(), blockEntity.getBlockPos()), player)
-                && player.distanceToSqr(blockEntity.getBlockPos().getX() + 0.5,
+        if (owner != player || player instanceof FakePlayer) return false;
+        if (player.level().isClientSide) {
+            return blockEntity == null || (!blockEntity.isRemoved() && player.distanceToSqr(
+                    blockEntity.getBlockPos().getX() + 0.5,
+                    blockEntity.getBlockPos().getY() + 0.5,
+                    blockEntity.getBlockPos().getZ() + 0.5) <= 64.0);
+        }
+        if (blockEntity == null) return false;
+        Level level = blockEntity.getLevel();
+        if (level == null || level != player.level() || !level.hasChunkAt(blockEntity.getBlockPos())) return false;
+        if (blockEntity.isRemoved() || level.getBlockEntity(blockEntity.getBlockPos()) != blockEntity) return false;
+        if (!Platform.hasPermissions(new DimensionalBlockPos(level, blockEntity.getBlockPos()), player)) return false;
+        return player.distanceToSqr(
+                blockEntity.getBlockPos().getX() + 0.5,
                 blockEntity.getBlockPos().getY() + 0.5,
                 blockEntity.getBlockPos().getZ() + 0.5) <= 64.0;
     }

@@ -3,12 +3,11 @@ package thaumicenergistics.distillation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -65,11 +64,11 @@ public final class DistillationPatternEncoderBlockEntity extends BlockEntity imp
         // Drop ONLY real pattern items from slot 1 and 2. Ghost source (slot 0) is never dropped!
         var blanks = inventory.removeItemNoUpdate(SLOT_BLANK_PATTERNS);
         if (!blanks.isEmpty()) {
-            level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, blanks));
+            Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), blanks);
         }
         var encoded = inventory.removeItemNoUpdate(SLOT_ENCODED_PATTERN);
         if (!encoded.isEmpty()) {
-            level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, encoded));
+            Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), encoded);
         }
     }
 
@@ -98,17 +97,6 @@ public final class DistillationPatternEncoderBlockEntity extends BlockEntity imp
         }
         if (data.contains("EncodedPattern", Tag.TAG_COMPOUND)) {
             inventory.setItem(SLOT_ENCODED_PATTERN, ItemStack.parseOptional(registries, data.getCompound("EncodedPattern")));
-        }
-        // Backward-compatibility: 1.7.10 "inventory" TagList
-        if (data.contains("inventory", Tag.TAG_LIST)) {
-            ListTag list = data.getList("inventory", Tag.TAG_COMPOUND);
-            for (int i = 0; i < list.size(); i++) {
-                CompoundTag slotTag = list.getCompound(i);
-                int slot = slotTag.getByte("Slot") & 255;
-                if (slot >= 0 && slot < SLOT_TOTAL_COUNT) {
-                    inventory.setItem(slot, ItemStack.parseOptional(registries, slotTag));
-                }
-            }
         }
     }
 

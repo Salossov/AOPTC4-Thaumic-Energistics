@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Modern CC:Tweaked peripheral for the Thaumic Energistics Essentia Provider.
  * Conforms to the {@link EssentiaProviderAccess} contract and implements CC:Tweaked {@link IPeripheral}.
  * Bound strictly to the exact initial {@link BlockEntity} instance and lifecycle.
+ * Listener lifecycle is fully serialized onto the Minecraft server thread using epoch tokens to eliminate race conditions.
  */
 public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProviderAccess.Listener {
     public static final String PERIPHERAL_TYPE = "EssentiaProvider";
@@ -142,43 +143,21 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
             this.attachedComputers.add(computer);
         }
         int currentEpoch = this.registrationEpoch.incrementAndGet();
-        Level level = this.levelRef != null ? this.levelRef.get() : null;
-        if (level == null) {
-            BlockEntity initialBe = this.targetBeRef.get();
-            if (initialBe != null) {
-                level = initialBe.getLevel();
-            }
-        }
-        if (level instanceof ServerLevel serverLevel) {
-            serverLevel.getServer().execute(() -> checkAndRegisterListener(currentEpoch));
-        } else if (level != null && level.getServer() != null) {
-            MinecraftServer server = level.getServer();
-            if (server.isSameThread()) {
-                checkAndRegisterListener(currentEpoch);
-            } else {
-                server.execute(() -> checkAndRegisterListener(currentEpoch));
-            }
-        } else {
-            checkAndRegisterListener(currentEpoch);
-        }
+        dispatchToServer(() -> syncListenerOnServerThread(currentEpoch));
     }
 
     @Override
     public void detach(IComputerAccess computer) {
-        boolean wasLast;
         synchronized (this.attachedComputers) {
             this.attachedComputers.remove(computer);
-            wasLast = this.attachedComputers.isEmpty();
         }
         this.watcher.removeComputerWatcher(computer);
         try {
             sendEvent(computer, CCEvents.Detached);
         } catch (Exception ignored) {
         }
-        if (wasLast) {
-            this.registrationEpoch.incrementAndGet();
-            unregisterListener();
-        }
+        int currentEpoch = this.registrationEpoch.incrementAndGet();
+        dispatchToServer(() -> syncListenerOnServerThread(currentEpoch));
     }
 
     @LuaFunction(mainThread = true)
@@ -264,17 +243,23 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
 
     @Override
     public void onProviderPowerChange(boolean online) {
-        List<IComputerAccess> bad = null;
+        List<IComputerAccess> targets;
         synchronized (this.attachedComputers) {
-            for (IComputerAccess computer : this.attachedComputers) {
-                try {
-                    sendEvent(computer, CCEvents.PowerChange, online);
-                } catch (Exception ex) {
-                    if (bad == null) bad = new ArrayList<>();
-                    bad.add(computer);
-                }
+            targets = new ArrayList<>(this.attachedComputers);
+        }
+
+        List<IComputerAccess> bad = null;
+        for (IComputerAccess computer : targets) {
+            try {
+                sendEvent(computer, CCEvents.PowerChange, online);
+            } catch (Exception ex) {
+                if (bad == null) bad = new ArrayList<>();
+                bad.add(computer);
             }
-            if (bad != null) {
+        }
+
+        if (bad != null) {
+            synchronized (this.attachedComputers) {
                 for (IComputerAccess computer : bad) {
                     this.attachedComputers.remove(computer);
                     this.watcher.removeComputerWatcher(computer);
@@ -285,19 +270,26 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
 
     @Override
     public void onProviderBroken() {
-        this.registrationEpoch.incrementAndGet();
-        unregisterListener();
-        List<IComputerAccess> bad = null;
+        int currentEpoch = this.registrationEpoch.incrementAndGet();
+        dispatchToServer(() -> syncListenerOnServerThread(currentEpoch));
+
+        List<IComputerAccess> targets;
         synchronized (this.attachedComputers) {
-            for (IComputerAccess computer : this.attachedComputers) {
-                try {
-                    sendEvent(computer, CCEvents.PowerChange, false);
-                } catch (Exception ex) {
-                    if (bad == null) bad = new ArrayList<>();
-                    bad.add(computer);
-                }
+            targets = new ArrayList<>(this.attachedComputers);
+        }
+
+        List<IComputerAccess> bad = null;
+        for (IComputerAccess computer : targets) {
+            try {
+                sendEvent(computer, CCEvents.PowerChange, false);
+            } catch (Exception ex) {
+                if (bad == null) bad = new ArrayList<>();
+                bad.add(computer);
             }
-            if (bad != null) {
+        }
+
+        if (bad != null) {
+            synchronized (this.attachedComputers) {
                 for (IComputerAccess computer : bad) {
                     this.attachedComputers.remove(computer);
                 }
@@ -344,108 +336,74 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
             return null;
         }
         if (currentBe instanceof EssentiaProviderAccess currentAccess && currentAccess == provider) {
-            synchronized (this.attachedComputers) {
-                if (!this.attachedComputers.isEmpty()) {
-                    ensureListenerRegistered(provider);
-                }
-            }
             return provider;
         }
         return null;
     }
 
-    private synchronized void checkAndRegisterListener(int expectedEpoch) {
+    private void dispatchToServer(Runnable task) {
+        Level level = this.levelRef != null ? this.levelRef.get() : null;
+        if (level == null) {
+            BlockEntity initialBe = this.targetBeRef.get();
+            if (initialBe != null) {
+                level = initialBe.getLevel();
+            }
+        }
+        if (level instanceof ServerLevel serverLevel) {
+            MinecraftServer server = serverLevel.getServer();
+            if (server.isSameThread()) {
+                task.run();
+            } else {
+                server.execute(task);
+            }
+        } else if (level != null && level.getServer() != null) {
+            MinecraftServer server = level.getServer();
+            if (server.isSameThread()) {
+                task.run();
+            } else {
+                server.execute(task);
+            }
+        }
+    }
+
+    private void syncListenerOnServerThread(int expectedEpoch) {
         if (expectedEpoch != this.registrationEpoch.get()) {
             return;
         }
 
+        boolean hasComputers;
         synchronized (this.attachedComputers) {
-            if (this.attachedComputers.isEmpty()) {
-                unregisterListener();
-                return;
-            }
+            hasComputers = !this.attachedComputers.isEmpty();
         }
 
         BlockEntity initialBe = this.targetBeRef.get();
-        if (initialBe == null || initialBe.isRemoved()) {
-            unregisterListener();
-            return;
-        }
-
         EssentiaProviderAccess provider = this.targetProviderRef.get();
-        if (provider == null) {
-            unregisterListener();
-            return;
+        boolean shouldBeRegistered = false;
+
+        if (hasComputers && initialBe != null && !initialBe.isRemoved() && provider != null) {
+            Level level = this.levelRef != null ? this.levelRef.get() : null;
+            if (level == null) {
+                level = initialBe.getLevel();
+            }
+            if (level instanceof ServerLevel serverLevel && serverLevel.hasChunkAt(this.pos)) {
+                BlockEntity currentBe = serverLevel.getBlockEntity(this.pos);
+                if (currentBe == initialBe && !currentBe.isRemoved() && currentBe instanceof EssentiaProviderAccess currentAccess && currentAccess == provider) {
+                    shouldBeRegistered = true;
+                }
+            }
         }
 
-        Level level = this.levelRef != null ? this.levelRef.get() : null;
-        if (level == null) {
-            level = initialBe.getLevel();
-        }
-        if (level == null || !level.hasChunkAt(this.pos)) {
-            unregisterListener();
-            return;
-        }
-
-        BlockEntity currentBe = level.getBlockEntity(this.pos);
-        if (currentBe != initialBe || currentBe.isRemoved()) {
-            unregisterListener();
-            return;
-        }
-
-        if (currentBe instanceof EssentiaProviderAccess currentAccess && currentAccess == provider) {
+        if (shouldBeRegistered) {
             if (!this.isRegisteredAsBlockListener) {
                 provider.addProviderListener(this);
                 this.isRegisteredAsBlockListener = true;
             }
         } else {
-            unregisterListener();
-        }
-    }
-
-    private synchronized void ensureListenerRegistered(@Nullable EssentiaProviderAccess provider) {
-        EssentiaProviderAccess initialProvider = this.targetProviderRef.get();
-        if (provider != null && provider == initialProvider && !this.isRegisteredAsBlockListener) {
-            int epoch = this.registrationEpoch.get();
-            Level level = this.levelRef != null ? this.levelRef.get() : null;
-            if (level == null) {
-                BlockEntity initialBe = this.targetBeRef.get();
-                if (initialBe != null) {
-                    level = initialBe.getLevel();
-                }
-            }
-            MinecraftServer server = level != null ? level.getServer() : null;
-            if (server != null && !server.isSameThread()) {
-                server.execute(() -> checkAndRegisterListener(epoch));
-            } else {
-                checkAndRegisterListener(epoch);
-            }
-        }
-    }
-
-    private synchronized void unregisterListener() {
-        if (this.isRegisteredAsBlockListener) {
-            EssentiaProviderAccess initialProvider = this.targetProviderRef.get();
-            this.isRegisteredAsBlockListener = false;
-            if (initialProvider != null) {
-                Level level = this.levelRef != null ? this.levelRef.get() : null;
-                if (level == null) {
-                    BlockEntity initialBe = this.targetBeRef.get();
-                    if (initialBe != null) {
-                        level = initialBe.getLevel();
-                    }
-                }
-                MinecraftServer server = level != null ? level.getServer() : null;
-                if (server != null && !server.isSameThread()) {
-                    server.execute(() -> {
-                        try {
-                            initialProvider.removeProviderListener(this);
-                        } catch (Exception ignored) {
-                        }
-                    });
-                } else {
+            if (this.isRegisteredAsBlockListener) {
+                this.isRegisteredAsBlockListener = false;
+                if (provider != null) {
                     try {
-                        initialProvider.removeProviderListener(this);
+                        provider.removeProviderListener(this);
                     } catch (Exception ignored) {
                     }
                 }

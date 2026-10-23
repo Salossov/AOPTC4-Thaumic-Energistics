@@ -56,7 +56,7 @@ public final class DistillationPatternHelper {
             return DecodedPattern.INVALID;
         }
         var inGeneric = possibleInputs[0];
-        if (!(inGeneric.what() instanceof AEItemKey itemKey) || inGeneric.amount() <= 0) {
+        if (!(inGeneric.what() instanceof AEItemKey itemKey) || inGeneric.amount() != 1) {
             return DecodedPattern.INVALID;
         }
 
@@ -65,13 +65,13 @@ public final class DistillationPatternHelper {
             return DecodedPattern.INVALID;
         }
         var outGeneric = outputs.get(0);
-        if (!(outGeneric.what() instanceof EssentiaKey essentiaKey) || outGeneric.amount() <= 0) {
+        if (!(outGeneric.what() instanceof EssentiaKey essentiaKey) || outGeneric.amount() <= 0 || outGeneric.amount() > Integer.MAX_VALUE) {
             return DecodedPattern.INVALID;
         }
         Aspect aspect = essentiaKey.aspect();
         if (aspect == null) {
             return DecodedPattern.INVALID;
         }
-        return new DecodedPattern(itemKey.toStack(1), aspect, (int) outGeneric.amount(), true);
+        return new DecodedPattern(itemKey.toStack(1).copy(), aspect, (int) outGeneric.amount(), true);
     }
 }

@@ -5,14 +5,12 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import thaumcraft.api.aspects.Aspect;
 import thaumicenergistics.api.EssentiaProviderAccess;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * State machine managing computer watchers for the EssentiaProvider peripheral.
- * Concurrency is synchronized on {@code threadLock} matching 1.7.10 behavior.
+ * Concurrency is synchronized on {@code threadLock} matching 1.7.10 behavior,
+ * with event dispatches performed outside the lock to prevent deadlock with CC's queue.
  */
 public final class EssentiaWatcher {
     private final EssentiaProviderPeripheral peripheral;
@@ -34,6 +32,7 @@ public final class EssentiaWatcher {
      * (Boolean.FALSE), the original code did not clear anyWatchers.
      */
     public void addComputerWatch(IComputerAccess computer, Set<Aspect> aspectsOfInterest) {
+        EssentiaProviderAccess provider = this.peripheral.getProvider();
         synchronized (this.threadLock) {
             if (this.computerWatchers.containsKey(computer) && Boolean.TRUE.equals(this.computerWatchers.get(computer))) {
                 this.removeComputerWatcher(computer);
@@ -51,7 +50,6 @@ public final class EssentiaWatcher {
 
             this.computerWatchers.put(computer, specificWatches);
 
-            EssentiaProviderAccess provider = this.peripheral.getProvider();
             if (provider != null) {
                 this.registeredGrid = provider.providerGrid();
                 this.isReceiving = (this.registeredGrid != null);
@@ -101,6 +99,7 @@ public final class EssentiaWatcher {
             return;
         }
 
+        List<IComputerAccess> targets = new ArrayList<>();
         synchronized (this.threadLock) {
             if (!this.isReceiving || grid == null || grid != this.registeredGrid) {
                 // Requirement 14: Grid identity verification:
@@ -108,35 +107,37 @@ public final class EssentiaWatcher {
                 return;
             }
 
-            Set<IComputerAccess> invalidWatchers = null;
-            Object[] ccChange = new Object[] { aspect.getName(), delta };
-
             if (!this.anyWatchers.isEmpty()) {
-                for (IComputerAccess computer : this.anyWatchers) {
-                    try {
-                        this.peripheral.sendEvent(computer, CCEvents.AspectUpdate, ccChange);
-                    } catch (Exception ex) {
-                        if (invalidWatchers == null) invalidWatchers = new HashSet<>();
-                        invalidWatchers.add(computer);
-                    }
-                }
+                targets.addAll(this.anyWatchers);
             }
 
             Set<IComputerAccess> specific = this.aspectWatchers.get(aspect);
             if (specific != null && !specific.isEmpty()) {
                 for (IComputerAccess computer : specific) {
-                    try {
-                        this.peripheral.sendEvent(computer, CCEvents.AspectUpdate, ccChange);
-                    } catch (Exception ex) {
-                        if (invalidWatchers == null) invalidWatchers = new HashSet<>();
-                        invalidWatchers.add(computer);
+                    if (!this.anyWatchers.contains(computer)) {
+                        targets.add(computer);
                     }
                 }
             }
+        }
 
-            // Requirement 15: Resilience watcher delivery:
-            // Safely unregister any bad computers without affecting others.
-            if (invalidWatchers != null) {
+        if (targets.isEmpty()) return;
+
+        Set<IComputerAccess> invalidWatchers = null;
+        Object[] ccChange = new Object[] { aspect.getName(), delta };
+
+        for (IComputerAccess computer : targets) {
+            try {
+                this.peripheral.sendEvent(computer, CCEvents.AspectUpdate, ccChange);
+            } catch (Exception ex) {
+                if (invalidWatchers == null) invalidWatchers = new HashSet<>();
+                invalidWatchers.add(computer);
+            }
+        }
+
+        // Resilience watcher delivery: Safely unregister any bad computers without affecting others.
+        if (invalidWatchers != null) {
+            synchronized (this.threadLock) {
                 for (IComputerAccess badComputer : invalidWatchers) {
                     this.removeComputerWatcher(badComputer);
                 }

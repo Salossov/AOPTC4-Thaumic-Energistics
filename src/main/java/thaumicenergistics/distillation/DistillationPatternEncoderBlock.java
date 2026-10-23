@@ -65,7 +65,7 @@ public final class DistillationPatternEncoderBlock extends Block implements Enti
             return InteractionResult.FAIL;
         }
         if (player instanceof ServerPlayer server && level.getBlockEntity(pos) instanceof DistillationPatternEncoderBlockEntity encoder) {
-            server.openMenu(encoder);
+            server.openMenu(encoder, buf -> buf.writeBlockPos(pos));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
