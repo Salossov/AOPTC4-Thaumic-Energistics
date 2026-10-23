@@ -1,0 +1,32 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tearcaneassembler",
+  "category": "thaumicenergistics:main",
+  "parents": ["thaumicenergistics:tevisint", "thaumicenergistics:pseudo_sceptre"],
+  "hidden_parents": ["thaumicenergistics:tearcaneterm"],
+  "icon": "thaumicenergistics:arcane_assembler",
+  "column": 6,
+  "row": -1,
+  "aspects": {
+    "fabrico": 5,
+    "machina": 3,
+    "cognitio": 3,
+    "permutatio": 3,
+    "auram": 3,
+    "lucrum": 3
+  },
+  "complexity": 3,
+  "concealed": true,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEARCANEASSEMBLER.1",
+    "thaumicenergistics.research_page.TEARCANEASSEMBLER.2",
+    "thaumicenergistics.research_page.TEARCANEASSEMBLER.3"
+  ],
+  "recipe_pages": ["thaumicenergistics:arcane_assembler"],
+  "page_order": [
+    "thaumicenergistics.research_page.TEARCANEASSEMBLER.1",
+    "thaumicenergistics:arcane_assembler",
+    "thaumicenergistics.research_page.TEARCANEASSEMBLER.2",
+    "thaumicenergistics.research_page.TEARCANEASSEMBLER.3"
+  ]
+}

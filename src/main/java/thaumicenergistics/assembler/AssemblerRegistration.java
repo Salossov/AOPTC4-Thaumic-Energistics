@@ -20,8 +20,13 @@ public final class AssemblerRegistration {
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<ArcaneAssemblerBlockEntity>> BLOCK_ENTITY=ENTITIES.register("arcane_assembler",()->BlockEntityType.Builder.of(ArcaneAssemblerBlockEntity::new,BLOCK.get()).build(null));
     private static final DeferredRegister<MenuType<?>> MENUS=DeferredRegister.create(Registries.MENU,ThaumicEnergistics.ID);
     public static final DeferredHolder<MenuType<?>,MenuType<ArcaneAssemblerMenu>> MENU=MENUS.register("arcane_assembler",()->IMenuTypeExtension.create(ArcaneAssemblerMenu::new));
+    private static final DeferredRegister<net.neoforged.neoforge.common.crafting.IngredientType<?>> INGREDIENTS =
+            DeferredRegister.create(net.neoforged.neoforge.registries.NeoForgeRegistries.INGREDIENT_TYPES,ThaumicEnergistics.ID);
+    public static final DeferredHolder<net.neoforged.neoforge.common.crafting.IngredientType<?>,
+            net.neoforged.neoforge.common.crafting.IngredientType<AssemblerSceptreIngredient>> SCEPTRE_INGREDIENT =
+            INGREDIENTS.register("assembler_sceptre",()->new net.neoforged.neoforge.common.crafting.IngredientType<>(AssemblerSceptreIngredient.CODEC));
     public static void initialize(IEventBus bus){
-        BLOCKS.register(bus);ITEMS.register(bus);ENTITIES.register(bus);MENUS.register(bus);
+        BLOCKS.register(bus);ITEMS.register(bus);ENTITIES.register(bus);MENUS.register(bus);INGREDIENTS.register(bus);
         bus.addListener((FMLCommonSetupEvent event)->event.enqueueWork(()->{
             BLOCK.get().setBlockEntity(ArcaneAssemblerBlockEntity.class,BLOCK_ENTITY.get(),(level,pos,state,assembler)->assembler.serverTick(),null);
             appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(BLOCK_ENTITY.get(),ITEM.get());

@@ -1,0 +1,13 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:pseudo_sceptre",
+  "category": "thaumicenergistics:main",
+  "linked_research": "SCEPTRE",
+  "column": 5,
+  "row": 0,
+  "complexity": 1,
+  "stub": true,
+  "hidden": true,
+  "icon": "minecraft:air",
+  "aspects": {}
+}
