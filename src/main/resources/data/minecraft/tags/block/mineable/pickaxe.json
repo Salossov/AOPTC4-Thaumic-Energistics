@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "thaumicenergistics:essentia_cell_workbench"
+    "thaumicenergistics:essentia_cell_workbench",
+    "thaumicenergistics:distillation_pattern_encoder"
   ]
 }

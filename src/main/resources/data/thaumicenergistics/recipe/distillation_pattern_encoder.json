@@ -1,0 +1,32 @@
+{
+  "type": "thaumcraft:arcane",
+  "research": "thaumicenergistics:tedistillationpatternencoder",
+  "vis": {
+    "ordo": 5,
+    "perditio": 5,
+    "ignis": 3
+  },
+  "pattern": [
+    "IPI",
+    " T ",
+    "IEI"
+  ],
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "P": {
+      "item": "ae2:illuminated_panel"
+    },
+    "T": {
+      "item": "thaumcraft:thaumometer"
+    },
+    "E": {
+      "item": "ae2:engineering_processor"
+    }
+  },
+  "result": {
+    "id": "thaumicenergistics:distillation_pattern_encoder",
+    "count": 1
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "thaumicenergistics:block/distillation_pattern_encoder"
+    },
+    "facing=south": {
+      "model": "thaumicenergistics:block/distillation_pattern_encoder",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "thaumicenergistics:block/distillation_pattern_encoder",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "thaumicenergistics:block/distillation_pattern_encoder",
+      "y": 90
+    },
+    "facing=up": {
+      "model": "thaumicenergistics:block/distillation_pattern_encoder",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "thaumicenergistics:block/distillation_pattern_encoder",
+      "x": 90
+    }
+  }
+}
