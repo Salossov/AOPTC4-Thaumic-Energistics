@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -22,7 +21,6 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectApi;
-import thaumcraft.api.knowledge.PlayerKnowledge;
 import thaumcraft.api.research.ResearchApi;
 import thaumicenergistics.storage.EssentiaKey;
 
@@ -153,7 +151,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
             addSlot(new Slot(playerInventory, col, 8 + col * 18, 210));
         }
 
-        if (blockEntity != null) {
+        if (blockEntity != null && !owner.level().isClientSide) {
             cachedSource = getSlot(SLOT_SOURCE_ITEM).getItem().copy();
             cachedPattern = getSlot(SLOT_ENCODED_PATTERN).getItem().copy();
             if (!cachedPattern.isEmpty()) {
@@ -180,7 +178,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
                 return essentiaKey.aspect();
             }
         }
-        return selectedAspect;
+        return null;
     }
 
     public int getSelectedAmount() {
@@ -191,15 +189,13 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
                 return (int) generic.amount();
             }
         }
-        return selectedAmount;
+        return 0;
     }
 
     public static boolean isScanned(Player player, ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (player instanceof ServerPlayer sp) {
-            PlayerKnowledge pk = ResearchApi.knowledge(sp);
-            String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
-            return pk.scanned(PlayerKnowledge.ScanKind.OBJECT).contains(id);
+            return AspectApi.scanned(sp, stack);
         } else {
             return AspectApi.scanned(stack);
         }
@@ -237,7 +233,9 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     }
 
     public void scanSourceItem(boolean autoSelectFirst) {
+        if (owner.level().isClientSide) return;
         clearAspectSlots();
+        if (autoSelectFirst) clearSelectedAspect();
         ItemStack source = getSlot(SLOT_SOURCE_ITEM).getItem();
         if (source.isEmpty()) {
             clearSelectedAspect();
@@ -282,9 +280,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
                 }
                 if (selectedAspect != null && selectedAspect.equals(aspect)) {
                     currentSelectionStillValid = true;
-                    if (selectedAmount != amount) {
-                        setSelectedAspect(aspect, amount);
-                    }
+                    setSelectedAspect(aspect, amount);
                 }
             } else {
                 aspectContainer.setItem(i, GenericStack.wrapInItemStack(EssentiaKey.ofTag("unknown"), 1));
@@ -296,18 +292,20 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
 
         if (autoSelectFirst && firstKnown != null && selectedAspect == null) {
             setSelectedAspect(firstKnown, firstAmount);
-        } else if (!currentSelectionStillValid && !autoSelectFirst) {
+        } else if (!currentSelectionStillValid) {
             clearSelectedAspect();
         }
     }
 
     public void loadPattern(ItemStack patternStack) {
+        if (owner.level().isClientSide) return;
         var decoded = DistillationPatternHelper.decodePattern(patternStack, owner.level());
         if (decoded.valid()) {
             getSlot(SLOT_SOURCE_ITEM).set(decoded.sourceItem().copyWithCount(1));
             cachedSource = decoded.sourceItem().copyWithCount(1);
             scanSourceItem(false);
-            if (knowsAspect(owner, decoded.aspect())) {
+            if (isScanned(owner, decoded.sourceItem()) && knowsAspect(owner, decoded.aspect())
+                    && AspectApi.aspects(owner.level(), decoded.sourceItem()).getOrDefault(decoded.aspect().getTag(), 0) == decoded.amount()) {
                 setSelectedAspect(decoded.aspect(), decoded.amount());
             } else {
                 clearSelectedAspect();
@@ -317,6 +315,10 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
 
     @Override
     public void broadcastChanges() {
+        if (owner.level().isClientSide) {
+            super.broadcastChanges();
+            return;
+        }
         ItemStack currentPattern = getSlot(SLOT_ENCODED_PATTERN).getItem();
         if (!ItemStack.matches(currentPattern, cachedPattern)) {
             cachedPattern = currentPattern.copy();
@@ -351,6 +353,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     }
 
     public void onEncodePattern() {
+        if (!(owner instanceof ServerPlayer) || !stillValid(owner)) return;
         ItemStack source = getSlot(SLOT_SOURCE_ITEM).getItem();
         if (source.isEmpty() || !isScanned(owner, source)) return;
         Aspect aspect = getSelectedAspect();
@@ -385,6 +388,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     }
 
     public void onSelectAspectAction(int index) {
+        if (!(owner instanceof ServerPlayer) || !stillValid(owner)) return;
         if (index >= 0 && index < SLOT_SOURCE_ASPECTS_COUNT) {
             ItemStack stack = aspectContainer.getItem(index);
             if (!stack.isEmpty()) {
@@ -422,7 +426,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
 
         // Ghost source slot click handling (Slot 0)
         if (slotId == SLOT_SOURCE_ITEM) {
-            if (clickType == ClickType.PICKUP) {
+            if (clickType == ClickType.PICKUP && !owner.level().isClientSide) {
                 ItemStack carried = getCarried();
                 if (carried.isEmpty()) {
                     getSlot(SLOT_SOURCE_ITEM).set(ItemStack.EMPTY);
@@ -455,6 +459,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
 
     @Override
     public ItemStack quickMoveStack(Player player, int slotIndex) {
+        if (!stillValid(player) || slotIndex < 0 || slotIndex >= slots.size()) return ItemStack.EMPTY;
         if (slotIndex == SLOT_SOURCE_ITEM || (slotIndex >= SLOT_SOURCE_ASPECTS_START && slotIndex <= SLOT_SELECTED_ASPECT)) {
             return ItemStack.EMPTY;
         }
@@ -485,6 +490,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
                 }
             } else {
                 // In 1.7.10: Shift-clicking an ordinary item copies it into the ghost source slot without consumption
+                if (owner.level().isClientSide) return ItemStack.EMPTY;
                 getSlot(SLOT_SOURCE_ITEM).set(stack.copyWithCount(1));
                 cachedSource = getSlot(SLOT_SOURCE_ITEM).getItem().copy();
                 scanSourceItem(true);
@@ -505,6 +511,13 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
 
         slot.onTake(player, stack);
         return original;
+    }
+
+    @Override
+    public boolean canTakeItemForPickAll(ItemStack stack, Slot slot) {
+        return slot.index != SLOT_SOURCE_ITEM
+                && (slot.index < SLOT_SOURCE_ASPECTS_START || slot.index > SLOT_SELECTED_ASPECT)
+                && super.canTakeItemForPickAll(stack, slot);
     }
 
     @Override

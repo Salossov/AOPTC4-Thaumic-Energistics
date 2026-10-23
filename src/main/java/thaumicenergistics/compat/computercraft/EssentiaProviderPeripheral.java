@@ -46,6 +46,7 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
     private final Set<IComputerAccess> attachedComputers = Collections.synchronizedSet(new HashSet<>());
     private final AtomicInteger registrationEpoch = new AtomicInteger(0);
     private boolean isRegisteredAsBlockListener = false;
+    private volatile boolean providerBroken;
 
     public EssentiaProviderPeripheral(EssentiaProviderAccess access) {
         BlockEntity be = access != null ? access.getBlockEntity() : null;
@@ -86,6 +87,7 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
     @Nullable
     @Override
     public Object getTarget() {
+        if (this.providerBroken) return null;
         BlockEntity initialBe = this.targetBeRef.get();
         if (initialBe == null || initialBe.isRemoved()) {
             return null;
@@ -270,6 +272,7 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
 
     @Override
     public void onProviderBroken() {
+        this.providerBroken = true;
         int currentEpoch = this.registrationEpoch.incrementAndGet();
         dispatchToServer(() -> syncListenerOnServerThread(currentEpoch));
 
@@ -309,6 +312,7 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
 
     @Nullable
     EssentiaProviderAccess getProvider() {
+        if (this.providerBroken) return null;
         BlockEntity initialBe = this.targetBeRef.get();
         if (initialBe == null || initialBe.isRemoved()) {
             return null;
@@ -380,7 +384,7 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
         EssentiaProviderAccess provider = this.targetProviderRef.get();
         boolean shouldBeRegistered = false;
 
-        if (hasComputers && initialBe != null && !initialBe.isRemoved() && provider != null) {
+        if (!this.providerBroken && hasComputers && initialBe != null && !initialBe.isRemoved() && provider != null) {
             Level level = this.levelRef != null ? this.levelRef.get() : null;
             if (level == null) {
                 level = initialBe.getLevel();

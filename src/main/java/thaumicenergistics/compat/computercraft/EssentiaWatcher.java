@@ -33,6 +33,7 @@ public final class EssentiaWatcher {
      */
     public void addComputerWatch(IComputerAccess computer, Set<Aspect> aspectsOfInterest) {
         EssentiaProviderAccess provider = this.peripheral.getProvider();
+        IGrid providerGrid = provider != null ? provider.providerGrid() : null;
         synchronized (this.threadLock) {
             if (this.computerWatchers.containsKey(computer) && Boolean.TRUE.equals(this.computerWatchers.get(computer))) {
                 this.removeComputerWatcher(computer);
@@ -50,8 +51,9 @@ public final class EssentiaWatcher {
 
             this.computerWatchers.put(computer, specificWatches);
 
-            if (provider != null) {
-                this.registeredGrid = provider.providerGrid();
+            if (this.registeredGrid != providerGrid) this.isReceiving = false;
+            if (!this.isReceiving && providerGrid != null) {
+                this.registeredGrid = providerGrid;
                 this.isReceiving = (this.registeredGrid != null);
             }
         }
@@ -98,9 +100,14 @@ public final class EssentiaWatcher {
         if (!provider.isActive()) {
             return;
         }
+        IGrid providerGrid = provider.providerGrid();
 
         List<IComputerAccess> targets = new ArrayList<>();
         synchronized (this.threadLock) {
+            if (providerGrid != this.registeredGrid) {
+                this.isReceiving = false;
+                return;
+            }
             if (!this.isReceiving || grid == null || grid != this.registeredGrid) {
                 // Requirement 14: Grid identity verification:
                 // Subscriptions to old grid become invalid after grid change.
@@ -113,11 +120,8 @@ public final class EssentiaWatcher {
 
             Set<IComputerAccess> specific = this.aspectWatchers.get(aspect);
             if (specific != null && !specific.isEmpty()) {
-                for (IComputerAccess computer : specific) {
-                    if (!this.anyWatchers.contains(computer)) {
-                        targets.add(computer);
-                    }
-                }
+                // Original ANY -> specific subscription retains both deliveries.
+                targets.addAll(specific);
             }
         }
 
