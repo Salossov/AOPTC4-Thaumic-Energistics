@@ -1,0 +1,224 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "side": "thaumicenergistics:blocks/parts/essentia.terminal.side",
+    "particle": "thaumicenergistics:blocks/parts/essentia.terminal.side",
+    "border": "thaumicenergistics:blocks/parts/essentia.termina.border",
+    "dark": "thaumicenergistics:blocks/parts/essentia.terminal.overlay.dark",
+    "medium": "thaumicenergistics:blocks/parts/essentia.terminal.overlay.medium",
+    "light": "thaumicenergistics:blocks/parts/essentia.terminal.overlay.light",
+    "status": "thaumicenergistics:blocks/parts/bus.color.light"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        0
+      ],
+      "to": [
+        14,
+        14,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#border",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        4,
+        2
+      ],
+      "to": [
+        12,
+        12,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        3
+      ],
+      "to": [
+        11,
+        11,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "up": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        3,
+        -0.001
+      ],
+      "to": [
+        13,
+        13,
+        -0.001
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "tintindex": 1,
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "rotation": 180,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        3,
+        -0.002
+      ],
+      "to": [
+        13,
+        13,
+        -0.002
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#medium",
+          "tintindex": 2,
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "rotation": 180,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        3,
+        -0.003
+      ],
+      "to": [
+        13,
+        13,
+        -0.003
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#light",
+          "tintindex": 3,
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "rotation": 180,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "type": "thaumcraft:arcane_shapeless",
+  "research": "thaumicenergistics:teessterm",
+  "vis": {
+    "aqua": 5,
+    "ordo": 2,
+    "ignis": 1
+  },
+  "ingredients": [
+    {
+      "tag": "ae2:illuminated_panel"
+    },
+    {
+      "item": "thaumicenergistics:diffusion_core"
+    },
+    {
+      "item": "thaumicenergistics:coalescence_core"
+    },
+    {
+      "item": "ae2:logic_processor"
+    },
+    {
+      "item": "thaumcraft:vis_filter"
+    }
+  ],
+  "result": {
+    "id": "thaumicenergistics:essentia_terminal",
+    "count": 1
+  }
+}

@@ -65,13 +65,15 @@ public final class ClientMenuSmoke {
     private static final BlockPos CABLE = new BlockPos(3,100,3), BENCH = new BlockPos(5,100,3);
     private static final BlockPos VIS_INPUT = new BlockPos(3,100,12), VIS_OUTPUT = new BlockPos(3,100,14);
     private static final BlockPos CONVERSION = new BlockPos(16,104,9);
+    private static final BlockPos TERMINAL = new BlockPos(20,104,16);
     private static final AtomicReference<Throwable> SERVER_ERROR = new AtomicReference<>();
     private static final java.util.concurrent.atomic.AtomicBoolean VIS_LINK_DRAINED = new java.util.concurrent.atomic.AtomicBoolean();
+    private static final java.util.concurrent.atomic.AtomicBoolean TERMINAL_WRENCHED = new java.util.concurrent.atomic.AtomicBoolean();
     private static final Map<String,Object> EVIDENCE = new LinkedHashMap<>();
     private static final List<String> CAPTURES = new ArrayList<>();
     private static final long RUN = System.currentTimeMillis();
     private static int step, age, totalTicks;
-    private static boolean queued, finished;
+    private static boolean queued, finished, terminalOpenQueued;
     private static String requestedCapture;
     private static Path awaitingCapture;
 
@@ -474,11 +476,143 @@ public final class ClientMenuSmoke {
                         EVIDENCE.put("conversion_partial_phial_refused",true);capture("conversion-monitor-phial-refused");
                     }
                 }
-                case 77 -> {mc.options.keyShift.setDown(false);finish(true,null);}
+                case 77 -> {
+                    mc.options.keyShift.setDown(false);
+                    server(player->{
+                        var level=player.serverLevel();level.setBlockAndUpdate(TERMINAL,Blocks.AIR.defaultBlockState());
+                        // Removing a prior restored terminal legitimately drops its work items.
+                        // Clear only this owned fixture's local drops before seeding inventory.
+                        level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(TERMINAL).inflate(4)).forEach(net.minecraft.world.entity.Entity::discard);
+                        level.setBlockAndUpdate(TERMINAL.west(),block("ae2:creative_energy_cell"));level.setBlockAndUpdate(TERMINAL.east(),block("ae2:drive"));
+                        var cell=new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());var contents=new EssentiaCell(cell,null);
+                        contents.insert(EssentiaKey.of(Aspects.WATER),200,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        contents.insert(EssentiaKey.of(Aspects.EARTH),5,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        contents.insert(EssentiaKey.of(thaumcraft.api.aspects.Aspect.getAspect("praecantatio")),7,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        var slots=level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,TERMINAL.east(),Direction.UP);
+                        if(!slots.getStackInSlot(0).isEmpty())slots.extractItem(0,1,false);slots.insertItem(0,cell,false);
+                        PartHelper.setPart(level,TERMINAL,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+                        PartHelper.setPart(level,TERMINAL,Direction.SOUTH,null,ThaumicEnergistics.ESSENTIA_TERMINAL.get());
+                        player.getInventory().clearContent();player.getInventory().selected=0;player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(0));
+                        var empty=nativeItem("empty_phial");empty.setCount(16);player.getInventory().setItem(9,empty);
+                        var labels=nativeItem("jar_label");labels.setCount(64);player.getInventory().setItem(10,labels);
+                        player.inventoryMenu.broadcastChanges();player.teleportTo(level,20.5,104.5-player.getEyeHeight(),18.9,180,0);
+                    });advance();
+                }
+                case 78 -> {
+                    var host=PartHelper.getPartHost(mc.level,TERMINAL);
+                    if(host!=null&&host.getPart(Direction.SOUTH) instanceof thaumicenergistics.parts.EssentiaTerminalPart part&&part.isActive()){
+                        server(player->{var partServer=(thaumicenergistics.parts.EssentiaTerminalPart)PartHelper.getPartHost(player.level(),TERMINAL).getPart(Direction.SOUTH);partServer.getMainNode().getGrid().getCraftingService().addGlobalCraftingProvider(TerminalCraftingFixture.provider(player.level()));});
+                        capture("terminal-world-active");
+                    }
+                }
+                case 79 -> {
+                    if(!terminalOpenQueued){terminalOpenQueued=true;mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(TERMINAL).add(0,0,.501),Direction.SOUTH,TERMINAL,false));}
+                    if(mc.screen instanceof thaumicenergistics.client.EssentiaTerminalScreen&&mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.entries().size()==4){EVIDENCE.put("terminal_menu_real_packets",true);capture("terminal-main");}
+                }
+                case 80 -> {terminalClick(Aspects.WATER,0);advance();}
+                case 81 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.selected()==Aspects.WATER)capture("terminal-selected-water");
+                }
+                case 82 -> {click(11,ClickType.PICKUP);click(0,ClickType.PICKUP);advance();}
+                case 83 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.getSlot(0).getItem().isEmpty()&&menu.getSlot(1).getItem().getCount()==16&&terminalAmount(menu,Aspects.WATER)==72)capture("terminal-work-filled");
+                }
+                case 84 -> {click(1,ClickType.QUICK_MOVE);advance();}
+                case 85 -> {if(mc.player.containerMenu.getSlot(1).getItem().isEmpty()){click(12,ClickType.PICKUP);click(0,ClickType.PICKUP);advance();}}
+                case 86 -> {
+                    if(mc.player.containerMenu.getSlot(1).getItem().getCount()==64&&mc.player.containerMenu.getSlot(0).getItem().isEmpty()){
+                        EVIDENCE.put("terminal_work_slots",true);click(1,ClickType.QUICK_MOVE);advance();
+                    }
+                }
+                case 87 -> {server(player->{var empty=nativeItem("empty_phial");empty.setCount(2);player.getInventory().setItem(12,empty);player.containerMenu.broadcastChanges();});advance();}
+                case 88 -> {if(mc.player.containerMenu.getSlot(14).getItem().getCount()==2){click(14,ClickType.PICKUP);advance();}}
+                case 89 -> {if(mc.player.containerMenu.getCarried().getCount()==2){terminalClick(Aspects.WATER,0);advance();}}
+                case 90 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.getCarried().getCount()==1&&terminalAmount(menu,Aspects.WATER)==64){
+                        EVIDENCE.put("terminal_cursor_transfer",true);click(14,ClickType.PICKUP);advance();
+                    }
+                }
+                case 91 -> {
+                    var screen=(net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)mc.screen;
+                    mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+17,0);
+                    mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+37,0);mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+37,0);advance();
+                }
+                case 92 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.sort()==1&&menu.view()==appeng.api.config.ViewItems.CRAFTABLE)capture("terminal-craftable");
+                }
+                case 93 -> {terminalClick(Aspects.FIRE,0);advance();}
+                case 94 -> {
+                    if(mc.player.containerMenu instanceof appeng.menu.me.crafting.CraftAmountMenu menu&&menu.getWhatToCraft()!=null&&menu.getWhatToCraft().what().equals(EssentiaKey.of(Aspects.FIRE)))capture("terminal-native-craft-amount");
+                }
+                case 95 -> {((appeng.menu.me.crafting.CraftAmountMenu)mc.player.containerMenu).confirm(0,false,false);advance();}
+                case 96 -> {
+                    if(mc.screen instanceof thaumicenergistics.client.EssentiaTerminalScreen&&mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu){
+                        EVIDENCE.put("terminal_native_craft_menu",true);var screen=(net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)mc.screen;
+                        mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+37,0);advance();
+                    }
+                }
+                case 97 -> {editBox().setValue(" AQUA ");advance();}
+                case 98 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.view()==appeng.api.config.ViewItems.ALL){
+                        var filtered=thaumicenergistics.storage.TerminalEntries.visible(menu.entries(),menu.sort(),menu.view(),editBox().getValue());
+                        if(filtered.size()==1&&filtered.getFirst().key().equals(EssentiaKey.of(Aspects.WATER))){EVIDENCE.put("terminal_search_filter",true);capture("terminal-search");}
+                    }
+                }
+                case 99 -> {
+                    mc.player.closeContainer();
+                    server(player->{
+                        var part=(thaumicenergistics.parts.EssentiaTerminalPart)PartHelper.getPartHost(player.level(),TERMINAL).getPart(Direction.SOUTH);
+                        var empty=nativeItem("empty_phial");empty.setCount(2);part.inventory().setItem(0,empty);
+                        part.inventory().setItem(1,thaumcraft.api.aspects.EssentiaItemApi.configureLabel(nativeItem("jar_label"),Aspects.WATER).orElseThrow());
+                        player.getInventory().clearContent();player.setItemInHand(InteractionHand.MAIN_HAND,ae("nether_quartz_wrench"));player.inventoryMenu.broadcastChanges();
+                    });mc.options.keyShift.setDown(true);advance();
+                }
+                case 100 -> {
+                    if(mc.screen==null&&mc.player.isShiftKeyDown()&&mc.player.getMainHandItem().is(ae("nether_quartz_wrench").getItem())){
+                        mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(TERMINAL).add(0,0,.501),Direction.SOUTH,TERMINAL,false));advance();
+                    }
+                }
+                case 101 -> {
+                    var host=PartHelper.getPartHost(mc.level,TERMINAL);
+                    if(host!=null&&host.getPart(Direction.SOUTH)==null){
+                        server(player->{
+                            var found=new ArrayList<ItemStack>();
+                            for(int slot=0;slot<36;slot++){
+                                var item=player.getInventory().getItem(slot);
+                                if(item.is(ThaumicEnergistics.ESSENTIA_TERMINAL.get())){found.add(item.copy());player.getInventory().setItem(slot,ItemStack.EMPTY);}
+                            }
+                            for(var entity:player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(TERMINAL).inflate(3))){
+                                if(entity.getItem().is(ThaumicEnergistics.ESSENTIA_TERMINAL.get())){found.add(entity.getItem().copy());entity.discard();}
+                                else throw new IllegalStateException("Wrench duplicated terminal work items: "+entity.getItem());
+                            }
+                            if(found.size()!=1||found.getFirst().getCount()!=1)throw new IllegalStateException("Wrench expected one terminal item, got "+found);
+                            player.setItemInHand(InteractionHand.MAIN_HAND,found.getFirst());player.inventoryMenu.broadcastChanges();TERMINAL_WRENCHED.set(true);
+                        });mc.options.keyShift.setDown(false);advance();
+                    }
+                }
+                case 102 -> {
+                    if(TERMINAL_WRENCHED.get()&&!mc.player.isShiftKeyDown()&&mc.player.getMainHandItem().is(ThaumicEnergistics.ESSENTIA_TERMINAL.get())){
+                        mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(TERMINAL).add(0,0,.501),Direction.SOUTH,TERMINAL,false));advance();
+                    }
+                }
+                case 103 -> {
+                    var host=PartHelper.getPartHost(mc.level,TERMINAL);
+                    if(host!=null&&host.getPart(Direction.SOUTH) instanceof thaumicenergistics.parts.EssentiaTerminalPart&&mc.player.getMainHandItem().isEmpty()){
+                        mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(TERMINAL).add(0,0,.501),Direction.SOUTH,TERMINAL,false));advance();
+                    }
+                }
+                case 104 -> {
+                    if(mc.screen instanceof thaumicenergistics.client.EssentiaTerminalScreen&&mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu
+                            &&menu.getSlot(0).getItem().getCount()==2&&menu.getSlot(1).getItem().is(nativeItem("jar_label").getItem())&&menu.sort()==1&&menu.selected()==null){
+                        EVIDENCE.put("terminal_real_wrench_restore",true);capture("terminal-wrench-restored");
+                    }
+                }
+                case 105 -> finish(true,null);
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
             if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName())
-                    + "; held="+mc.player.getMainHandItem()+"; conversion="+(conversion(mc)==null?"missing":conversion(mc).getAmount()+"/locked="+conversion(mc).isLocked()));
+                    + "; held="+mc.player.getMainHandItem()+"; conversion="+(conversion(mc)==null?"missing":conversion(mc).getAmount()+"/locked="+conversion(mc).isLocked())
+                    + (mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu?"; terminal input="+menu.getSlot(0).getItem()+" output="+menu.getSlot(1).getItem()+" water="+terminalAmount(menu,Aspects.WATER):""));
         } catch (Throwable failure) { finish(false,failure); }
     }
     private static EssentiaLevelEmitterPart emitter(Minecraft mc) {
@@ -487,6 +621,16 @@ public final class ClientMenuSmoke {
     private static thaumicenergistics.parts.EssentiaConversionMonitorPart conversion(Minecraft mc){
         var host=PartHelper.getPartHost(mc.level,CONVERSION);
         return host!=null&&host.getPart(Direction.SOUTH) instanceof thaumicenergistics.parts.EssentiaConversionMonitorPart part?part:null;
+    }
+    private static long terminalAmount(thaumicenergistics.menu.EssentiaTerminalMenu menu,thaumcraft.api.aspects.Aspect aspect){
+        return menu.entries().stream().filter(entry->entry.key().equals(EssentiaKey.of(aspect))).mapToLong(thaumicenergistics.storage.TerminalEntry::amount).findFirst().orElse(0);
+    }
+    private static void terminalClick(thaumcraft.api.aspects.Aspect aspect,int button){
+        var mc=Minecraft.getInstance();var menu=(thaumicenergistics.menu.EssentiaTerminalMenu)mc.player.containerMenu;var screen=(net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)mc.screen;
+        var rows=thaumicenergistics.storage.TerminalEntries.visible(menu.entries(),menu.sort(),menu.view(),editBox().getValue());
+        int index=-1;for(int i=0;i<rows.size();i++)if(rows.get(i).key().equals(EssentiaKey.of(aspect)))index=i;
+        if(index<0||index>=36)throw new IllegalStateException("Terminal fixture aspect not visible: "+aspect);
+        mc.screen.mouseClicked(screen.getGuiLeft()+7+index%9*18+9,screen.getGuiTop()+17+index/9*18+9,button);
     }
     private static void conversionUse(Minecraft mc){
         mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(CONVERSION).add(0,0,.501),Direction.SOUTH,CONVERSION,false));

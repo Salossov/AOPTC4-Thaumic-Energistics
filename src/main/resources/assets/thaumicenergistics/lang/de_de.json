@@ -92,5 +92,6 @@
   "tc.research_text.thaumicenergistics:testorage": "Kann das Ding wirklich Essentia aufnehmen?",
   "tc.research_name.thaumicenergistics:teio": "Digi-sentia-Transport",
   "tc.research_text.thaumicenergistics:teio": "Essentia digital bewegen!",
-  "item.thaumicenergistics.essentia_level_emitter": "ME-Essentia-Füllstandsemitter"
+  "item.thaumicenergistics.essentia_level_emitter": "ME-Essentia-Füllstandsemitter",
+  "item.thaumicenergistics.essentia_terminal": "Essentia-Konsole"
 }

@@ -147,5 +147,6 @@
   "tc.research_text.thaumicenergistics:teio": "Цифровой перенос эссенции!",
   "item.thaumicenergistics.essentia_level_emitter": "Излучатель уровня эссенции",
   "item.thaumicenergistics.essentia_storage_monitor": "Монитор хранения эссенции",
-  "item.thaumicenergistics.essentia_conversion_monitor": "Монитор преобразования эссенции"
+  "item.thaumicenergistics.essentia_conversion_monitor": "Монитор преобразования эссенции",
+  "item.thaumicenergistics.essentia_terminal": "Терминал эссенции"
 }

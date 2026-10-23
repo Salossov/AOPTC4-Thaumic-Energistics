@@ -29,10 +29,11 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
             case 2 -> appeng.api.util.AEColor.TRANSPARENT.mediumVariant;
             case 3 -> appeng.api.util.AEColor.TRANSPARENT.whiteVariant;
             default -> 0xffffff;
-        },ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get());
+        },ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get(),ThaumicEnergistics.ESSENTIA_TERMINAL.get());
     }
     @SubscribeEvent
     public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        event.register(ThaumicEnergistics.TERMINAL_MENU.get(),EssentiaTerminalScreen::new);
         event.register(ThaumicEnergistics.BUS_MENU.get(), EssentiaBusScreen::new);
         event.register(ThaumicEnergistics.WORKBENCH_MENU.get(), CellWorkbenchScreen::new);
         event.register(ThaumicEnergistics.STORAGE_BUS_MENU.get(),StorageBusScreen::new);
@@ -51,6 +52,12 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
                 : ResourceLocation.parse(key.aspect().texture());
     }
     @Override public void drawInGui(Minecraft minecraft, GuiGraphics graphics, int x, int y, EssentiaKey key) {
+        drawInGui(graphics,x,y,key,texture(key));
+    }
+    public void drawUnknownInGui(GuiGraphics graphics,int x,int y,EssentiaKey key){
+        drawInGui(graphics,x,y,key,ResourceLocation.parse("thaumcraft:textures/aspects/_unknown.png"));
+    }
+    private void drawInGui(GuiGraphics graphics,int x,int y,EssentiaKey key,ResourceLocation texture){
         int color = key.aspect() == null ? 0xffffff : key.aspect().getColor();
         float[] previous = com.mojang.blaze3d.systems.RenderSystem.getShaderColor().clone();
         graphics.flush();
@@ -59,7 +66,7 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
         graphics.setColor(((color >> 16) & 255) / 255f, ((color >> 8) & 255) / 255f, (color & 255) / 255f, 1);
         // flush() enables depth testing even when the container disabled it for slots.
         com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
-        graphics.blit(texture(key), x, y, 16, 16, 0, 0, 32, 32, 32, 32);
+        graphics.blit(texture, x, y, 16, 16, 0, 0, 32, 32, 32, 32);
         graphics.flush();
         graphics.setColor(previous[0], previous[1], previous[2], previous[3]);
         com.mojang.blaze3d.systems.RenderSystem.enableBlend();

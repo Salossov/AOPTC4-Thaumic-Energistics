@@ -56,6 +56,8 @@ public final class ThaumicEnergistics {
             MENUS.register("essentia_level_emitter", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
                     (id, inventory, data) -> new thaumicenergistics.menu.EssentiaLevelEmitterMenu(id,inventory,null)));
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, ID);
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>,net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaTerminalMenu>> TERMINAL_MENU =
+            MENUS.register("essentia_terminal",()->net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create((id,inventory,data)->new thaumicenergistics.menu.EssentiaTerminalMenu(id,inventory,null)));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CellContents>> CELL_CONTENTS =
             COMPONENTS.register("cell_contents", () -> DataComponentType.<CellContents>builder()
                     .persistent(CellContents.CODEC)
@@ -73,6 +75,7 @@ public final class ThaumicEnergistics {
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaLevelEmitterItem> LEVEL_EMITTER = ITEMS.register("essentia_level_emitter",thaumicenergistics.parts.EssentiaLevelEmitterItem::new);
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaStorageMonitorItem> STORAGE_MONITOR = ITEMS.register("essentia_storage_monitor",thaumicenergistics.parts.EssentiaStorageMonitorItem::new);
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaConversionMonitorItem> CONVERSION_MONITOR = ITEMS.register("essentia_conversion_monitor",thaumicenergistics.parts.EssentiaConversionMonitorItem::new);
+    public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaTerminalItem> ESSENTIA_TERMINAL = ITEMS.register("essentia_terminal",thaumicenergistics.parts.EssentiaTerminalItem::new);
 
     static {
         KEY_TYPES.register("essentia", () -> EssentiaKeyType.INSTANCE);
@@ -92,6 +95,7 @@ public final class ThaumicEnergistics {
                     output.accept(LEVEL_EMITTER.get());
                     output.accept(STORAGE_MONITOR.get());
                     output.accept(CONVERSION_MONITOR.get());
+                    output.accept(ESSENTIA_TERMINAL.get());
                     for (var tier : CellTier.values()) {
                         if (!tier.creative()) output.accept(COMPONENT_ITEMS.get(tier).get());
                         output.accept(CELLS.get(tier).get());
@@ -115,6 +119,7 @@ public final class ThaumicEnergistics {
         PartModels.registerModels(id("part/essentia_level_emitter_off"),id("part/essentia_level_emitter_on"));
         PartModels.registerModels(id("part/essentia_storage_monitor_off"),id("part/essentia_storage_monitor_on"),id("part/essentia_storage_monitor_empty_off"),id("part/essentia_storage_monitor_empty_on"));
         PartModels.registerModels(id("part/essentia_conversion_monitor_off"),id("part/essentia_conversion_monitor_on"),id("part/essentia_conversion_monitor_empty_off"),id("part/essentia_conversion_monitor_empty_on"));
+        for(int rotation=0;rotation<4;rotation++)PartModels.registerModels(id("part/essentia_terminal_"+rotation+"_off"),id("part/essentia_terminal_"+rotation+"_on"));
         modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) ->
                 event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
                         CELL_WORKBENCH_ENTITY.get(), (workbench, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(workbench.inventory())));
