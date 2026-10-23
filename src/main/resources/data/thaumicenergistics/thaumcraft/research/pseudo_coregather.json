@@ -1,0 +1,13 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:pseudo_coregather",
+  "category": "thaumicenergistics:main",
+  "linked_research": "COREGATHER",
+  "column": 0,
+  "row": -5,
+  "complexity": 1,
+  "stub": true,
+  "hidden": true,
+  "icon": "minecraft:air",
+  "aspects": {}
+}

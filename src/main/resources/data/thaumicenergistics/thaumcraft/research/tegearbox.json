@@ -1,0 +1,36 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tegearbox",
+  "category": "thaumicenergistics:main",
+  "parents": [],
+  "hidden_parents": [],
+  "icon": "thaumicenergistics:iron_gear",
+  "column": 4,
+  "row": -5,
+  "aspects": {
+    "machina": 6,
+    "metallum": 4,
+    "permutatio": 4
+  },
+  "complexity": 1,
+  "auto_unlock": false,
+  "concealed": false,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEIRONGEARBOX.1",
+    "thaumicenergistics.research_page.TEIRONGEARBOX.2"
+  ],
+  "secondary": true,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:iron_gear",
+    "thaumicenergistics:iron_gear_box"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEIRONGEARBOX.1",
+    "thaumicenergistics.research_page.TEIRONGEARBOX.2",
+    "thaumicenergistics:iron_gear",
+    "thaumicenergistics:iron_gear_box"
+  ]
+}

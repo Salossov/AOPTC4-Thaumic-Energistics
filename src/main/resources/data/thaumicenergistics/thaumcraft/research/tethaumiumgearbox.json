@@ -1,0 +1,37 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tethaumiumgearbox",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:tegearbox",
+    "thaumicenergistics:pseudo_coreuse"
+  ],
+  "hidden_parents": [
+    "COREUSE"
+  ],
+  "icon": "thaumicenergistics:thaumium_gear_box",
+  "column": 4,
+  "row": -6,
+  "aspects": {
+    "machina": 10,
+    "praecantatio": 8,
+    "metallum": 5
+  },
+  "complexity": 1,
+  "auto_unlock": false,
+  "concealed": false,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TETHAUMGBOX.1"
+  ],
+  "secondary": true,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:thaumium_gear_box"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TETHAUMGBOX.1",
+    "thaumicenergistics:thaumium_gear_box"
+  ]
+}
