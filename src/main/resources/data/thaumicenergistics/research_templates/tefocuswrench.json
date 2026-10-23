@@ -1,0 +1,34 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tefocuswrench",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:pseudo_focusfire"
+  ],
+  "hidden_parents": [],
+  "icon": "thaumicenergistics:focus_ae_wrench",
+  "column": -3,
+  "row": -7,
+  "aspects": {
+    "machina": 6,
+    "instrumentum": 5,
+    "praecantatio": 3
+  },
+  "complexity": 1,
+  "auto_unlock": false,
+  "concealed": false,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEFOCUSWRENCH.1"
+  ],
+  "secondary": true,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:focus_ae_wrench"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEFOCUSWRENCH.1",
+    "thaumicenergistics:focus_ae_wrench"
+  ]
+}

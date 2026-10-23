@@ -1,0 +1,22 @@
+{
+  "type": "thaumcraft:crucible",
+  "research": "thaumicenergistics:tecertusdupe",
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:extras_feature",
+      "feature": "certus_dupe"
+    }
+  ],
+  "result": {
+    "id": "minecraft:quartz",
+    "count": 2
+  },
+  "catalyst": {
+    "tag": "c:gems/quartz"
+  },
+  "aspects": {
+    "vitreus": 4,
+    "aqua": 2,
+    "potentia": 2
+  }
+}

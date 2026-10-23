@@ -1,0 +1,37 @@
+{
+  "type": "thaumcraft:arcane",
+  "research": "thaumicenergistics:tefocuswrench",
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:extras_feature",
+      "feature": "wrench_focus"
+    }
+  ],
+  "pattern": [
+    "ANF",
+    "NWN",
+    "FNA"
+  ],
+  "key": {
+    "A": {
+      "item": "thaumcraft:air_shard"
+    },
+    "F": {
+      "item": "thaumcraft:fire_shard"
+    },
+    "N": {
+      "item": "minecraft:quartz"
+    },
+    "W": {
+      "item": "ae2:certus_quartz_wrench"
+    }
+  },
+  "result": {
+    "id": "thaumicenergistics:focus_ae_wrench",
+    "count": 1
+  },
+  "vis": {
+    "aer": 10,
+    "ignis": 10
+  }
+}

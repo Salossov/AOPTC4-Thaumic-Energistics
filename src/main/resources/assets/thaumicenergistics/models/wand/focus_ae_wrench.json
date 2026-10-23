@@ -1,0 +1,84 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "head": "thaumcraft:models/wand",
+    "particle": "thaumcraft:models/wand"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        18,
+        6.5
+      ],
+      "to": [
+        9.5,
+        21,
+        9.5
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            3,
+            3.0,
+            6
+          ],
+          "texture": "#head",
+          "tintindex": 0
+        },
+        "south": {
+          "uv": [
+            3.0,
+            3,
+            6,
+            6
+          ],
+          "texture": "#head",
+          "tintindex": 0
+        },
+        "east": {
+          "uv": [
+            6,
+            3,
+            9.0,
+            6
+          ],
+          "texture": "#head",
+          "tintindex": 0
+        },
+        "north": {
+          "uv": [
+            9.0,
+            3,
+            12,
+            6
+          ],
+          "texture": "#head",
+          "tintindex": 0
+        },
+        "up": {
+          "uv": [
+            3.0,
+            0,
+            6,
+            3
+          ],
+          "texture": "#head",
+          "tintindex": 0
+        },
+        "down": {
+          "uv": [
+            6,
+            0,
+            9.0,
+            3
+          ],
+          "texture": "#head",
+          "tintindex": 0
+        }
+      },
+      "shade": false
+    }
+  ]
+}

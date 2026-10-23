@@ -1,0 +1,21 @@
+{
+  "type": "thaumcraft:crucible",
+  "research": "thaumicenergistics:tecertusdupe",
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:extras_feature",
+      "feature": "certus_dupe"
+    }
+  ],
+  "result": {
+    "id": "ae2:certus_quartz_crystal",
+    "count": 2
+  },
+  "catalyst": {
+    "tag": "thaumicenergistics:cell_certus_quartz"
+  },
+  "aspects": {
+    "vitreus": 4,
+    "aqua": 2
+  }
+}

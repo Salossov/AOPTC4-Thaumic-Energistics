@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "thaumcraft:amber_block",
+    "thaumcraft:amber_bricks",
+    "thaumcraft:obsidian_tile",
+    "thaumcraft:tallow_block",
+    "thaumcraft:arcane_stone",
+    "thaumcraft:arcane_stone_bricks",
+    "thaumcraft:ancient_stone",
+    "thaumcraft:greatwood_planks",
+    "thaumcraft:silverwood_planks",
+    "thaumcraft:fibrous_taint",
+    "thaumcraft:tainted_flesh"
+  ]
+}
