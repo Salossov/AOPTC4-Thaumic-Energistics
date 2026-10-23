@@ -22,17 +22,30 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.util.FakePlayer;
 
 public final class CellWorkbenchBlock extends Block implements EntityBlock {
-    public CellWorkbenchBlock() { super(BlockBehaviour.Properties.of().strength(1).sound(SoundType.METAL)); }
-    @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new CellWorkbenchBlockEntity(pos, state); }
+    public CellWorkbenchBlock() {
+        super(BlockBehaviour.Properties.of().strength(1.0f).sound(SoundType.METAL));
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new CellWorkbenchBlockEntity(pos, state);
+    }
+
     private boolean mayUse(Level level, BlockPos pos, Player player) {
         return !(player instanceof FakePlayer) && Platform.hasPermissions(new DimensionalBlockPos(level, pos), player);
     }
-    @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!mayUse(level, pos, player)) return InteractionResult.FAIL;
-        if (player instanceof ServerPlayer server && level.getBlockEntity(pos) instanceof CellWorkbenchBlockEntity workbench) server.openMenu(workbench);
+        if (player instanceof ServerPlayer server && level.getBlockEntity(pos) instanceof CellWorkbenchBlockEntity workbench) {
+            server.openMenu(workbench);
+        }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
-    @Override protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!mayUse(level, pos, player)) return ItemInteractionResult.FAIL;
         if (player.isShiftKeyDown() && InteractionUtil.canWrenchDisassemble(stack)) {
             if (!level.isClientSide) {
@@ -45,10 +58,14 @@ public final class CellWorkbenchBlock extends Block implements EntityBlock {
         if (InteractionUtil.canWrenchRotate(stack)) return ItemInteractionResult.sidedSuccess(level.isClientSide);
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
-    @Override protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
         if (!state.is(replacement.getBlock()) && !level.isClientSide && level.getBlockEntity(pos) instanceof CellWorkbenchBlockEntity workbench) {
             var cell = workbench.inventory().removeItemNoUpdate(0);
-            if (!cell.isEmpty()) level.addFreshEntity(new ItemEntity(level, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .2, cell));
+            if (!cell.isEmpty()) {
+                level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.2, cell));
+            }
         }
         super.onRemove(state, level, pos, replacement, moving);
     }
