@@ -1,0 +1,35 @@
+{
+  "type": "thaumcraft:arcane",
+  "research": "thaumicenergistics:tegearbox",
+  "vis": {
+    "aer": 2,
+    "ordo": 2
+  },
+  "pattern": [
+    "SGS",
+    "GGG",
+    "SGS"
+  ],
+  "key": {
+    "S": [
+      {
+        "tag": "c:cobblestones"
+      },
+      {
+        "item": "minecraft:cobblestone"
+      }
+    ],
+    "G": [
+      {
+        "tag": "c:gears/iron"
+      },
+      {
+        "item": "thaumicenergistics:iron_gear"
+      }
+    ]
+  },
+  "result": {
+    "id": "thaumicenergistics:iron_gear_box",
+    "count": 1
+  }
+}

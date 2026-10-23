@@ -1,0 +1,54 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:tegolembackpack",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:tethaumiumgearbox",
+    "thaumicenergistics:pseudo_coregather"
+  ],
+  "hidden_parents": [],
+  "icon": "thaumicenergistics:golem_wireless_backpack",
+  "column": 0,
+  "row": -6,
+  "aspects": {
+    "potentia": 5,
+    "auram": 5,
+    "cognitio": 3,
+    "tutamen": 3,
+    "motus": 1,
+    "permutatio": 1
+  },
+  "complexity": 3,
+  "auto_unlock": false,
+  "concealed": true,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.1",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.2",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.3",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREGATHER",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREFILL",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.CORELIQUID",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREALCHEMY",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.UPGRADEORDER",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.ADVANCEDGOLEM"
+  ],
+  "secondary": false,
+  "special": false,
+  "recipe_pages": [
+    "thaumicenergistics:golem_wireless_backpack"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.1",
+    "thaumicenergistics:golem_wireless_backpack",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.2",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.3",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREGATHER",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREFILL",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.CORELIQUID",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREALCHEMY",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.UPGRADEORDER",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.ADVANCEDGOLEM"
+  ]
+}
