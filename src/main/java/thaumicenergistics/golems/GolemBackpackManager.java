@@ -2,30 +2,33 @@ package thaumicenergistics.golems;
 
 import appeng.api.implementations.blockentities.IWirelessAccessPoint;
 import appeng.api.networking.IGrid;
-import appeng.util.Platform;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import thaumcraft.api.entities.GolemEquipmentApi;
 import thaumcraft.api.entities.IControllableGolem;
 
 /**
  * Server-authoritative runtime manager for wireless golem backpack attachments,
  * network connectivity, AP tracking, and lifecycle cleanup.
+ * Uses GolemEquipmentApi for persistent equipment storage and CAS operations.
  */
 public final class GolemBackpackManager {
     public static class GolemConnection {
         public final UUID golemUUID;
         public ItemStack backpackStack;
         public GolemBackpackSkin skin;
-        public ItemStack facadeStack;
         public IGrid grid;
         public IWirelessAccessPoint accessPoint;
         public boolean isInRange;
@@ -36,7 +39,6 @@ public final class GolemBackpackManager {
             this.backpackStack = backpackStack.copy();
             this.backpackStack.setCount(1);
             this.skin = skin != null ? skin : GolemBackpackSkin.THAUMIUM;
-            this.facadeStack = ItemStack.EMPTY;
             this.isInRange = false;
             this.tickCounter = 0;
         }
@@ -47,11 +49,31 @@ public final class GolemBackpackManager {
     private GolemBackpackManager() {}
 
     public static boolean hasBackpack(Entity golem) {
-        return golem != null && CONNECTIONS.containsKey(golem.getUUID());
+        if (!(golem instanceof LivingEntity living) || !GolemEquipmentApi.supports(living)) {
+            return false;
+        }
+        ItemStack equipped = GolemEquipmentApi.backpack(living);
+        return !equipped.isEmpty() && equipped.getItem() instanceof WirelessGolemBackpackItem;
     }
 
     public static GolemConnection getConnection(Entity golem) {
-        return golem != null ? CONNECTIONS.get(golem.getUUID()) : null;
+        if (!(golem instanceof LivingEntity living) || !hasBackpack(living)) {
+            return null;
+        }
+
+        ItemStack equipped = GolemEquipmentApi.backpack(living);
+        GolemConnection conn = CONNECTIONS.get(living.getUUID());
+        if (conn == null || !ItemStack.matches(conn.backpackStack, equipped)) {
+            GolemBackpackSkin skin = WirelessGolemBackpackItem.getSkin(equipped);
+            if (skin == null && living instanceof IControllableGolem cg) {
+                skin = GolemBackpackSkin.fromMaterialName(cg.golemMaterial());
+            }
+            conn = new GolemConnection(living.getUUID(), equipped, skin);
+            conn.grid = WirelessGolemBackpackItem.getLinkedGrid(equipped, living.level(), null);
+            updateAccessPoint(conn, living);
+            CONNECTIONS.put(living.getUUID(), conn);
+        }
+        return conn;
     }
 
     public static GolemConnection getConnection(UUID uuid) {
@@ -59,43 +81,60 @@ public final class GolemBackpackManager {
     }
 
     public static Map<UUID, GolemConnection> getAllConnections() {
-        return CONNECTIONS;
+        return Map.copyOf(CONNECTIONS);
     }
 
     /**
-     * Attempts to equip a Wireless Golem Backpack on a controllable golem.
+     * Attempts to equip a Wireless Golem Backpack on a controllable golem via GolemEquipmentApi.
      */
-    public static boolean equipBackpack(LivingEntity golem, ItemStack held, Player player) {
-        if (golem == null || golem.level().isClientSide || !(golem instanceof IControllableGolem cg)) {
+    public static boolean equipBackpack(LivingEntity golem, ItemStack held, ServerPlayer actor) {
+        if (golem == null || golem.level().isClientSide || actor == null) {
             return false;
         }
 
-        if (hasBackpack(golem)) {
-            return false; // Already has a backpack
+        if (!GolemEquipmentApi.supports(golem) || !GolemEquipmentApi.canConfigure(golem, actor)) {
+            return false;
         }
 
-        // Check supported core: 0=Fill, 2=Gather, 5=Liquid, 6=Essentia
+        if (!(golem instanceof IControllableGolem cg)) {
+            return false;
+        }
+
+        // Check supported core: 0=Fill, 2=Gather, 5=Liquid, 6=Essentia/Alchemy
         int core = cg.core();
         if (core != 0 && core != 2 && core != 5 && core != 6) {
             return false;
         }
 
-        if (!WirelessGolemBackpackItem.isLinked(held)) {
+        if (!(held.getItem() instanceof WirelessGolemBackpackItem) || !WirelessGolemBackpackItem.isLinked(held)) {
             return false;
         }
 
-        GolemBackpackSkin initialSkin = GolemBackpackSkin.fromMaterialName(cg.golemMaterial());
-        GolemConnection conn = new GolemConnection(golem.getUUID(), held, initialSkin);
+        ItemStack current = GolemEquipmentApi.backpack(golem);
+        if (!current.isEmpty()) {
+            return false; // Already equipped
+        }
 
-        // Resolve grid immediately
-        conn.grid = WirelessGolemBackpackItem.getLinkedGrid(conn.backpackStack, golem.level(), null);
-        updateAccessPoint(conn, golem);
+        ItemStack toEquip = held.copyWithCount(1);
+        GolemBackpackSkin initialSkin = WirelessGolemBackpackItem.getSkin(toEquip);
+        if (initialSkin == null) {
+            initialSkin = GolemBackpackSkin.fromMaterialName(cg.golemMaterial());
+            WirelessGolemBackpackItem.setSkin(toEquip, initialSkin);
+        }
 
-        CONNECTIONS.put(golem.getUUID(), conn);
+        boolean success = GolemEquipmentApi.replaceBackpack(golem, actor, ItemStack.EMPTY, toEquip);
+        if (!success) {
+            return false;
+        }
 
-        if (player != null && !player.isCreative()) {
+        if (!actor.isCreative()) {
             held.shrink(1);
         }
+
+        GolemConnection conn = new GolemConnection(golem.getUUID(), toEquip, initialSkin);
+        conn.grid = WirelessGolemBackpackItem.getLinkedGrid(toEquip, golem.level(), null);
+        updateAccessPoint(conn, golem);
+        CONNECTIONS.put(golem.getUUID(), conn);
 
         golem.level().playSound(null, golem.getX(), golem.getY(), golem.getZ(),
                 SoundEvents.ARMOR_EQUIP_IRON.value(), SoundSource.NEUTRAL, 0.5F, 1.0F);
@@ -104,42 +143,14 @@ public final class GolemBackpackManager {
     }
 
     /**
-     * Unequips the backpack, optionally dropping the items into the world.
+     * Applies an AE2 Facade to the equipped backpack, altering its skin via GolemEquipmentApi CAS.
      */
-    public static boolean unequipBackpack(LivingEntity golem, boolean drop) {
-        if (golem == null || golem.level().isClientSide) {
+    public static boolean applyFacade(LivingEntity golem, ItemStack held, ServerPlayer actor) {
+        if (golem == null || golem.level().isClientSide || actor == null) {
             return false;
         }
 
-        GolemConnection conn = CONNECTIONS.remove(golem.getUUID());
-        if (conn == null) {
-            return false;
-        }
-
-        if (drop && golem.level() instanceof ServerLevel level) {
-            if (conn.backpackStack != null && !conn.backpackStack.isEmpty()) {
-                ItemEntity dropEntity = new ItemEntity(level, golem.getX(), golem.getY() + 0.5, golem.getZ(), conn.backpackStack);
-                level.addFreshEntity(dropEntity);
-            }
-            if (conn.facadeStack != null && !conn.facadeStack.isEmpty()) {
-                ItemEntity dropEntity = new ItemEntity(level, golem.getX(), golem.getY() + 0.5, golem.getZ(), conn.facadeStack);
-                level.addFreshEntity(dropEntity);
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Applies a facade to the equipped backpack, altering its skin.
-     */
-    public static boolean applyFacade(LivingEntity golem, ItemStack held, Player player) {
-        if (golem == null || golem.level().isClientSide) {
-            return false;
-        }
-
-        GolemConnection conn = CONNECTIONS.get(golem.getUUID());
-        if (conn == null) {
+        if (!GolemEquipmentApi.supports(golem) || !GolemEquipmentApi.canConfigure(golem, actor)) {
             return false;
         }
 
@@ -148,18 +159,40 @@ public final class GolemBackpackManager {
             return false;
         }
 
-        // Return old facade if present
-        if (conn.facadeStack != null && !conn.facadeStack.isEmpty() && (player == null || !player.isCreative())) {
-            ItemEntity dropEntity = new ItemEntity(golem.level(), golem.getX(), golem.getY() + 0.5, golem.getZ(), conn.facadeStack);
-            golem.level().addFreshEntity(dropEntity);
+        ItemStack current = GolemEquipmentApi.backpack(golem);
+        if (current.isEmpty() || !(current.getItem() instanceof WirelessGolemBackpackItem)) {
+            return false;
         }
 
-        conn.facadeStack = held.copy();
-        conn.facadeStack.setCount(1);
-        conn.skin = skin;
+        ItemStack replacement = current.copy();
+        CustomData.update(DataComponents.CUSTOM_DATA, replacement, tag -> {
+            tag.putString("Skin", skin.getKey());
+            tag.put("Facade", held.copyWithCount(1).save(golem.registryAccess()));
+        });
 
-        if (player != null && !player.isCreative()) {
+        boolean success = GolemEquipmentApi.replaceBackpack(golem, actor, current, replacement);
+        if (!success) {
+            return false;
+        }
+
+        // Return old facade if present and actor not in creative
+        CustomData oldData = current.get(DataComponents.CUSTOM_DATA);
+        if (oldData != null && oldData.contains("Facade") && !actor.isCreative() && golem.level() instanceof ServerLevel level) {
+            Optional<ItemStack> oldFacadeOpt = ItemStack.parse(golem.registryAccess(), oldData.copyTag().getCompound("Facade"));
+            if (oldFacadeOpt.isPresent() && !oldFacadeOpt.get().isEmpty()) {
+                ItemEntity dropEntity = new ItemEntity(level, golem.getX(), golem.getY() + 0.5, golem.getZ(), oldFacadeOpt.get());
+                level.addFreshEntity(dropEntity);
+            }
+        }
+
+        if (!actor.isCreative()) {
             held.shrink(1);
+        }
+
+        GolemConnection conn = CONNECTIONS.get(golem.getUUID());
+        if (conn != null) {
+            conn.backpackStack = replacement;
+            conn.skin = skin;
         }
 
         golem.level().playSound(null, golem.getX(), golem.getY(), golem.getZ(),
@@ -189,13 +222,11 @@ public final class GolemBackpackManager {
     }
 
     private static void updateAccessPoint(GolemConnection conn, Entity golem) {
+        conn.grid = WirelessGolemBackpackItem.getLinkedGrid(conn.backpackStack, golem.level(), null);
         if (conn.grid == null) {
-            conn.grid = WirelessGolemBackpackItem.getLinkedGrid(conn.backpackStack, golem.level(), null);
-            if (conn.grid == null) {
-                conn.accessPoint = null;
-                conn.isInRange = false;
-                return;
-            }
+            conn.accessPoint = null;
+            conn.isInRange = false;
+            return;
         }
 
         if (isUsable(conn.accessPoint, conn.grid, golem)) {
@@ -226,7 +257,7 @@ public final class GolemBackpackManager {
             return;
         }
 
-        GolemConnection conn = CONNECTIONS.get(golem.getUUID());
+        GolemConnection conn = getConnection(golem);
         if (conn == null) {
             return;
         }
@@ -238,14 +269,22 @@ public final class GolemBackpackManager {
         }
     }
 
+    /**
+     * Cleans up the runtime connection cache on entity death.
+     * Core ThaumicGolem natively handles equipment drops without duplicate drop in addon.
+     */
     public static void onEntityDeath(LivingEntity entity) {
-        unequipBackpack(entity, true);
+        if (entity != null) {
+            CONNECTIONS.remove(entity.getUUID());
+        }
     }
 
+    /**
+     * Cleans up the runtime connection cache on entity unload/leave.
+     */
     public static void onEntityLeave(Entity entity) {
-        // Drop backpack if entity is removed/discarded
-        if (entity instanceof LivingEntity living && living.isDeadOrDying()) {
-            unequipBackpack(living, true);
+        if (entity != null) {
+            CONNECTIONS.remove(entity.getUUID());
         }
     }
 

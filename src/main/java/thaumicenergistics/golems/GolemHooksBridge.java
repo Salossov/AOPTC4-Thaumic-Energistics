@@ -1,7 +1,7 @@
 package thaumicenergistics.golems;
 
 import appeng.api.config.Actionable;
-import net.minecraft.world.InteractionHand;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,16 +12,19 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import thaumcraft.api.aspects.Aspect;
+import thaumcraft.api.entities.GolemEquipmentApi;
 import thaumcraft.api.entities.IControllableGolem;
 import thaumicenergistics.ThaumicEnergistics;
 
 /**
  * Event-driven bridge and hook dispatcher connecting live Thaumcraft golems with
- * Wireless Golem Backpack interactions, AI tasks, and lifecycle events.
+ * Wireless Golem Backpack interactions, AP status refresh, and lifecycle events.
+ * Note: Actual golem AI task replacement (Gather/Fill/Liquid/Alchemy) requires
+ * core AI task hooks and remains BLOCKED_CORE_API (G3).
  */
 @EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.GAME)
 public final class GolemHooksBridge {
@@ -36,27 +39,47 @@ public final class GolemHooksBridge {
     @SubscribeEvent
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         Entity target = event.getTarget();
-        if (!(target instanceof LivingEntity living) || !(target instanceof IControllableGolem)) {
+        if (!(target instanceof LivingEntity living) || !GolemEquipmentApi.supports(living) || !(target instanceof IControllableGolem)) {
             return;
         }
 
         Player player = event.getEntity();
         ItemStack held = event.getItemStack();
 
+        // Client side preview: acknowledge interaction to swing hand
+        if (event.getLevel().isClientSide) {
+            if (held.getItem() instanceof WirelessGolemBackpackItem && GolemEquipmentApi.backpack(living).isEmpty()) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.sidedSuccess(true));
+                return;
+            }
+            if (GolemBackpackManager.hasBackpack(living) && GolemBackpackSkin.fromFacade(held) != null) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.sidedSuccess(true));
+                return;
+            }
+            return;
+        }
+
+        // Server side: enforce ServerPlayer and GolemEquipmentApi.canConfigure permissions
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
+
         // 1. Equip Wireless Backpack
         if (held.getItem() instanceof WirelessGolemBackpackItem) {
-            if (GolemBackpackManager.equipBackpack(living, held, player)) {
+            if (GolemBackpackManager.equipBackpack(living, held, serverPlayer)) {
                 event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+                event.setCancellationResult(InteractionResult.sidedSuccess(false));
                 return;
             }
         }
 
         // 2. Apply Facade to alter skin
         if (GolemBackpackManager.hasBackpack(living) && GolemBackpackSkin.fromFacade(held) != null) {
-            if (GolemBackpackManager.applyFacade(living, held, player)) {
+            if (GolemBackpackManager.applyFacade(living, held, serverPlayer)) {
                 event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+                event.setCancellationResult(InteractionResult.sidedSuccess(false));
             }
         }
     }
@@ -70,16 +93,12 @@ public final class GolemHooksBridge {
 
     @SubscribeEvent
     public static void onEntityDeath(LivingDeathEvent event) {
-        if (GolemBackpackManager.hasBackpack(event.getEntity())) {
-            GolemBackpackManager.onEntityDeath(event.getEntity());
-        }
+        GolemBackpackManager.onEntityDeath(event.getEntity());
     }
 
     @SubscribeEvent
     public static void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
-        if (GolemBackpackManager.hasBackpack(event.getEntity())) {
-            GolemBackpackManager.onEntityLeave(event.getEntity());
-        }
+        GolemBackpackManager.onEntityLeave(event.getEntity());
     }
 
     @SubscribeEvent
@@ -87,7 +106,8 @@ public final class GolemHooksBridge {
         GolemBackpackManager.onServerStopped();
     }
 
-    // --- Golem Action Handlers (Gather, Fill, Liquid, Essentia) ---
+    // --- Golem Action Helper Handlers (Gather, Fill, Liquid, Essentia) ---
+    // Note: Pending core AI task hook integration (G3 BLOCKED_CORE_API).
 
     /**
      * Executes the Gather action: deposits golem carried stack into the ME network.

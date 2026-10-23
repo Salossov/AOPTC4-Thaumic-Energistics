@@ -3,10 +3,12 @@
   "key": "thaumicenergistics:tegolembackpack",
   "category": "thaumicenergistics:main",
   "parents": [
-    "thaumicenergistics:tethaumiumgearbox",
+    "thaumicenergistics:tecores",
     "thaumicenergistics:pseudo_coregather"
   ],
-  "hidden_parents": [],
+  "hidden_parents": [
+    "COREGATHER"
+  ],
   "icon": "thaumicenergistics:golem_wireless_backpack",
   "column": 0,
   "row": -6,
@@ -50,5 +52,12 @@
     "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREALCHEMY",
     "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.UPGRADEORDER",
     "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.ADVANCEDGOLEM"
-  ]
+  ],
+  "page_requirements": {
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREFILL": "COREFILL",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.CORELIQUID": "CORELIQUID",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREALCHEMY": "COREALCHEMY",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.UPGRADEORDER": "UPGRADEORDER",
+    "thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.ADVANCEDGOLEM": "ADVANCEDGOLEM"
+  }
 }

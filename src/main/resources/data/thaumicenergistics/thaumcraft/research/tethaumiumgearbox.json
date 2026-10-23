@@ -3,10 +3,11 @@
   "key": "thaumicenergistics:tethaumiumgearbox",
   "category": "thaumicenergistics:main",
   "parents": [
-    "thaumicenergistics:tegearbox"
+    "thaumicenergistics:tegearbox",
+    "thaumicenergistics:pseudo_coreuse"
   ],
   "hidden_parents": [
-    "thaumicenergistics:pseudo_coreuse"
+    "COREUSE"
   ],
   "icon": "thaumicenergistics:thaumium_gear_box",
   "column": 4,

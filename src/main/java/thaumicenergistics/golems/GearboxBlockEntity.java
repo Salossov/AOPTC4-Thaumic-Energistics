@@ -11,69 +11,69 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Unbreakable crank gearbox block entity.
- * Faithful port of 1.7.10 TileGearBox.
+ * BlockEntity for the Iron and Thaumium Gearbox.
+ * Direct port of 1.7.10 TileGearBox:
+ * - 6 directional shaft connections
+ * - Cranking distributor: BASE_POWER (6) / (number of ready crankables)
+ * - Power accumulation per shaft up to REQUIRED_POWER (18) before turning
+ * - Network synchronization throttled to MIN_TICKS_PER_SYNC (6 ticks)
  */
 public class GearboxBlockEntity extends BlockEntity {
-    /** Amount of power generated per crank turn, divided among turning shafts. */
+    public static final String NBT_KEY_CRANKABLES = "crankables";
+    public static final String NBT_KEY_ROTATION = "rotation";
+    public static final String NBT_KEY_ISTHAUMBOX = "isThaumbox";
+
     public static final int BASE_POWER = 6;
-
-    /** Power required by a shaft to execute one crank turn. */
     public static final int REQUIRED_POWER = 18;
-
-    /** Number of valid sides (6 directions). */
-    public static final int SIDE_COUNT = 6;
-
-    /** Minimum server ticks between synchronization updates. */
     public static final int MIN_TICKS_PER_SYNC = 6;
-
-    /** One full rotation in radians. */
+    public static final int SIDE_COUNT = 6;
     public static final float FULL_ROTATION = (float) Math.PI;
 
-    private static final String NBT_KEY_CRANKABLES = "crankables";
-    private static final String NBT_KEY_ROTATION = "shaftrotation";
-    private static final String NBT_KEY_ISTHAUMBOX = "isthaumbox";
-
-    private final int[] shafts = new int[SIDE_COUNT];
-    private final boolean[] canTurn = new boolean[SIDE_COUNT];
-    public final boolean[] sideIsFacingCrankable = new boolean[SIDE_COUNT];
-
     private int crankableCount = 0;
-    private boolean isThaumiumGearbox;
-    private boolean isReady = false;
+    public final boolean[] sideIsFacingCrankable = new boolean[SIDE_COUNT];
+    private final boolean[] canTurn = new boolean[SIDE_COUNT];
+    private final int[] shafts = new int[SIDE_COUNT];
+
     private boolean hasNewCranks = false;
     private int syncTickCount = 0;
+    private boolean isReady = false;
+    private boolean isThaumiumGearbox = false;
 
-    /** Client-side visual shaft rotation. */
     public float shaftRotation = 0.0F;
 
-    public GearboxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, boolean isThaumium) {
-        super(type, pos, state);
-        this.isThaumiumGearbox = isThaumium;
+    public GearboxBlockEntity(BlockPos pos, BlockState state) {
+        super(GolemsRegistrar.GEARBOX_BE.get(), pos, state);
+        if (state.getBlock() instanceof GearboxBlock gb) {
+            this.isThaumiumGearbox = gb.isThaumium();
+        }
     }
 
     public GearboxBlockEntity(BlockPos pos, BlockState state, boolean isThaumium) {
-        this(GolemsRegistrar.GEARBOX_BE.get(), pos, state, isThaumium);
-    }
-
-    public GearboxBlockEntity(BlockPos pos, BlockState state) {
-        this(GolemsRegistrar.GEARBOX_BE.get(), pos, state, false);
+        super(GolemsRegistrar.GEARBOX_BE.get(), pos, state);
+        this.isThaumiumGearbox = isThaumium;
     }
 
     public boolean isThaumiumGearbox() {
         return isThaumiumGearbox;
     }
 
-    public void setThaumiumGearbox(boolean thaumium) {
-        this.isThaumiumGearbox = thaumium;
+    public void setThaumiumGearbox(boolean isThaumium) {
+        this.isThaumiumGearbox = isThaumium;
     }
 
     public int getCrankableCount() {
         return crankableCount;
+    }
+
+    public boolean canTurn(int side) {
+        return side >= 0 && side < SIDE_COUNT && canTurn[side];
+    }
+
+    public int getShaftPower(int side) {
+        return side >= 0 && side < SIDE_COUNT ? shafts[side] : 0;
     }
 
     public int[] getShafts() {
@@ -114,6 +114,8 @@ public class GearboxBlockEntity extends BlockEntity {
 
     /**
      * Calculates power transferred to each turning shaft (6 / count).
+     * Note: Explicitly resets canTurn[i] to false when neighbor cannot turn,
+     * adapting 1.7.10's omission to prevent stale power distribution.
      */
     public int calculateTransferPower() {
         int powerDivisor = 0;
@@ -210,7 +212,7 @@ public class GearboxBlockEntity extends BlockEntity {
                 this.syncTickCount--;
                 if (this.hasNewCranks) {
                     level.sendBlockUpdated(pos, state, state, 3);
-                    this.hasNewCranks = false;
+                    // Do NOT clear hasNewCranks here! It is cleared when update tag/packet is created.
                     this.syncTickCount = 0;
                 }
             }
@@ -243,10 +245,6 @@ public class GearboxBlockEntity extends BlockEntity {
 
     private void writeSyncData(CompoundTag tag) {
         tag.putByte(NBT_KEY_CRANKABLES, getCrankableSideMask());
-        if (this.hasNewCranks) {
-            tag.putBoolean(NBT_KEY_ROTATION, true);
-            this.hasNewCranks = false;
-        }
         tag.putBoolean(NBT_KEY_ISTHAUMBOX, this.isThaumiumGearbox);
     }
 
@@ -268,6 +266,7 @@ public class GearboxBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         writeSyncData(tag);
+        // Do NOT clear hasNewCranks or serialize temporary rotation pulse to world save
     }
 
     @Override
@@ -280,6 +279,10 @@ public class GearboxBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         writeSyncData(tag);
+        if (this.hasNewCranks) {
+            tag.putBoolean(NBT_KEY_ROTATION, true);
+            this.hasNewCranks = false;
+        }
         return tag;
     }
 

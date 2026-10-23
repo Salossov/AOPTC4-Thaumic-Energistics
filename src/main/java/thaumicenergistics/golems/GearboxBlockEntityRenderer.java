@@ -11,11 +11,11 @@ import thaumicenergistics.ThaumicEnergistics;
 
 /**
  * 1.21.1 BlockEntityRenderer for Iron and Thaumium Gearbox.
- * Faithfully mirrors 1.7.10 RenderTileGearbox geometry, textures, and scaling.
+ * Faithfully mirrors 1.7.10 RenderTileGearbox geometry, textures, and scaling (0.12 * 0.625 = 0.075 blocks, scaled by 1.2F in PoseStack).
  */
 public class GearboxBlockEntityRenderer implements BlockEntityRenderer<GearboxBlockEntity> {
-    public static final ResourceLocation TEX_IRON = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "textures/models/gearbox.iron.png");
-    public static final ResourceLocation TEX_THAUMIUM = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "textures/models/gearbox.thaumium.png");
+    public static final ResourceLocation TEX_IRON = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "textures/models/gearbox_iron.png");
+    public static final ResourceLocation TEX_THAUMIUM = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "textures/models/gearbox_thaumium.png");
 
     private final GearboxModel model;
 
@@ -30,8 +30,8 @@ public class GearboxBlockEntityRenderer implements BlockEntityRenderer<GearboxBl
         // Center model in the block space
         poseStack.translate(0.5D, 0.5D, 0.5D);
 
-        // Original scale: 0.12F
-        poseStack.scale(0.12F, 0.12F, 0.12F);
+        // Model scale: 1.2F (matching 0.12 * 0.625 = 0.075 blocks)
+        poseStack.scale(1.2F, 1.2F, 1.2F);
 
         ResourceLocation texture = gearbox.isThaumiumGearbox() ? TEX_THAUMIUM : TEX_IRON;
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.entitySolid(texture));

@@ -144,8 +144,17 @@ def main():
     })
 
     # Recipes
-    # 1. Iron Gear: " I ", " W ", "I I", 'I': iron ingot, 'W': wood gear / stick, Vis terra 1, ignis 1
+    # 1. Iron Gear: " I ", " W ", "I I", 'I': iron ingot, 'W': wood gear / stick fallback, Vis terra 1, ignis 1
     write('data/thaumicenergistics/recipe/iron_gear.json', {
+        'neoforge:conditions': [
+            {
+                'type': 'neoforge:not',
+                'value': {
+                    'type': 'neoforge:tag_empty',
+                    'tag': 'c:gears/wooden'
+                }
+            }
+        ],
         'type': 'thaumcraft:arcane',
         'research': 'thaumicenergistics:tegearbox',
         'vis': {
@@ -161,10 +170,40 @@ def main():
             'I': {
                 'tag': 'c:ingots/iron'
             },
-            'W': [
-                {'tag': 'c:gears/wooden'},
-                {'item': 'minecraft:stick'}
-            ]
+            'W': {
+                'tag': 'c:gears/wooden'
+            }
+        },
+        'result': {
+            'id': 'thaumicenergistics:iron_gear',
+            'count': 1
+        }
+    })
+    write('data/thaumicenergistics/recipe/iron_gear_from_stick.json', {
+        'neoforge:conditions': [
+            {
+                'type': 'neoforge:tag_empty',
+                'tag': 'c:gears/wooden'
+            }
+        ],
+        'type': 'thaumcraft:arcane',
+        'research': 'thaumicenergistics:tegearbox',
+        'vis': {
+            'terra': 1,
+            'ignis': 1
+        },
+        'pattern': [
+            ' I ',
+            ' W ',
+            'I I'
+        ],
+        'key': {
+            'I': {
+                'tag': 'c:ingots/iron'
+            },
+            'W': {
+                'item': 'minecraft:stick'
+            }
         },
         'result': {
             'id': 'thaumicenergistics:iron_gear',
@@ -263,7 +302,7 @@ def main():
     })
 
     # Pseudo-research nodes
-    write('data/thaumicenergistics/research_templates/pseudo_coreuse.json', {
+    write('data/thaumicenergistics/thaumcraft/research/pseudo_coreuse.json', {
         'kind': 'research',
         'key': 'thaumicenergistics:pseudo_coreuse',
         'category': 'thaumicenergistics:main',
@@ -276,7 +315,7 @@ def main():
         'icon': 'minecraft:air',
         'aspects': {}
     })
-    write('data/thaumicenergistics/research_templates/pseudo_coregather.json', {
+    write('data/thaumicenergistics/thaumcraft/research/pseudo_coregather.json', {
         'kind': 'research',
         'key': 'thaumicenergistics:pseudo_coregather',
         'category': 'thaumicenergistics:main',
@@ -335,10 +374,11 @@ def main():
         'key': 'thaumicenergistics:tethaumiumgearbox',
         'category': 'thaumicenergistics:main',
         'parents': [
-            'thaumicenergistics:tegearbox'
+            'thaumicenergistics:tegearbox',
+            'thaumicenergistics:pseudo_coreuse'
         ],
         'hidden_parents': [
-            'thaumicenergistics:pseudo_coreuse'
+            'COREUSE'
         ],
         'icon': 'thaumicenergistics:thaumium_gear_box',
         'column': 4,
@@ -367,16 +407,18 @@ def main():
         ]
     })
 
-    # 3. Golem Wifi Backpack: column 0, row -6, concealed, complexity 3 (LARGE), parents tethaumiumgearbox + pseudo_coregather
+    # 3. Golem Wifi Backpack: column 0, row -6, concealed, complexity 3 (LARGE), parents tecores + pseudo_coregather
     write('data/thaumicenergistics/thaumcraft/research/tegolembackpack.json', {
         'kind': 'research',
         'key': 'thaumicenergistics:tegolembackpack',
         'category': 'thaumicenergistics:main',
         'parents': [
-            'thaumicenergistics:tethaumiumgearbox',
+            'thaumicenergistics:tecores',
             'thaumicenergistics:pseudo_coregather'
         ],
-        'hidden_parents': [],
+        'hidden_parents': [
+            'COREGATHER'
+        ],
         'icon': 'thaumicenergistics:golem_wireless_backpack',
         'column': 0,
         'row': -6,
@@ -420,7 +462,14 @@ def main():
             'thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREALCHEMY',
             'thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.UPGRADEORDER',
             'thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.ADVANCEDGOLEM'
-        ]
+        ],
+        'page_requirements': {
+            'thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREFILL': 'COREFILL',
+            'thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.CORELIQUID': 'CORELIQUID',
+            'thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.COREALCHEMY': 'COREALCHEMY',
+            'thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.UPGRADEORDER': 'UPGRADEORDER',
+            'thaumicenergistics.research_page.TEGOLEMWIFIBACKPACK.ADVANCEDGOLEM': 'ADVANCEDGOLEM'
+        }
     })
 
     analysis_dir = ADDON / 'analysis'

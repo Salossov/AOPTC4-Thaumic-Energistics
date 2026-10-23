@@ -1,10 +1,12 @@
 package thaumicenergistics.golems;
 
+import appeng.api.implementations.items.IFacadeItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import thaumicenergistics.ThaumicEnergistics;
 
 /**
@@ -77,12 +79,26 @@ public enum GolemBackpackSkin {
         };
     }
 
+    /**
+     * Extracts backpack skin from an AE2 Facade item based on the exact 1.7.10 whitelist:
+     * - Vanilla: stone, hay_block, bricks, iron_block, gold_block, diamond_block
+     * - Thaumcraft: thaumium_block, tallow_block, greatwood_log, tainted_flesh
+     * Non-facade items and unauthorized blocks strictly return null.
+     */
     public static GolemBackpackSkin fromFacade(ItemStack facade) {
         if (facade == null || facade.isEmpty()) {
             return null;
         }
-        Block block = Block.byItem(facade.getItem());
-        if (block == Blocks.AIR) {
+        if (!(facade.getItem() instanceof IFacadeItem facadeItem)) {
+            return null;
+        }
+
+        BlockState state = facadeItem.getTextureBlockState(facade);
+        if (state == null) {
+            return null;
+        }
+        Block block = state.getBlock();
+        if (block == null || block == Blocks.AIR) {
             return null;
         }
 
@@ -94,11 +110,13 @@ public enum GolemBackpackSkin {
         if (block == Blocks.DIAMOND_BLOCK) return DIAMOND;
 
         ResourceLocation id = BuiltInRegistries.BLOCK.getKey(block);
-        String path = id.getPath();
-        if (path.contains("thaumium")) return THAUMIUM;
-        if (path.contains("tallow")) return TALLOW;
-        if (path.contains("greatwood")) return GREATWOOD;
-        if (path.contains("flesh") || path.contains("taint")) return FLESH;
+        if ("thaumcraft".equals(id.getNamespace())) {
+            String path = id.getPath();
+            if ("thaumium_block".equals(path)) return THAUMIUM;
+            if ("tallow_block".equals(path)) return TALLOW;
+            if ("greatwood_log".equals(path)) return GREATWOOD;
+            if ("tainted_flesh".equals(path)) return FLESH;
+        }
 
         return null;
     }

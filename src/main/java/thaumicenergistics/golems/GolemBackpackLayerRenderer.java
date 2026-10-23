@@ -11,9 +11,13 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import thaumcraft.api.entities.GolemEquipmentApi;
+import thaumcraft.api.entities.IControllableGolem;
 
 /**
  * Client RenderLayer rendering the Wireless Golem Backpack on wearing golems.
+ * Reads GolemEquipmentApi.backpack(entity) directly on client without server map dependency.
  * Attachment, scale, and pearl rotation match 1.7.10 WirelessGolemHandler.renderGolem.
  */
 public class GolemBackpackLayerRenderer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
@@ -27,8 +31,12 @@ public class GolemBackpackLayerRenderer<T extends LivingEntity, M extends Entity
     @Override
     public void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, T entity,
                        float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-        var conn = GolemBackpackManager.getConnection(entity);
-        if (conn == null) {
+        if (!GolemEquipmentApi.supports(entity)) {
+            return;
+        }
+
+        ItemStack backpack = GolemEquipmentApi.backpack(entity);
+        if (backpack.isEmpty() || !(backpack.getItem() instanceof WirelessGolemBackpackItem)) {
             return;
         }
 
@@ -39,12 +47,20 @@ public class GolemBackpackLayerRenderer<T extends LivingEntity, M extends Entity
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
         poseStack.scale(0.8F, 0.8F, 0.8F);
 
-        GolemBackpackSkin skin = conn.skin != null ? conn.skin : GolemBackpackSkin.THAUMIUM;
+        GolemBackpackSkin skin = WirelessGolemBackpackItem.getSkin(backpack);
+        if (skin == null && entity instanceof IControllableGolem cg) {
+            skin = GolemBackpackSkin.fromMaterialName(cg.golemMaterial());
+        }
+        if (skin == null) {
+            skin = GolemBackpackSkin.THAUMIUM;
+        }
+
         ResourceLocation texture = skin.getTextureLocation();
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(texture));
 
         float pearlRotation = (ageInTicks * 2.0F) % 360.0F;
-        this.backpackModel.renderBackpack(poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, pearlRotation, conn.isInRange);
+        boolean inRange = WirelessGolemBackpackItem.isLinked(backpack);
+        this.backpackModel.renderBackpack(poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, pearlRotation, inRange);
 
         poseStack.popPose();
     }

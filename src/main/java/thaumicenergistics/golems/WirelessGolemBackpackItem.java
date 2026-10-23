@@ -10,8 +10,6 @@ import appeng.core.localization.PlayerMessages;
 import appeng.core.localization.Tooltips;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -25,31 +23,23 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
  * Wireless Golem Backpack item giving Thaumcraft golems direct wireless access to the ME network.
- * Supports modern AE2 GridLinkables (GlobalPos target) and legacy wifiKey NBT interop.
+ * Uses modern AE2 GridLinkables and AEComponents.WIRELESS_LINK_TARGET (GlobalPos target).
  */
 public class WirelessGolemBackpackItem extends Item {
-    public static final String NBT_ENCRYPTION_KEY = "wifiKey";
-
     public static final IGridLinkableHandler LINKABLE_HANDLER = new IGridLinkableHandler() {
         @Override
         public boolean canLink(ItemStack stack) {
-            return stack.getItem() instanceof WirelessGolemBackpackItem;
+            return stack != null && stack.getItem() instanceof WirelessGolemBackpackItem;
         }
 
         @Override
         public void link(ItemStack stack, GlobalPos pos) {
             stack.set(AEComponents.WIRELESS_LINK_TARGET, pos);
-            CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-                tag.putString(NBT_ENCRYPTION_KEY, pos.dimension().location() + "@" + pos.pos().asLong());
-            });
         }
 
         @Override
         public void unlink(ItemStack stack) {
             stack.remove(AEComponents.WIRELESS_LINK_TARGET);
-            CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-                tag.remove(NBT_ENCRYPTION_KEY);
-            });
         }
     };
 
@@ -58,33 +48,35 @@ public class WirelessGolemBackpackItem extends Item {
     }
 
     public static boolean isLinked(ItemStack stack) {
-        if (stack.has(AEComponents.WIRELESS_LINK_TARGET)) {
-            return true;
-        }
-        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-        return customData != null && customData.contains(NBT_ENCRYPTION_KEY);
+        return stack != null && !stack.isEmpty() && stack.has(AEComponents.WIRELESS_LINK_TARGET);
     }
 
     public static GlobalPos getLinkedPosition(ItemStack stack) {
-        return stack.get(AEComponents.WIRELESS_LINK_TARGET);
+        return stack != null ? stack.get(AEComponents.WIRELESS_LINK_TARGET) : null;
     }
 
-    public static String getEncryptionKey(ItemStack stack) {
-        GlobalPos pos = getLinkedPosition(stack);
-        if (pos != null) {
-            return pos.dimension().location() + "@" + pos.pos().asLong();
+    public static GolemBackpackSkin getSkin(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return null;
         }
-        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-        if (customData != null && customData.contains(NBT_ENCRYPTION_KEY)) {
-            return customData.copyTag().getString(NBT_ENCRYPTION_KEY);
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        if (data != null && data.contains("Skin")) {
+            return GolemBackpackSkin.fromMaterialName(data.copyTag().getString("Skin"));
         }
         return null;
     }
 
-    public static void setEncryptionKey(ItemStack stack, String key) {
-        if (key != null) {
-            CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putString(NBT_ENCRYPTION_KEY, key));
+    public static void setSkin(ItemStack stack, GolemBackpackSkin skin) {
+        if (stack == null || stack.isEmpty()) {
+            return;
         }
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            if (skin != null) {
+                tag.putString("Skin", skin.getKey());
+            } else {
+                tag.remove("Skin");
+            }
+        });
     }
 
     @Override

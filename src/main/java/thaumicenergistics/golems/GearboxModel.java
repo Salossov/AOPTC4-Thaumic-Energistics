@@ -11,17 +11,17 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.Direction;
 
 /**
  * 1.21.1 Model definition for Iron and Thaumium Gearbox.
  * Recreates original 1.7.10 ModelGearbox with 7x7x7 transmission box,
  * 6 directional shafts, and 4-spoke gears on detached sides.
+ * Shaft offsets calibrated for PoseStack space with EDGE_DISTANCE = 0.312F and SPOKE_OFFSET = 1.2F.
  */
 public class GearboxModel extends Model {
     private static final float HALF_TURN = (float) (Math.PI / 2);
     private static final float QUARTER_TURN = (float) (Math.PI / 4);
-    private static final float EDGE_DISTANCE = 3.12F;
+    private static final float EDGE_DISTANCE = 0.312F;
     private static final float SPOKE_OFFSET = 1.2F;
 
     private final ModelPart transmission;
