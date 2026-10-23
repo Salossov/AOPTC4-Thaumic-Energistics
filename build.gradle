@@ -110,6 +110,12 @@ tasks.register('arcaneTerminalViewRulesTest', JavaExec) {
     mainClass = 'thaumicenergistics.client.ArcaneTerminalViewRulesTest'
 }
 tasks.named('check') { dependsOn 'arcaneTerminalViewRulesTest' }
+tasks.register('assemblerRulesTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'thaumicenergistics.assembler.AssemblerRulesTest'
+}
+tasks.named('check') { dependsOn 'assemblerRulesTest' }
 
 tasks.register('prepareQuietClient') {
     def earlyConfig = file('runs/client/config/fml.toml')

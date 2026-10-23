@@ -209,5 +209,8 @@
   "tc.research_name.thaumicenergistics:tecertusdupe": "赛特斯石英复制",
   "tc.research_text.thaumicenergistics:tecertusdupe": "吃我炼金术",
   "tc.research_name.thaumicenergistics:tefocuswrench": "法杖核心: AE扳手",
-  "tc.research_text.thaumicenergistics:tefocuswrench": "一些地方会用得上的"
+  "tc.research_text.thaumicenergistics:tefocuswrench": "一些地方会用得上的",
+  "block.thaumicenergistics.arcane_assembler": "奥术装配器",
+  "tc.research_name.thaumicenergistics:tearcaneassembler": "奥术装配器",
+  "tc.research_text.thaumicenergistics:tearcaneassembler": "装配魔力分子"
 }

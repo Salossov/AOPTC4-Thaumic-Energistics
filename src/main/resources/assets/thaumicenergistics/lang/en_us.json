@@ -219,5 +219,8 @@
   "tc.research_name.thaumicenergistics:tecertusdupe": "Quartz Duplication",
   "tc.research_text.thaumicenergistics:tecertusdupe": "Impurities Intact",
   "tc.research_name.thaumicenergistics:tefocuswrench": "Wand Focus: AE Wrench",
-  "tc.research_text.thaumicenergistics:tefocuswrench": "Some Assembly Required"
+  "tc.research_text.thaumicenergistics:tefocuswrench": "Some Assembly Required",
+  "block.thaumicenergistics.arcane_assembler": "Arcane Assembler",
+  "tc.research_name.thaumicenergistics:tearcaneassembler": "Arcane Assembler",
+  "tc.research_text.thaumicenergistics:tearcaneassembler": "Magical Molecule Assembly"
 }

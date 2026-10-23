@@ -140,6 +140,7 @@ public final class ThaumicEnergistics {
     }
 
     public ThaumicEnergistics(IEventBus modBus) {
+        thaumicenergistics.assembler.AssemblerRegistration.initialize(modBus);
         thaumicenergistics.crafting.ProviderResearchRegistration.initialize();
         thaumicenergistics.extras.ExtrasRegistrar.initialize(modBus);
         COMPONENTS.register(modBus);

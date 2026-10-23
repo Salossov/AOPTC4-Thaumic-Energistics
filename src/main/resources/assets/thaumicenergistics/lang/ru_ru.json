@@ -191,5 +191,8 @@
   "tc.research_name.thaumicenergistics:tecertusdupe": "Удвоение кварца",
   "tc.research_text.thaumicenergistics:tecertusdupe": "Интактные примеси",
   "tc.research_name.thaumicenergistics:tefocuswrench": "Набалдашник: AE-ключ",
-  "tc.research_text.thaumicenergistics:tefocuswrench": "Требуется немного сборки"
+  "tc.research_text.thaumicenergistics:tefocuswrench": "Требуется немного сборки",
+  "block.thaumicenergistics.arcane_assembler": "Магический сборщик",
+  "tc.research_name.thaumicenergistics:tearcaneassembler": "Магический сборщик",
+  "tc.research_text.thaumicenergistics:tearcaneassembler": "Магическая сборка молекул"
 }
