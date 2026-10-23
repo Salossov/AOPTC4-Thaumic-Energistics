@@ -42,13 +42,16 @@ import thaumcraft.api.research.ResearchLinks;
 import thaumicenergistics.ThaumicEnergistics;
 import thaumicenergistics.client.CellWorkbenchScreen;
 import thaumicenergistics.client.EssentiaBusScreen;
+import thaumicenergistics.client.EssentiaLevelEmitterScreen;
 import thaumicenergistics.client.StorageBusScreen;
 import thaumicenergistics.client.StoragePriorityScreen;
 import thaumicenergistics.menu.CellWorkbenchMenu;
 import thaumicenergistics.menu.EssentiaBusMenu;
+import thaumicenergistics.menu.EssentiaLevelEmitterMenu;
 import thaumicenergistics.menu.StorageBusMenu;
 import thaumicenergistics.menu.StoragePriorityMenu;
 import thaumicenergistics.parts.EssentiaIOBusPart;
+import thaumicenergistics.parts.EssentiaLevelEmitterPart;
 import thaumicenergistics.parts.EssentiaStorageBusPart;
 import thaumicenergistics.storage.CellTier;
 import thaumicenergistics.storage.EssentiaCell;
@@ -295,11 +298,52 @@ public final class ClientMenuSmoke {
                     var spread=mc.screen.getClass().getDeclaredField("spread");spread.setAccessible(true);spread.setInt(mc.screen,recipeIndex/2);advance();
                 }
                 case 41 -> capture("original-storage-research-recipes");
-                case 42 -> finish(true,null);
+                case 42 -> {
+                    mc.setScreen(null);
+                    server(player -> {
+                        var emitter=PartHelper.setPart(player.serverLevel(),CABLE,Direction.UP,null,ThaumicEnergistics.LEVEL_EMITTER.get());
+                        if(emitter==null)throw new IllegalStateException("Emitter placement failed");
+                        player.teleportTo(player.serverLevel(),4.5,100,4.5,135,29);
+                    });advance();
+                }
+                case 43 -> {
+                    server(player -> {
+                        if(PartHelper.getPartHost(player.level(),CABLE).getPart(Direction.UP) instanceof EssentiaLevelEmitterPart emitter&&emitter.isActive())
+                            emitter.onUseWithoutItem(player,Vec3.atCenterOf(CABLE));
+                    });
+                    if(mc.screen instanceof EssentiaLevelEmitterScreen)advance();
+                }
+                case 44 -> { click(10,ClickType.PICKUP); advance(); }
+                case 45 -> { if(!mc.player.containerMenu.getCarried().isEmpty()){click(0,ClickType.PICKUP);click(10,ClickType.PICKUP);advance();} }
+                case 46 -> {
+                    if(mc.player.containerMenu instanceof EssentiaLevelEmitterMenu menu&&EssentiaKey.of(Aspects.WATER).equals(menu.filter())) {
+                        var field=editBox();field.setValue("");for(char c:"7".toCharArray())field.charTyped(c,0);advance();
+                    }
+                }
+                case 47 -> {
+                    var part=emitter(mc);
+                    if(mc.player.containerMenu instanceof EssentiaLevelEmitterMenu menu&&menu.threshold()==7&&editBox().getValue().equals("7")&&part!=null&&part.emitting()) {
+                        EVIDENCE.put("emitter_menu_real_packets",true);capture("emitter-menu-high");
+                    }
+                }
+                case 48 -> { button(6); advance(); }
+                case 49 -> {
+                    var part=emitter(mc);
+                    if(mc.player.containerMenu instanceof EssentiaLevelEmitterMenu menu&&menu.lowSignal()&&part!=null&&!part.emitting())capture("emitter-menu-low");
+                }
+                case 50 -> { button(6); mc.player.closeContainer(); advance(); }
+                case 51 -> {
+                    var part=emitter(mc);
+                    if(mc.screen==null&&part!=null&&part.emitting()) {EVIDENCE.put("emitter_world_flare_synced",true);capture("emitter-world-active");}
+                }
+                case 52 -> finish(true,null);
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
             if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName()));
         } catch (Throwable failure) { finish(false,failure); }
+    }
+    private static EssentiaLevelEmitterPart emitter(Minecraft mc) {
+        var host=PartHelper.getPartHost(mc.level,CABLE);return host!=null&&host.getPart(Direction.UP) instanceof EssentiaLevelEmitterPart part?part:null;
     }
     private static ItemStack ae(String path) { return BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:"+path)).getDefaultInstance(); }
     private static void fixture(ServerPlayer player) {

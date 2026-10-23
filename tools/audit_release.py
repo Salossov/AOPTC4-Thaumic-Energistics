@@ -32,8 +32,9 @@ def client_evidence(code_files: list[Path]) -> dict:
     screenshots = result.get("screenshots", [])
     checks = ("server_cursor_filter_packet", "storage_filter_retained_after_inverter", "inverter_tool_and_void_packets", "absolute_priority_real_payload",
               "backspace_at_typing_limit", "io_capacity_card_packet", "workbench_real_cell_and_partition_packets",
-              "vis_drain_color_real_client_sync", "hidden_unfocused_window", "sound_playback_blocked", "aspect_palette_rendered", "linked_research_real_client_sync", "imported_research_real_client_sync")
-    if not result.get("automation_passed") or len(screenshots) < 16 or not all(result.get(key) is True for key in checks):
+              "vis_drain_color_real_client_sync", "hidden_unfocused_window", "sound_playback_blocked", "aspect_palette_rendered", "linked_research_real_client_sync", "imported_research_real_client_sync",
+              "emitter_menu_real_packets", "emitter_world_flare_synced")
+    if not result.get("automation_passed") or len(screenshots) < 19 or not all(result.get(key) is True for key in checks):
         raise SystemExit("Client smoke failed or screenshots missing")
     hashes = {str(Path(path).resolve()): sha256(Path(path)) for path in screenshots}
     review = json.loads(review_path.read_text(encoding="utf-8")) if review_path.is_file() else {}
@@ -44,7 +45,7 @@ def client_evidence(code_files: list[Path]) -> dict:
             "vis_link_drain_color_synced": result["vis_drain_color_real_client_sync"],
             "hidden_unfocused_window": result["hidden_unfocused_window"], "sound_playback_blocked": result["sound_playback_blocked"],
             "aspect_pixels": audit_aspects(PROJECT,result,Path(receipt["inputs"]["core"]["path"])),
-            "scope": "storage bus, priority editor, import/export menus, cell workbench, Water Vis-interface and seven-aspect color/alpha palette at GUI scale 2"}
+            "scope": "storage bus, priority editor, import/export menus, cell workbench, essentia level emitter menu/world flare, Water Vis-interface and seven-aspect color/alpha palette at GUI scale 2"}
 
 
 def main() -> None:

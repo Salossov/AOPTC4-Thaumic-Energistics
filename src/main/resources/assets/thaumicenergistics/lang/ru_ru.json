@@ -144,5 +144,6 @@
   "tc.research_name.thaumicenergistics:testorage": "Хранилище цифросенции",
   "tc.research_text.thaumicenergistics:testorage": "Эта вещица и вправду может хранить эссенцию?",
   "tc.research_name.thaumicenergistics:teio": "Транспортировка цифросенции",
-  "tc.research_text.thaumicenergistics:teio": "Цифровой перенос эссенции!"
+  "tc.research_text.thaumicenergistics:teio": "Цифровой перенос эссенции!",
+  "item.thaumicenergistics.essentia_level_emitter": "Излучатель уровня эссенции"
 }

@@ -28,6 +28,7 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
         event.register(ThaumicEnergistics.WORKBENCH_MENU.get(), CellWorkbenchScreen::new);
         event.register(ThaumicEnergistics.STORAGE_BUS_MENU.get(),StorageBusScreen::new);
         event.register(ThaumicEnergistics.PRIORITY_MENU.get(),StoragePriorityScreen::new);
+        event.register(ThaumicEnergistics.EMITTER_MENU.get(),EssentiaLevelEmitterScreen::new);
     }
     @SubscribeEvent
     public static void setup(FMLClientSetupEvent event) {

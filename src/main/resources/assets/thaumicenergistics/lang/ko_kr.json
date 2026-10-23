@@ -114,5 +114,6 @@
   "tc.research_name.thaumicenergistics:testorage": "[TE] 디지-센시아 저장소",
   "tc.research_text.thaumicenergistics:testorage": "이걸로 에센시아를 저장할 수 있을까?",
   "tc.research_name.thaumicenergistics:teio": "[TE] 디지-센시아 운송",
-  "tc.research_text.thaumicenergistics:teio": "에센시아를 디지털식으로 옮기자!"
+  "tc.research_text.thaumicenergistics:teio": "에센시아를 디지털식으로 옮기자!",
+  "item.thaumicenergistics.essentia_level_emitter": "에센시아 레벨 방출기"
 }

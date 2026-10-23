@@ -52,6 +52,9 @@ public final class ThaumicEnergistics {
             MENUS.register("essentia_cell_workbench", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
                     (id, inventory, data) -> new thaumicenergistics.menu.CellWorkbenchMenu(id, inventory, null)));
     private static final DeferredRegister<AEKeyType> KEY_TYPES = DeferredRegister.create(AEKeyType.REGISTRY_KEY, ID);
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaLevelEmitterMenu>> EMITTER_MENU =
+            MENUS.register("essentia_level_emitter", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
+                    (id, inventory, data) -> new thaumicenergistics.menu.EssentiaLevelEmitterMenu(id,inventory,null)));
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, ID);
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CellContents>> CELL_CONTENTS =
             COMPONENTS.register("cell_contents", () -> DataComponentType.<CellContents>builder()
@@ -67,6 +70,7 @@ public final class ThaumicEnergistics {
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaStorageBusItem> STORAGE_BUS = ITEMS.register("essentia_storage_bus", thaumicenergistics.parts.EssentiaStorageBusItem::new);
     public static final DeferredHolder<Item, thaumicenergistics.parts.VisInterfaceItem> VIS_INTERFACE = ITEMS.register("vis_interface", thaumicenergistics.parts.VisInterfaceItem::new);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
+    public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaLevelEmitterItem> LEVEL_EMITTER = ITEMS.register("essentia_level_emitter",thaumicenergistics.parts.EssentiaLevelEmitterItem::new);
 
     static {
         KEY_TYPES.register("essentia", () -> EssentiaKeyType.INSTANCE);
@@ -83,6 +87,7 @@ public final class ThaumicEnergistics {
                     output.accept(IMPORT_BUS.get()); output.accept(EXPORT_BUS.get());
                     output.accept(STORAGE_BUS.get());
                     output.accept(VIS_INTERFACE.get());
+                    output.accept(LEVEL_EMITTER.get());
                     for (var tier : CellTier.values()) {
                         if (!tier.creative()) output.accept(COMPONENT_ITEMS.get(tier).get());
                         output.accept(CELLS.get(tier).get());
@@ -103,6 +108,7 @@ public final class ThaumicEnergistics {
         PartModels.registerModels(id("part/essentia_storage_bus_off"),id("part/essentia_storage_bus_on"));
         PartModels.registerModels(id("part/vis_interface_off"),id("part/vis_interface_on"));
         modBus.addListener(ThaumicEnergistics::setup);
+        PartModels.registerModels(id("part/essentia_level_emitter_off"),id("part/essentia_level_emitter_on"));
         modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) ->
                 event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
                         CELL_WORKBENCH_ENTITY.get(), (workbench, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(workbench.inventory())));
