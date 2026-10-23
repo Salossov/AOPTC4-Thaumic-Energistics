@@ -130,5 +130,14 @@
   "tc.research_name.thaumicenergistics:tearcaneterm": "[TE]아케인 조합 단말기",
   "tc.research_text.thaumicenergistics:tearcaneterm": "마법과§o기술을 이용한 조합§r",
   "tc.research_name.thaumicenergistics:tevisint": "비스 중계 인터페이스",
-  "tc.research_text.thaumicenergistics:tevisint": "디지털방식의 비스 사용"
+  "tc.research_text.thaumicenergistics:tevisint": "디지털방식의 비스 사용",
+  "block.thaumicenergistics.iron_gear_box": "철 기어박스",
+  "block.thaumicenergistics.thaumium_gear_box": "사우뮴 기어박스",
+  "item.thaumicenergistics.iron_gear": "철 톱니바퀴",
+  "tc.research_name.thaumicenergistics:tegearbox": "철 기어박스",
+  "tc.research_text.thaumicenergistics:tegearbox": "One Turn At A Time",
+  "tc.research_name.thaumicenergistics:tethaumiumgearbox": "사우뮴 기어박스",
+  "tc.research_text.thaumicenergistics:tethaumiumgearbox": "Little Labor Force",
+  "tc.research_name.thaumicenergistics:tecertusdupe": "Quartz Duplication",
+  "tc.research_text.thaumicenergistics:tecertusdupe": "Impurities Intact"
 }

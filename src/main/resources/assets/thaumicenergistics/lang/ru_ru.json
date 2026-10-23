@@ -179,5 +179,17 @@
   "block.thaumicenergistics.knowledge_inscriber": "Высекатель знаний",
   "item.thaumicenergistics.knowledge_core": "Ядро знаний",
   "tc.research_name.thaumicenergistics:teknowledgeinscriber": "Высечение знаний",
-  "tc.research_text.thaumicenergistics:teknowledgeinscriber": "Магические шаблоны"
+  "tc.research_text.thaumicenergistics:teknowledgeinscriber": "Магические шаблоны",
+  "block.thaumicenergistics.iron_gear_box": "Железная коробка передач",
+  "block.thaumicenergistics.thaumium_gear_box": "Таумическая коробка передач",
+  "item.thaumicenergistics.iron_gear": "Железная шестерня",
+  "item.thaumicenergistics.focus_ae_wrench": "Набалдашник: AE-ключ",
+  "tc.research_name.thaumicenergistics:tegearbox": "Железная коробка передач",
+  "tc.research_text.thaumicenergistics:tegearbox": "Один оборот за раз",
+  "tc.research_name.thaumicenergistics:tethaumiumgearbox": "Таумическая коробка передач",
+  "tc.research_text.thaumicenergistics:tethaumiumgearbox": "Небольшая рабочая сила",
+  "tc.research_name.thaumicenergistics:tecertusdupe": "Удвоение кварца",
+  "tc.research_text.thaumicenergistics:tecertusdupe": "Интактные примеси",
+  "tc.research_name.thaumicenergistics:tefocuswrench": "Набалдашник: AE-ключ",
+  "tc.research_text.thaumicenergistics:tefocuswrench": "Требуется немного сборки"
 }

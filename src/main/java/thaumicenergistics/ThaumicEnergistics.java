@@ -141,6 +141,7 @@ public final class ThaumicEnergistics {
 
     public ThaumicEnergistics(IEventBus modBus) {
         thaumicenergistics.crafting.ProviderResearchRegistration.initialize();
+        thaumicenergistics.extras.ExtrasRegistrar.initialize(modBus);
         COMPONENTS.register(modBus);
         ITEMS.register(modBus);
         BLOCKS.register(modBus);
