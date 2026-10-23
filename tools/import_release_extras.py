@@ -221,17 +221,18 @@ def main():
         check("nether_quartz_dupe item condition", any(c.get("type") == "neoforge:item_exists" and c.get("item") == "minecraft:quartz" for c in conditions), str(conditions))
 
     whitelisted = ["thaumcraft:amber_block", "thaumcraft:amber_bricks", "thaumcraft:warded_glass",
-                   "thaumcraft:obsidian_tile", "thaumcraft:tallow_block",
-                   "thaumcraft:thaumium_block", "thaumcraft:arcane_stone", "thaumcraft:arcane_stone_bricks",
+                   "thaumcraft:obsidian_tile", "thaumcraft:thaumium_block",
+                   "thaumcraft:tallow_block", "thaumcraft:arcane_stone", "thaumcraft:arcane_stone_bricks",
                    "thaumcraft:ancient_stone", "thaumcraft:greatwood_planks", "thaumcraft:silverwood_planks",
                    "thaumcraft:fibrous_taint", "thaumcraft:tainted_flesh"]
-    data = load_json("ae2 facades tag", ROOT / "data/ae2/tags/block/whitelisted/facades.json")
-    if data is not None:
-        check("facades tag replace false", data.get("replace") is False, str(data.get("replace")))
-        check("facades tag values exact whitelist", data.get("values") == whitelisted, f"{len(data.get('values', []))} values")
-        check("facades tag includes warded glass with active allowMirrors", "thaumcraft:warded_glass" in data.get("values", []))
-        NOTES.append("FACADES: blockCosmeticOpaque meta 2 (Warded Glass) is whitelisted corresponding to active allowMirrors;"
-                     " blockCosmeticSolid meta 4 (Thaumium Block) is whitelisted as thaumium_block.")
+    pack = load_source("ExtrasFacadePack", PROJECT / "src/main/java/thaumicenergistics/extras/ExtrasFacadePack.java")
+    if pack:
+        match = re.search(r"BLOCKS = List.of\((.*?)\);", pack, re.S)
+        names = re.findall(r'"([a-z_]+)"', match.group(1)) if match else []
+        check("facades source maps exact release counterparts", ["thaumcraft:" + name for name in names] == whitelisted)
+        check("unconditional facade tag removed", not (ROOT / "data/ae2/tags/block/whitelisted/facades.json").exists())
+        NOTES.append("FACADES: source mapping only. Runtime pack loading, both option gates, optional entries and data reload"
+                     " must be exercised by the deferred native test; this script cannot establish them.")
 
     data = load_json("focus_ae_wrench model", ROOT / "assets/thaumicenergistics/models/item/focus_ae_wrench.json")
     if data is not None:
@@ -289,8 +290,7 @@ def main():
     # Original whitelist metas intentionally absent from the modern whitelist (reported, not asserted,
     # because the port may grow these blocks independently).
     ported = lambda name: f"port has {'thaumcraft:' + name} blockstates" if (TC_BLOCKSTATES / f"{name}.json").is_file() else f"no {name} blockstates in port"
-    NOTES.append("REPORT: original whitelist metas with no modern whitelist entry - blockCosmeticSolid 4 (Thaumium Block): "
-                 + ported("thaumium_block") + ", exclusion kept as an open question; blockCosmeticSolid 12 (Ancient Rock): "
+    NOTES.append("REPORT: Thaumium Block is included. Missing original counterparts - blockCosmeticSolid 12 (Ancient Rock): "
                  + ported("ancient_rock") + " (no such modern block, intentionally absent from the port); blockCosmeticSolid 14"
                  " (Crusted Stone): " + ported("crusted_stone") + " (no such modern block, intentionally absent from the port).")
 

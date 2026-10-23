@@ -4,9 +4,7 @@ import appeng.api.orientation.BlockOrientation;
 import appeng.api.orientation.IOrientationStrategy;
 import appeng.api.orientation.RelativeSide;
 import appeng.api.parts.IPartHost;
-import java.util.Map;
 import java.util.Objects;
-import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -37,18 +35,6 @@ public final class FocusAEWrenchInteraction {
     public static final double REACH = 4.0D;
     /** Original Packet_R_ParticleFX.createWrenchFX range parameter. */
     public static final float BEAM_RANGE = 20.0F;
-
-    /** Unified cooldown tracker across right-click and left-click interactions. */
-    private static final Map<ServerPlayer, Long> COOLDOWNS = new WeakHashMap<>();
-
-    public static boolean isOnCooldown(ServerPlayer player) {
-        return COOLDOWNS.getOrDefault(player, Long.MIN_VALUE) > player.server.getTickCount();
-    }
-
-    public static void applyCooldown(ServerPlayer player, int cooldownMs) {
-        long now = player.server.getTickCount();
-        COOLDOWNS.put(player, now + Math.max(1, (cooldownMs + 49) / 50));
-    }
 
     /**
      * Creates a fresh AE2 certus wrench item stack when the feature is enabled.
@@ -170,9 +156,9 @@ public final class FocusAEWrenchInteraction {
     /**
      * Public-contract seam for the infusion matrix symmetry branch (B2-MATRIX).
      * The original read TileInfusionMatrix.active/crafting/symmetry and forced
-     * checkSurroundings; the port core exposes no public contract for that yet
-     * (API request pending B2-MATRIX), so the probe stays uninstalled and the
-     * branch is a safe no-op until the user approves the core addition.
+     * checkSurroundings; the current core exposes that operation
+     * through the separately approved InfusionMatrixApi adapter. It remains
+     * a safe no-op if a core bootstrap has not installed that adapter.
      */
     public interface MatrixProbe {
         /** True when the tile is the core's infusion matrix. */

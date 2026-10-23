@@ -32,8 +32,7 @@ public final class ExtrasLeftClickHandler {
             return;
         }
         // Validate player state: reject fake players and dead entities.
-        if (!player.isAlive() || player instanceof net.neoforged.neoforge.common.util.FakePlayer
-                || player.getClass().getName().contains("Fake")) {
+        if (!player.isAlive() || player instanceof net.neoforged.neoforge.common.util.FakePlayer) {
             return;
         }
         // Sneaking is strictly required by the original onUse.
@@ -64,11 +63,11 @@ public final class ExtrasLeftClickHandler {
             return;
         }
         var focusStack = WandApi.focus(wand);
-        if (!(focusStack.getItem() instanceof FocusAEWrenchItem focusItem)) {
+        if (!(focusStack.getItem() instanceof FocusAEWrenchItem)) {
             return;
         }
-        // Check unified cooldown between right-click and left-click.
-        if (FocusAEWrenchInteraction.isOnCooldown(player)) {
+        // TC4 starts the native cooldown before delegating the swing, including no-op actions.
+        if (!thaumcraft.api.wands.FocusSwingApi.tryBegin(player, wand)) {
             return;
         }
         // Fresh ray trace exactly like the original onEntitySwing ray trace.
@@ -105,7 +104,6 @@ public final class ExtrasLeftClickHandler {
         }
 
         if (handled) {
-            FocusAEWrenchInteraction.applyCooldown(player, focusItem.getActivationCooldown(focusStack));
             FocusAEWrenchInteraction.spawnBeam(player, blockHit.getBlockPos());
             event.setCanceled(true);
         }

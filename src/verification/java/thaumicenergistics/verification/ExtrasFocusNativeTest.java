@@ -234,20 +234,25 @@ public final class ExtrasFocusNativeTest {
         var player = fixturePlayer(helper);
         var wand = focusedWand(1000, 1000);
         player.setItemInHand(InteractionHand.MAIN_HAND, wand);
-        var focus = WandApi.focus(wand);
-
-        helper.assertTrue(!FocusAEWrenchInteraction.isOnCooldown(player), "player is not initially on cooldown");
-        helper.assertTrue(FocusAEWrenchBehavior.INSTANCE.begin(player, wand, focus, InteractionHand.MAIN_HAND),
-                "begin allows cast when not on cooldown");
-
-        // Apply 1000ms cooldown (20 ticks).
-        FocusAEWrenchInteraction.applyCooldown(player, 1000);
-        helper.assertTrue(FocusAEWrenchInteraction.isOnCooldown(player), "player is now on cooldown");
-        helper.assertTrue(!FocusAEWrenchBehavior.INSTANCE.begin(player, wand, focus, InteractionHand.MAIN_HAND),
-                "begin rejects cast while on cooldown");
-        helper.assertTrue(!FocusAEWrenchBehavior.INSTANCE.cast(player, wand, focus),
-                "cast rejects while on cooldown");
-        helper.succeed();
+        helper.assertTrue(thaumcraft.api.wands.FocusSwingApi.tryBegin(player, wand), "first swing claims the native cooldown");
+        helper.assertTrue(!thaumcraft.api.wands.FocusSwingApi.tryBegin(player, wand), "a second swing cannot reuse it");
+        helper.assertTrue(WandApi.stored(wand, Aspects.FIRE) == 1000 && WandApi.stored(wand, Aspects.AIR) == 1000,
+                "claiming a cooldown does not debit Vis");
+        var anotherWand = focusedWand(1000, 1000);
+        WandApi.focus(anotherWand, new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("thaumcraft:focus_frost"))));
+        WandApi.set(anotherWand, Aspects.WATER, 1000);
+        player.setItemInHand(InteractionHand.MAIN_HAND, anotherWand);
+        player.gameMode.useItem(player, player.serverLevel(), anotherWand, InteractionHand.MAIN_HAND);
+        helper.assertTrue(WandApi.stored(anotherWand, Aspects.WATER) == 1000,
+                "the native Frost right-click shares the cooldown claimed by the addon swing");
+        helper.assertTrue(!thaumcraft.api.wands.FocusSwingApi.tryBegin(player, anotherWand),
+                "changing wands and selected focus cannot bypass the player's shared cooldown");
+        helper.runAfterDelay(19, () -> helper.assertTrue(
+                !thaumcraft.api.wands.FocusSwingApi.tryBegin(player, anotherWand), "1000ms still blocks tick 19"));
+        helper.runAfterDelay(20, () -> {
+            helper.assertTrue(thaumcraft.api.wands.FocusSwingApi.tryBegin(player, anotherWand), "1000ms expires at tick 20");
+            helper.succeed();
+        });
     }
 
     private static JsonObject resource(String path) {
@@ -263,19 +268,35 @@ public final class ExtrasFocusNativeTest {
 
     @GameTest(template = "empty", timeoutTicks = 120)
     public static void nativeFacadeWhitelistAndCrucibleData(GameTestHelper helper) {
-        var tag = resource("/data/ae2/tags/block/whitelisted/facades.json");
+        JsonObject tag;
+        try {
+            var packs = helper.getLevel().getServer().getResourceManager().getResourceStack(
+                    ResourceLocation.fromNamespaceAndPath("ae2", "tags/block/whitelisted/facades.json"));
+            var generated = packs.stream().filter(value -> value.sourcePackId().equals("thaumicenergistics/tc_facades"))
+                    .findFirst().orElseThrow(() -> new IllegalStateException("Missing active facade pack"));
+            try (var reader = generated.openAsReader()) {
+                tag = JsonParser.parseReader(reader).getAsJsonObject();
+            }
+        } catch (java.io.IOException failure) {
+            throw new IllegalStateException("Cannot read active facade pack", failure);
+        }
         var values = tag.getAsJsonArray("values");
         var expected = List.of("thaumcraft:amber_block", "thaumcraft:amber_bricks", "thaumcraft:warded_glass",
-                "thaumcraft:obsidian_tile", "thaumcraft:tallow_block", "thaumcraft:thaumium_block",
+                "thaumcraft:obsidian_tile", "thaumcraft:thaumium_block", "thaumcraft:tallow_block",
                 "thaumcraft:arcane_stone", "thaumcraft:arcane_stone_bricks", "thaumcraft:ancient_stone",
                 "thaumcraft:greatwood_planks", "thaumcraft:silverwood_planks", "thaumcraft:fibrous_taint",
-                "thaumcraft:tainted_flesh");
+                "thaumcraft:tainted_flesh").stream()
+                .filter(ignored -> thaumicenergistics.extras.ExtrasConfig.forceTCFacades())
+                .filter(id -> !id.equals("thaumcraft:warded_glass") || thaumcraft.api.world.ContentRules.mirrorsEnabled())
+                .toList();
         helper.assertTrue(tag.get("replace").getAsBoolean() == false, "the facade whitelist merges instead of replacing AE2 values");
         var actual = new java.util.ArrayList<String>();
         for (var value : values) {
-            actual.add(value.getAsString());
+            var entry = value.getAsJsonObject();
+            actual.add(entry.get("id").getAsString());
+            helper.assertTrue(!entry.get("required").getAsBoolean(), "absent legacy counterparts stay optional");
         }
-        helper.assertTrue(actual.equals(expected), "the whitelist maps to exactly the thirteen port blocks including warded_glass");
+        helper.assertTrue(actual.equals(expected), "the active facade pack respects both original option gates");
         helper.assertTrue(actual.contains("thaumcraft:warded_glass"), "warded glass is whitelisted with active allowMirrors");
 
         var certus = resource("/data/thaumicenergistics/recipe/certus_quartz_dupe.json");

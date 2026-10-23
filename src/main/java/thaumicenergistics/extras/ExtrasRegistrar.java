@@ -48,6 +48,7 @@ public final class ExtrasRegistrar {
     public static void initialize(IEventBus modBus) {
         ITEMS.register(modBus);
         CONDITIONS.register(modBus);
+        modBus.addListener(ExtrasFacadePack::register);
         AddonRegistrationEvent.BUS.addListener(ExtrasRegistrar::registerAddon);
         modBus.addListener((net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent event) -> {
             if (event.getTabKey() == ADDON_TAB) {
@@ -62,6 +63,22 @@ public final class ExtrasRegistrar {
      * the two ordinary researches behind the config seam.
      */
     private static void registerAddon(AddonRegistrationEvent event) {
+        var matrixProbe = thaumcraft.api.crafting.InfusionMatrixApi.probe();
+        if (matrixProbe != null) {
+            FocusAEWrenchInteraction.installMatrixProbe(new FocusAEWrenchInteraction.MatrixProbe() {
+                @Override public boolean isMatrix(net.minecraft.world.level.block.entity.BlockEntity tile) {
+                    return matrixProbe.isMatrix(tile);
+                }
+                @Override public boolean requestSymmetry(net.minecraft.server.level.ServerPlayer player,
+                        net.minecraft.world.level.block.entity.BlockEntity tile) {
+                    var symmetry = matrixProbe.requestSymmetry(player, tile);
+                    if (symmetry.isEmpty()) return false;
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            "Symmetry: " + symmetry.getAsInt()), true);
+                    return true;
+                }
+            });
+        }
         FocusBehaviors.register(FOCUS_AE_WRENCH.get(), FocusAEWrenchBehavior.INSTANCE,
                 ThaumicEnergistics.id("wand/focus_ae_wrench"), null, ThaumicEnergistics.id("staff/focus_ae_wrench"));
         AddonRegistry.research(read("pseudo_focusfire"));
