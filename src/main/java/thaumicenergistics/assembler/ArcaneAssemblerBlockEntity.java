@@ -14,6 +14,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -23,6 +24,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import thaumcraft.api.aspects.Aspect;
+import thaumcraft.api.client.ParticleApi;
 import thaumcraft.api.wands.WandApi;
 import thaumcraft.api.wands.WandParts;
 import thaumicenergistics.blocks.ProviderBlockEntity;
@@ -46,12 +48,18 @@ public final class ArcaneAssemblerBlockEntity extends ProviderBlockEntity implem
     private ItemStack sceptre = ItemStack.EMPTY;
     private boolean loading, broken;
     private int refillTicks;
+    private int visualTicks;
+    private boolean publishedBusy;
+    private VisualState publishedState;
+    private VisualState clientState = new VisualState(false, 0, 0, List.of(0, 0, 0, 0, 0, 0));
+
+    private record VisualState(boolean crafting, int ticks, int speed, List<Integer> vis) { }
 
     public ArcaneAssemblerBlockEntity(BlockPos pos, BlockState state) {
         super(AssemblerRegistration.BLOCK_ENTITY.get(), pos, state, AssemblerRules.IDLE_AE);
         crafting = new AssemblerCraftingProvider(getMainNode(),
                 () -> level instanceof ServerLevel server ? server : null,
-                this::current, this::patterns, tasks, getMachineSource(), this::saveChanges);
+                this::current, this::patterns, tasks, getMachineSource(), this::queueChanged);
         getMainNode().addService(ICraftingProvider.class, crafting);
     }
 
@@ -87,6 +95,21 @@ public final class ArcaneAssemblerBlockEntity extends ProviderBlockEntity implem
         if (loading || level == null || level.isClientSide) return;
         saveChanges();
         refreshCore();
+    }
+
+    private void queueChanged() {
+        saveChanges();
+        // Do not lose the start of a four-tick craft between the five-tick snapshots.
+        if (current() && publishedBusy != tasks.isBusy()) {
+            publishedBusy = tasks.isBusy();
+            markForUpdate();
+        }
+    }
+
+    private VisualState worldState() {
+        var amounts = new ArrayList<Integer>(6);
+        for (int i = 0; i < 6; i++) amounts.add(vis.get(i));
+        return new VisualState(tasks.isBusy(), tasks.paidTicks(), speed(), List.copyOf(amounts));
     }
 
     private AssemblerArmor armor() {
@@ -127,6 +150,14 @@ public final class ArcaneAssemblerBlockEntity extends ProviderBlockEntity implem
         }
         if (!ItemStack.matches(inventory.getItem(AssemblerRules.TARGET), target))
             inventory.display(AssemblerRules.TARGET, target);
+        if (++visualTicks >= AssemblerRules.REFILL_INTERVAL) {
+            visualTicks = 0;
+            VisualState next = worldState();
+            if (!next.equals(publishedState)) {
+                publishedState = next;
+                markForUpdate();
+            }
+        }
     }
 
     private int speed() { return upgrades.getInstalledUpgrades(AEItems.SPEED_CARD); }
@@ -198,6 +229,34 @@ public final class ArcaneAssemblerBlockEntity extends ProviderBlockEntity implem
         super.onProviderGridChanged();
         if (crafting != null && getMainNode().isReady()) crafting.patternsChanged();
     }
+
+    @Override protected void writeToStream(RegistryFriendlyByteBuf buffer) {
+        super.writeToStream(buffer);
+        VisualState state = worldState();
+        buffer.writeBoolean(state.crafting());
+        if (state.crafting()) buffer.writeInt(state.ticks());
+        for (int amount : state.vis()) buffer.writeInt(amount);
+        buffer.writeInt(state.speed());
+    }
+
+    @Override protected boolean readFromStream(RegistryFriendlyByteBuf buffer) {
+        super.readFromStream(buffer);
+        boolean busy = buffer.readBoolean();
+        int ticks = busy ? buffer.readInt() : 0;
+        var amounts = new ArrayList<Integer>(6);
+        for (int i = 0; i < 6; i++) amounts.add(Math.max(0, buffer.readInt()));
+        clientState = new VisualState(busy, ticks, buffer.readInt(), List.copyOf(amounts));
+        if (busy && level != null && level.isClientSide)
+            for (int i = 0; i < 2; i++) ParticleApi.blockRunes(level, worldPosition.getX(),
+                    worldPosition.getY(), worldPosition.getZ(), .5F, 0, .5F, 10, -.1F);
+        return true;
+    }
+
+    /** Observer data is independent of the server-owned task and menu inventory. */
+    public boolean visuallyCrafting() { return level != null && level.isClientSide ? clientState.crafting() : tasks.isBusy(); }
+    public int visualCraftTicks() { return level != null && level.isClientSide ? clientState.ticks() : tasks.paidTicks(); }
+    public int visualSpeed() { return level != null && level.isClientSide ? clientState.speed() : speed(); }
+    public int visualVis(int primal) { return level != null && level.isClientSide ? clientState.vis().get(primal) : vis.get(primal); }
 
     @Override public void saveAdditional(CompoundTag data, HolderLookup.Provider registries) {
         super.saveAdditional(data, registries);

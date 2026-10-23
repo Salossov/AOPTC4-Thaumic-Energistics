@@ -5,11 +5,16 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import thaumicenergistics.ThaumicEnergistics;
 import thaumicenergistics.assembler.AssemblerRegistration;
 
 @EventBusSubscriber(modid=ThaumicEnergistics.ID,value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
 public final class AssemblerRendering {
+    @SubscribeEvent public static void reload(RegisterClientReloadListenersEvent event){
+        event.registerReloadListener((ResourceManagerReloadListener)resources->AssemblerItemRenderer.invalidateModels());
+    }
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions event){event.registerLayerDefinition(AssemblerModel.LAYER,AssemblerModel::layer);}
     @SubscribeEvent public static void screens(RegisterMenuScreensEvent event){event.register(AssemblerRegistration.MENU.get(),ArcaneAssemblerScreen::new);}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){
