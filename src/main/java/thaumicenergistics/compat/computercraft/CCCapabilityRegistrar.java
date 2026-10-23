@@ -28,7 +28,7 @@ public final class CCCapabilityRegistrar {
     }
 
     public static synchronized IPeripheral getPeripheral(BlockEntity blockEntity) {
-        if (!(blockEntity instanceof EssentiaProviderAccess access)) {
+        if (blockEntity == null || blockEntity.isRemoved() || !(blockEntity instanceof EssentiaProviderAccess access)) {
             return null;
         }
         return PERIPHERAL_CACHE.computeIfAbsent(blockEntity, be -> new EssentiaProviderPeripheral(access));

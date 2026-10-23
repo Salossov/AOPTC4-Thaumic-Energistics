@@ -9,6 +9,7 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Modern CC:Tweaked peripheral for the Thaumic Energistics Essentia Provider.
  * Conforms to the {@link EssentiaProviderAccess} contract and implements CC:Tweaked {@link IPeripheral}.
+ * Bound strictly to the exact initial {@link BlockEntity} instance and lifecycle.
  */
 public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProviderAccess.Listener {
     public static final String PERIPHERAL_TYPE = "EssentiaProvider";
@@ -29,29 +31,47 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
 
     private static final Map<String, Aspect> aspectNameReverseMap = new ConcurrentHashMap<>();
 
+    private final WeakReference<BlockEntity> targetBeRef;
+    private final WeakReference<EssentiaProviderAccess> targetProviderRef;
+    private final int targetBeIdentityHashCode;
+
     private final WeakReference<Level> levelRef;
     private final ResourceKey<Level> levelDimension;
     private final BlockPos pos;
+
     private final EssentiaWatcher watcher;
     private final Set<IComputerAccess> attachedComputers = Collections.synchronizedSet(new HashSet<>());
     private boolean isRegisteredAsBlockListener = false;
 
     public EssentiaProviderPeripheral(EssentiaProviderAccess access) {
-        BlockEntity be = access.getBlockEntity();
+        BlockEntity be = access != null ? access.getBlockEntity() : null;
         Level level = be != null ? be.getLevel() : null;
+        this.targetBeRef = new WeakReference<>(be);
+        this.targetProviderRef = new WeakReference<>(access);
+        this.targetBeIdentityHashCode = be != null ? System.identityHashCode(be) : 0;
+
         this.levelRef = new WeakReference<>(level);
         this.levelDimension = level != null ? level.dimension() : null;
         this.pos = be != null ? be.getBlockPos() : BlockPos.ZERO;
         this.watcher = new EssentiaWatcher(this);
-        ensureListenerRegistered(access);
     }
 
     public EssentiaProviderPeripheral(Level level, BlockPos pos) {
         this.levelRef = new WeakReference<>(level);
         this.levelDimension = level != null ? level.dimension() : null;
         this.pos = pos != null ? pos : BlockPos.ZERO;
+
+        BlockEntity be = (level != null && pos != null && level.hasChunkAt(pos)) ? level.getBlockEntity(pos) : null;
+        if (be instanceof EssentiaProviderAccess access && !be.isRemoved()) {
+            this.targetBeRef = new WeakReference<>(be);
+            this.targetProviderRef = new WeakReference<>(access);
+            this.targetBeIdentityHashCode = System.identityHashCode(be);
+        } else {
+            this.targetBeRef = new WeakReference<>(be);
+            this.targetProviderRef = new WeakReference<>(null);
+            this.targetBeIdentityHashCode = be != null ? System.identityHashCode(be) : 0;
+        }
         this.watcher = new EssentiaWatcher(this);
-        getProvider();
     }
 
     @Override
@@ -62,53 +82,72 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
     @Nullable
     @Override
     public Object getTarget() {
+        BlockEntity initialBe = this.targetBeRef.get();
+        if (initialBe == null || initialBe.isRemoved()) {
+            return null;
+        }
         Level level = this.levelRef != null ? this.levelRef.get() : null;
+        if (level == null) {
+            level = initialBe.getLevel();
+        }
         if (level == null || !level.hasChunkAt(this.pos)) {
             return null;
         }
-        BlockEntity be = level.getBlockEntity(this.pos);
-        return (be != null && !be.isRemoved()) ? be : null;
+        BlockEntity currentBe = level.getBlockEntity(this.pos);
+        return (currentBe == initialBe && !currentBe.isRemoved()) ? initialBe : null;
     }
 
     @Override
     public boolean equals(@Nullable IPeripheral other) {
         if (this == other) return true;
         if (!(other instanceof EssentiaProviderPeripheral o)) return false;
-        return Objects.equals(this.pos, o.pos) && Objects.equals(this.levelDimension, o.levelDimension);
+        BlockEntity thisBe = this.targetBeRef.get();
+        BlockEntity otherBe = o.targetBeRef.get();
+        if (thisBe == null || otherBe == null) {
+            return false;
+        }
+        return thisBe == otherBe;
     }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (!(other instanceof EssentiaProviderPeripheral o)) return false;
-        return Objects.equals(this.pos, o.pos) && Objects.equals(this.levelDimension, o.levelDimension);
+        BlockEntity thisBe = this.targetBeRef.get();
+        BlockEntity otherBe = o.targetBeRef.get();
+        if (thisBe == null || otherBe == null) {
+            return false;
+        }
+        return thisBe == otherBe;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.pos, this.levelDimension);
+        return Objects.hash(this.levelDimension, this.pos, this.targetBeIdentityHashCode);
     }
 
     @Override
     public void attach(IComputerAccess computer) {
-        this.attachedComputers.add(computer);
+        synchronized (this.attachedComputers) {
+            this.attachedComputers.add(computer);
+        }
         ensureListenerRegistered(getProvider());
     }
 
     @Override
     public void detach(IComputerAccess computer) {
-        this.attachedComputers.remove(computer);
+        boolean wasLast;
+        synchronized (this.attachedComputers) {
+            this.attachedComputers.remove(computer);
+            wasLast = this.attachedComputers.isEmpty();
+        }
         this.watcher.removeComputerWatcher(computer);
         try {
             sendEvent(computer, CCEvents.Detached);
         } catch (Exception ignored) {
         }
-        if (this.attachedComputers.isEmpty()) {
-            EssentiaProviderAccess provider = getProvider();
-            if (provider != null) {
-                provider.removeProviderListener(this);
-            }
-            this.isRegisteredAsBlockListener = false;
+        if (wasLast) {
+            unregisterListener();
         }
     }
 
@@ -216,7 +255,7 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
 
     @Override
     public void onProviderBroken() {
-        this.isRegisteredAsBlockListener = false;
+        unregisterListener();
         List<IComputerAccess> bad = null;
         synchronized (this.attachedComputers) {
             for (IComputerAccess computer : this.attachedComputers) {
@@ -245,23 +284,80 @@ public class EssentiaProviderPeripheral implements IPeripheral, EssentiaProvider
         computer.queueEvent(EVENT_NAME, args);
     }
 
+    @Nullable
     EssentiaProviderAccess getProvider() {
+        BlockEntity initialBe = this.targetBeRef.get();
+        if (initialBe == null || initialBe.isRemoved()) {
+            return null;
+        }
+        EssentiaProviderAccess provider = this.targetProviderRef.get();
+        if (provider == null) {
+            return null;
+        }
         Level level = this.levelRef != null ? this.levelRef.get() : null;
+        if (level == null) {
+            level = initialBe.getLevel();
+        }
         if (level == null || !level.hasChunkAt(this.pos)) {
             return null;
         }
-        BlockEntity be = level.getBlockEntity(this.pos);
-        if (be instanceof EssentiaProviderAccess access && !be.isRemoved()) {
-            ensureListenerRegistered(access);
-            return access;
+        BlockEntity currentBe = level.getBlockEntity(this.pos);
+        if (currentBe != initialBe || currentBe.isRemoved()) {
+            return null;
+        }
+        if (currentBe instanceof EssentiaProviderAccess currentAccess && currentAccess == provider) {
+            synchronized (this.attachedComputers) {
+                if (!this.attachedComputers.isEmpty()) {
+                    ensureListenerRegistered(provider);
+                }
+            }
+            return provider;
         }
         return null;
     }
 
-    private synchronized void ensureListenerRegistered(EssentiaProviderAccess provider) {
-        if (!this.isRegisteredAsBlockListener && provider != null) {
-            provider.addProviderListener(this);
-            this.isRegisteredAsBlockListener = true;
+    private synchronized void ensureListenerRegistered(@Nullable EssentiaProviderAccess provider) {
+        EssentiaProviderAccess initialProvider = this.targetProviderRef.get();
+        if (provider != null && provider == initialProvider && !this.isRegisteredAsBlockListener) {
+            Level level = this.levelRef != null ? this.levelRef.get() : null;
+            MinecraftServer server = level != null ? level.getServer() : null;
+            if (server != null && !server.isSameThread()) {
+                server.execute(() -> {
+                    synchronized (this) {
+                        if (this.targetProviderRef.get() == provider && !this.isRegisteredAsBlockListener) {
+                            provider.addProviderListener(this);
+                            this.isRegisteredAsBlockListener = true;
+                        }
+                    }
+                });
+            } else {
+                provider.addProviderListener(this);
+                this.isRegisteredAsBlockListener = true;
+            }
+        }
+    }
+
+    private synchronized void unregisterListener() {
+        if (this.isRegisteredAsBlockListener) {
+            EssentiaProviderAccess initialProvider = this.targetProviderRef.get();
+            this.isRegisteredAsBlockListener = false;
+            if (initialProvider != null) {
+                Level level = this.levelRef != null ? this.levelRef.get() : null;
+                MinecraftServer server = level != null ? level.getServer() : null;
+                if (server != null && !server.isSameThread()) {
+                    server.execute(() -> {
+                        try {
+                            initialProvider.removeProviderListener(this);
+                        } catch (Exception ignored) {
+                        }
+                    });
+                } else {
+                    try {
+                        initialProvider.removeProviderListener(this);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
         }
     }
 
