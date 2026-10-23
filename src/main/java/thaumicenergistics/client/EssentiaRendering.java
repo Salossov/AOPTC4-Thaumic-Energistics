@@ -29,7 +29,7 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
             case 2 -> appeng.api.util.AEColor.TRANSPARENT.mediumVariant;
             case 3 -> appeng.api.util.AEColor.TRANSPARENT.whiteVariant;
             default -> 0xffffff;
-        },ThaumicEnergistics.STORAGE_MONITOR.get());
+        },ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get());
     }
     @SubscribeEvent
     public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {

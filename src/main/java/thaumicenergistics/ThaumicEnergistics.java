@@ -72,6 +72,7 @@ public final class ThaumicEnergistics {
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaLevelEmitterItem> LEVEL_EMITTER = ITEMS.register("essentia_level_emitter",thaumicenergistics.parts.EssentiaLevelEmitterItem::new);
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaStorageMonitorItem> STORAGE_MONITOR = ITEMS.register("essentia_storage_monitor",thaumicenergistics.parts.EssentiaStorageMonitorItem::new);
+    public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaConversionMonitorItem> CONVERSION_MONITOR = ITEMS.register("essentia_conversion_monitor",thaumicenergistics.parts.EssentiaConversionMonitorItem::new);
 
     static {
         KEY_TYPES.register("essentia", () -> EssentiaKeyType.INSTANCE);
@@ -90,6 +91,7 @@ public final class ThaumicEnergistics {
                     output.accept(VIS_INTERFACE.get());
                     output.accept(LEVEL_EMITTER.get());
                     output.accept(STORAGE_MONITOR.get());
+                    output.accept(CONVERSION_MONITOR.get());
                     for (var tier : CellTier.values()) {
                         if (!tier.creative()) output.accept(COMPONENT_ITEMS.get(tier).get());
                         output.accept(CELLS.get(tier).get());
@@ -112,6 +114,7 @@ public final class ThaumicEnergistics {
         modBus.addListener(ThaumicEnergistics::setup);
         PartModels.registerModels(id("part/essentia_level_emitter_off"),id("part/essentia_level_emitter_on"));
         PartModels.registerModels(id("part/essentia_storage_monitor_off"),id("part/essentia_storage_monitor_on"),id("part/essentia_storage_monitor_empty_off"),id("part/essentia_storage_monitor_empty_on"));
+        PartModels.registerModels(id("part/essentia_conversion_monitor_off"),id("part/essentia_conversion_monitor_on"),id("part/essentia_conversion_monitor_empty_off"),id("part/essentia_conversion_monitor_empty_on"));
         modBus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) ->
                 event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
                         CELL_WORKBENCH_ENTITY.get(), (workbench, side) -> new net.neoforged.neoforge.items.wrapper.InvWrapper(workbench.inventory())));

@@ -48,7 +48,7 @@ public class EssentiaStorageMonitorPart extends AEBasePart implements IStorageMo
     @Override public boolean isPowered(){return super.isPowered()&&!isMissingChannel();}
     @Override public boolean showNetworkInfo(UseOnContext context){return false;}
     @Override public boolean useStandardMemoryCard(){return false;}
-    private boolean allowed(Player player){
+    protected final boolean allowed(Player player){
         return !(player instanceof net.neoforged.neoforge.common.util.FakePlayer)&&isActive()
                 &&Platform.hasPermissions(getHost().getLocation(),player);
     }

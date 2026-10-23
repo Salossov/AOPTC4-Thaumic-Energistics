@@ -34,8 +34,9 @@ def client_evidence(code_files: list[Path]) -> dict:
               "backspace_at_typing_limit", "io_capacity_card_packet", "workbench_real_cell_and_partition_packets",
               "vis_drain_color_real_client_sync", "hidden_unfocused_window", "sound_playback_blocked", "aspect_palette_rendered", "linked_research_real_client_sync", "imported_research_real_client_sync",
               "emitter_menu_real_packets", "emitter_world_flare_synced",
-              "monitor_face_down", "monitor_face_up", "monitor_face_north", "monitor_face_south", "monitor_face_west", "monitor_face_east")
-    if not result.get("automation_passed") or len(screenshots) < 25 or not all(result.get(key) is True for key in checks):
+              "monitor_face_down", "monitor_face_up", "monitor_face_north", "monitor_face_south", "monitor_face_west", "monitor_face_east",
+              "conversion_fill_real_packet", "conversion_batch_real_packets", "conversion_partial_phial_refused")
+    if not result.get("automation_passed") or len(screenshots) < 28 or not all(result.get(key) is True for key in checks):
         raise SystemExit("Client smoke failed or screenshots missing")
     hashes = {str(Path(path).resolve()): sha256(Path(path)) for path in screenshots}
     review = json.loads(review_path.read_text(encoding="utf-8")) if review_path.is_file() else {}
@@ -47,7 +48,8 @@ def client_evidence(code_files: list[Path]) -> dict:
             "hidden_unfocused_window": result["hidden_unfocused_window"], "sound_playback_blocked": result["sound_playback_blocked"],
             "aspect_pixels": audit_aspects(PROJECT,result,Path(receipt["inputs"]["core"]["path"])),
             "storage_monitor_faces_synced": all(result.get("monitor_face_"+face) for face in ("down","up","north","south","west","east")),
-            "scope": "storage bus, priority editor, import/export menus, cell workbench, essentia level emitter menu/world flare, six storage-monitor faces, Water Vis-interface and seven-aspect color/alpha palette at GUI scale 2"}
+            "conversion_monitor_packets": all(result.get(key) for key in ("conversion_fill_real_packet", "conversion_batch_real_packets", "conversion_partial_phial_refused")),
+            "scope": "storage bus, priority editor, import/export menus, cell workbench, essentia level emitter menu/world flare, six storage-monitor faces, conversion-monitor transfers, Water Vis-interface and seven-aspect color/alpha palette at GUI scale 2"}
 
 
 def main() -> None:
@@ -62,7 +64,7 @@ def main() -> None:
                    if hashlib.sha256(jar.read(entry["path"])).hexdigest() != entry["sha256"]]
         invalid_paths = [name for name in jar.namelist() if name.startswith("assets/") and name != name.lower()]
         stale_recipes = [entry["output"] for entry in recipes if jar.read(entry["output"]) != (PROJECT / "src/main/resources" / entry["output"]).read_bytes()]
-        for path in ("data/thaumicenergistics/recipe/essentia_storage_monitor.json",):
+        for path in ("data/thaumicenergistics/recipe/essentia_storage_monitor.json", "data/thaumicenergistics/recipe/essentia_conversion_monitor.json"):
             if jar.read(path)!=(PROJECT/"src/main/resources"/path).read_bytes():stale_recipes.append(path)
         if forbidden or changed or invalid_paths or stale_recipes:
             raise SystemExit(f"Invalid artifact: forbidden={forbidden}, changed_assets={changed}, invalid_paths={invalid_paths}, stale_recipes={stale_recipes}")

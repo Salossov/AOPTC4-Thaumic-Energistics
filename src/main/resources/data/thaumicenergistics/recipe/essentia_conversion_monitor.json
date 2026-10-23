@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "thaumicenergistics:coalescence_core"
+    },
+    {
+      "item": "thaumicenergistics:essentia_storage_monitor"
+    },
+    {
+      "item": "thaumicenergistics:diffusion_core"
+    }
+  ],
+  "result": {
+    "id": "thaumicenergistics:essentia_conversion_monitor",
+    "count": 1
+  }
+}

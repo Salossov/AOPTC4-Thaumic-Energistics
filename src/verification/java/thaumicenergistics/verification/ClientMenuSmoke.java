@@ -64,6 +64,7 @@ public final class ClientMenuSmoke {
     private static final String SAVE = "THE-client-menu-smoke";
     private static final BlockPos CABLE = new BlockPos(3,100,3), BENCH = new BlockPos(5,100,3);
     private static final BlockPos VIS_INPUT = new BlockPos(3,100,12), VIS_OUTPUT = new BlockPos(3,100,14);
+    private static final BlockPos CONVERSION = new BlockPos(16,104,9);
     private static final AtomicReference<Throwable> SERVER_ERROR = new AtomicReference<>();
     private static final java.util.concurrent.atomic.AtomicBoolean VIS_LINK_DRAINED = new java.util.concurrent.atomic.AtomicBoolean();
     private static final Map<String,Object> EVIDENCE = new LinkedHashMap<>();
@@ -391,14 +392,114 @@ public final class ClientMenuSmoke {
                         EVIDENCE.put("monitor_face_"+face.getName(),true);capture("monitor-world-"+face.getName());
                     }
                 }
-                case 66 -> finish(true,null);
+                case 66 -> {
+                    server(player -> {
+                        var level=player.serverLevel();
+                        level.setBlockAndUpdate(CONVERSION,Blocks.AIR.defaultBlockState());
+                        level.setBlockAndUpdate(CONVERSION.west(),block("ae2:creative_energy_cell"));
+                        level.setBlockAndUpdate(CONVERSION.east(),block("ae2:drive"));
+                        var cell=new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());
+                        new EssentiaCell(cell,null).insert(EssentiaKey.of(Aspects.WATER),24,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        var slots=level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,CONVERSION.east(),Direction.UP);
+                        if(!slots.getStackInSlot(0).isEmpty())slots.extractItem(0,1,false);slots.insertItem(0,cell,false);
+                        PartHelper.setPart(level,CONVERSION,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+                        PartHelper.setPart(level,CONVERSION,Direction.SOUTH,null,ThaumicEnergistics.CONVERSION_MONITOR.get());
+                        player.setGameMode(GameType.SURVIVAL);player.getAbilities().mayfly=true;player.getAbilities().flying=true;player.onUpdateAbilities();
+                        player.getInventory().clearContent();player.getInventory().selected=0;
+                        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(0));
+                        var empty=nativeItem("empty_phial");empty.setCount(2);player.setItemInHand(InteractionHand.MAIN_HAND,empty);player.inventoryMenu.broadcastChanges();
+                        player.teleportTo(level,16.5,104.5-player.getEyeHeight(),11.9,180,0);
+                    });advance();
+                }
+                case 67 -> {
+                    var part=conversion(mc);
+                    if(part!=null&&part.isActive()){
+                        server(player -> {
+                            var serverPart=(thaumicenergistics.parts.EssentiaConversionMonitorPart)PartHelper.getPartHost(player.level(),CONVERSION).getPart(Direction.SOUTH);
+                            serverPart.onUseItemOn(AspectApi.wispEssence(Aspects.WATER),player,InteractionHand.MAIN_HAND,Vec3.atCenterOf(CONVERSION));
+                            serverPart.onUseItemOn(ae("nether_quartz_wrench"),player,InteractionHand.MAIN_HAND,Vec3.atCenterOf(CONVERSION));
+                        });advance();
+                    }
+                }
+                case 68 -> {
+                    var part=conversion(mc);
+                    if(part!=null&&part.isLocked()&&part.getAmount()==24&&mc.player.getMainHandItem().is(nativeItem("empty_phial").getItem())){
+                        conversionUse(mc);advance();
+                    }
+                }
+                case 69 -> {
+                    var part=conversion(mc);
+                    if(part!=null&&part.getAmount()==16&&portableUnits(mc.player,Aspects.WATER)==8){
+                        EVIDENCE.put("conversion_fill_real_packet",true);capture("conversion-monitor-filled-phial");
+                    }
+                }
+                case 70 -> {
+                    server(player -> {
+                        // Shift descends in flight; keep the real packet fixture within reach
+                        // while crouching through both clicks of the forty-tick window.
+                        player.getAbilities().flying=false;player.onUpdateAbilities();player.setNoGravity(true);
+                        player.getInventory().clearContent();player.getInventory().selected=0;
+                        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(0));
+                        player.getInventory().setItem(0,phials(Aspects.WATER,2));player.getInventory().setItem(9,phials(Aspects.WATER,2));
+                        player.getInventory().setItem(10,phials(Aspects.FIRE,1));player.inventoryMenu.broadcastChanges();
+                    });mc.options.keyShift.setDown(true);advance();
+                }
+                case 71 -> {
+                    if(mc.player.isShiftKeyDown()&&portableUnits(mc.player,Aspects.WATER)==32&&mc.player.getMainHandItem().getCount()==2){conversionUse(mc);advance();}
+                }
+                case 72 -> {
+                    var part=conversion(mc);
+                    if(part!=null&&part.getAmount()==24&&portableUnits(mc.player,Aspects.WATER)==24){conversionUse(mc);advance();}
+                }
+                case 73 -> {
+                    var part=conversion(mc);
+                    if(part!=null&&part.getAmount()==48&&portableUnits(mc.player,Aspects.WATER)==0&&portableUnits(mc.player,Aspects.FIRE)==8){
+                        EVIDENCE.put("conversion_batch_real_packets",true);capture("conversion-monitor-batch-deposit");
+                    }
+                }
+                case 74 -> {
+                    server(player -> {
+                        var part=(thaumicenergistics.parts.EssentiaConversionMonitorPart)PartHelper.getPartHost(player.level(),CONVERSION).getPart(Direction.SOUTH);
+                        long accepted=part.getMainNode().getGrid().getStorageService().getInventory().insert(EssentiaKey.of(Aspects.EARTH),1999,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        if(accepted!=1999)throw new IllegalStateException("One-free-unit conversion fixture invalid");
+                        player.getInventory().clearContent();player.setItemInHand(InteractionHand.MAIN_HAND,phials(Aspects.WATER,1));player.inventoryMenu.broadcastChanges();
+                    });advance();
+                }
+                case 75 -> {
+                    if(mc.player.isShiftKeyDown()&&mc.player.getMainHandItem().getCount()==1&&portableUnits(mc.player,Aspects.WATER)==8){conversionUse(mc);advance();}
+                }
+                case 76 -> {
+                    var part=conversion(mc);
+                    if(age>=25&&part!=null&&part.getAmount()==48&&mc.player.getMainHandItem().getCount()==1&&portableUnits(mc.player,Aspects.WATER)==8){
+                        EVIDENCE.put("conversion_partial_phial_refused",true);capture("conversion-monitor-phial-refused");
+                    }
+                }
+                case 77 -> {mc.options.keyShift.setDown(false);finish(true,null);}
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
-            if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName()));
+            if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName())
+                    + "; held="+mc.player.getMainHandItem()+"; conversion="+(conversion(mc)==null?"missing":conversion(mc).getAmount()+"/locked="+conversion(mc).isLocked()));
         } catch (Throwable failure) { finish(false,failure); }
     }
     private static EssentiaLevelEmitterPart emitter(Minecraft mc) {
         var host=PartHelper.getPartHost(mc.level,CABLE);return host!=null&&host.getPart(Direction.UP) instanceof EssentiaLevelEmitterPart part?part:null;
+    }
+    private static thaumicenergistics.parts.EssentiaConversionMonitorPart conversion(Minecraft mc){
+        var host=PartHelper.getPartHost(mc.level,CONVERSION);
+        return host!=null&&host.getPart(Direction.SOUTH) instanceof thaumicenergistics.parts.EssentiaConversionMonitorPart part?part:null;
+    }
+    private static void conversionUse(Minecraft mc){
+        mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(CONVERSION).add(0,0,.501),Direction.SOUTH,CONVERSION,false));
+    }
+    private static ItemStack nativeItem(String path){return BuiltInRegistries.ITEM.get(ResourceLocation.parse("thaumcraft:"+path)).getDefaultInstance();}
+    private static ItemStack phials(thaumcraft.api.aspects.Aspect aspect,int count){
+        var result=thaumcraft.api.aspects.EssentiaItemApi.fill(nativeItem("empty_phial"),aspect,8).orElseThrow().resultStack();result.setCount(count);return result;
+    }
+    private static int portableUnits(net.minecraft.world.entity.player.Player player,thaumcraft.api.aspects.Aspect aspect){
+        int total=0;for(int i=0;i<player.getInventory().getContainerSize();i++){
+            var stack=player.getInventory().getItem(i);var info=thaumcraft.api.aspects.EssentiaItemApi.inspect(stack);
+            if(info.isPresent()&&info.get().aspect()==aspect)total+=info.get().amount()*stack.getCount();
+        }return total;
     }
     private static ItemStack ae(String path) { return BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:"+path)).getDefaultInstance(); }
     private static void fixture(ServerPlayer player) {
