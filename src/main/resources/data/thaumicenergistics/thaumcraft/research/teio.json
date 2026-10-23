@@ -26,6 +26,7 @@
     "thaumicenergistics.research_page.TEIO.1",
     "thaumicenergistics.research_page.TEIO.2"
   ],
+  "secondary": false,
   "recipe_pages": [
     "thaumicenergistics:essentia_import_bus",
     "thaumicenergistics:essentia_export_bus",

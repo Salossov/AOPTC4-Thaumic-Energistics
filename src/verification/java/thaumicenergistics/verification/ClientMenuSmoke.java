@@ -67,6 +67,7 @@ public final class ClientMenuSmoke {
     private static final BlockPos CONVERSION = new BlockPos(16,104,9);
     private static final BlockPos TERMINAL = new BlockPos(20,104,16);
     private static final BlockPos CELL_CHEST = new BlockPos(28,104,16);
+    private static final BlockPos WIRELESS_AP = new BlockPos(36,104,16);
     private static final AtomicReference<Throwable> SERVER_ERROR = new AtomicReference<>();
     private static final java.util.concurrent.atomic.AtomicBoolean VIS_LINK_DRAINED = new java.util.concurrent.atomic.AtomicBoolean();
     private static final java.util.concurrent.atomic.AtomicBoolean TERMINAL_WRENCHED = new java.util.concurrent.atomic.AtomicBoolean();
@@ -687,7 +688,90 @@ public final class ClientMenuSmoke {
                 }
                 case 119 -> {server(player->((appeng.blockentity.storage.MEChestBlockEntity)player.level().getBlockEntity(CELL_CHEST)).setCell(new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K4).get())));advance();}
                 case 120 -> {if(mc.screen==null&&mc.player.containerMenu==mc.player.inventoryMenu){EVIDENCE.put("cell_terminal_replacement_closes_menu",true);advance();}}
-                case 121 -> finish(true,null);
+                case 121 -> {
+                    server(player->{
+                        var level=player.serverLevel();var cable=WIRELESS_AP.below();
+                        for(var pos:List.of(WIRELESS_AP,cable,cable.west(),cable.east()))level.setBlockAndUpdate(pos,Blocks.AIR.defaultBlockState());
+                        level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(WIRELESS_AP).inflate(4)).forEach(net.minecraft.world.entity.Entity::discard);
+                        level.setBlockAndUpdate(WIRELESS_AP,block("ae2:wireless_access_point"));appeng.api.orientation.BlockOrientation.UP_NORTH.setOn(level,WIRELESS_AP);
+                        level.setBlockAndUpdate(cable.west(),block("ae2:creative_energy_cell"));level.setBlockAndUpdate(cable.east(),block("ae2:drive"));
+                        PartHelper.setPart(level,cable,null,null,IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
+                        var cell=new ItemStack(ThaumicEnergistics.CELLS.get(CellTier.K1).get());new EssentiaCell(cell,null).insert(EssentiaKey.of(Aspects.WATER),160,appeng.api.config.Actionable.MODULATE,appeng.api.networking.security.IActionSource.empty());
+                        level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,cable.east(),Direction.UP).insertItem(0,cell,false);
+                        player.getInventory().clearContent();player.getInventory().selected=0;player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(0));
+                        var terminal=new ItemStack(ThaumicEnergistics.WIRELESS_TERMINAL.get());ThaumicEnergistics.WIRELESS_TERMINAL.get().injectAEPower(terminal,10000,appeng.api.config.Actionable.MODULATE);player.setItemInHand(InteractionHand.MAIN_HAND,terminal);
+                        var empty=nativeItem("empty_phial");empty.setCount(4);player.getInventory().setItem(9,empty);player.inventoryMenu.broadcastChanges();player.teleportTo(level,36.5,105.6,18.9,180,45);
+                    });advance();
+                }
+                case 122 -> {
+                    if(age>=40&&mc.player.getMainHandItem().is(ThaumicEnergistics.WIRELESS_TERMINAL.get())&&mc.level.getBlockEntity(WIRELESS_AP) instanceof appeng.blockentity.networking.WirelessAccessPointBlockEntity){
+                        server(player->{var ap=(appeng.blockentity.networking.WirelessAccessPointBlockEntity)player.level().getBlockEntity(WIRELESS_AP);if(!ap.isActive())throw new IllegalStateException("Wireless fixture AP inactive");ap.getGrid().getCraftingService().addGlobalCraftingProvider(TerminalCraftingFixture.provider(player.level()));});
+                        mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(WIRELESS_AP).add(0,.501,0),Direction.UP,WIRELESS_AP,false));advance();
+                    }
+                }
+                case 123 -> {
+                    if(mc.player.containerMenu instanceof appeng.menu.implementations.WirelessAccessPointMenu apMenu){
+                        int heldSlot=apMenu.slots.stream().filter(slot->slot.container==mc.player.getInventory()&&slot.getContainerSlot()==0).findFirst().orElseThrow().index;
+                        if(apMenu.getCarried().isEmpty()&&!apMenu.getSlot(heldSlot).getItem().isEmpty()&&ThaumicEnergistics.WIRELESS_TERMINAL.get().getLinkedPosition(apMenu.getSlot(heldSlot).getItem())==null){click(heldSlot,ClickType.PICKUP);click(1,ClickType.PICKUP);}
+                        else if(apMenu.getCarried().isEmpty()&&!apMenu.getSlot(2).getItem().isEmpty()&&ThaumicEnergistics.WIRELESS_TERMINAL.get().getLinkedPosition(apMenu.getSlot(2).getItem())!=null){click(2,ClickType.PICKUP);click(heldSlot,ClickType.PICKUP);}
+                        else if(apMenu.getCarried().isEmpty()&&ThaumicEnergistics.WIRELESS_TERMINAL.get().getLinkedPosition(mc.player.getMainHandItem())!=null){
+                            EVIDENCE.put("wireless_native_ap_binding_packet",true);mc.player.closeContainer();mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);advance();
+                        }
+                    }
+                }
+                case 124 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&terminalAmount(menu,Aspects.WATER)==160&&menu.entries().size()==2){EVIDENCE.put("wireless_initial_connection_real_packet",true);capture("wireless-terminal-main");}
+                }
+                case 125 -> {click(2,ClickType.PICKUP);mc.gameMode.handleInventoryMouseClick(mc.player.containerMenu.containerId,11,0,ClickType.SWAP,mc.player);advance();}
+                case 126 -> {
+                    if(mc.player.containerMenu.getSlot(2).getItem().is(ThaumicEnergistics.WIRELESS_TERMINAL.get())&&mc.player.containerMenu.getCarried().isEmpty()){
+                        EVIDENCE.put("wireless_bound_slot_real_packets",true);terminalClick(Aspects.WATER,0);advance();
+                    }
+                }
+                case 127 -> {click(11,ClickType.PICKUP);click(0,ClickType.PICKUP);advance();}
+                case 128 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.getSlot(0).getItem().isEmpty()&&menu.getSlot(1).getItem().getCount()==4&&terminalAmount(menu,Aspects.WATER)==128&&ThaumicEnergistics.WIRELESS_TERMINAL.get().getAECurrentPower(mc.player.getMainHandItem())<10000){EVIDENCE.put("wireless_work_and_battery_real_packets",true);capture("wireless-terminal-filled");}
+                }
+                case 129 -> {
+                    click(1,ClickType.QUICK_MOVE);var screen=(net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)mc.screen;
+                    mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+17,0);mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+37,0);advance();
+                }
+                case 130 -> {if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.sort()==1&&menu.view()==appeng.api.config.ViewItems.STORED){mc.player.closeContainer();advance();}}
+                case 131 -> {if(mc.screen==null){mc.gameMode.useItem(mc.player,InteractionHand.MAIN_HAND);advance();}}
+                case 132 -> {
+                    if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.sort()==1&&menu.view()==appeng.api.config.ViewItems.STORED&&menu.selected()==null&&menu.getSlot(0).getItem().isEmpty()&&menu.getSlot(1).getItem().isEmpty()&&terminalAmount(menu,Aspects.WATER)==128){EVIDENCE.put("wireless_modes_reopen",true);capture("wireless-terminal-reopened");}
+                }
+                case 133 -> {var screen=(net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)mc.screen;mc.screen.mouseClicked(screen.getGuiLeft()-10,screen.getGuiTop()+37,0);advance();}
+                case 134 -> {if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu menu&&menu.view()==appeng.api.config.ViewItems.CRAFTABLE){terminalClick(Aspects.FIRE,0);advance();}}
+                case 135 -> {if(mc.player.containerMenu instanceof appeng.menu.me.crafting.CraftAmountMenu menu&&menu.getWhatToCraft()!=null&&menu.getWhatToCraft().what().equals(EssentiaKey.of(Aspects.FIRE)))capture("wireless-native-craft-amount");}
+                case 136 -> {((appeng.menu.me.crafting.CraftAmountMenu)mc.player.containerMenu).confirm(0,false,false);advance();}
+                case 137 -> {if(mc.player.containerMenu instanceof thaumicenergistics.menu.EssentiaTerminalMenu){EVIDENCE.put("wireless_native_craft_return",true);server(player->player.teleportTo(player.serverLevel(),136.5,105.6,18.9,180,45));advance();}}
+                case 138 -> {if(mc.screen==null&&mc.player.containerMenu==mc.player.inventoryMenu){EVIDENCE.put("wireless_range_closes_menu",true);advance();}}
+                case 139 -> {
+                    server(player->{
+                        if(!ResearchApi.knows(player,"thaumicenergistics:teessterm"))ResearchApi.grant(player,"thaumicenergistics:teessterm");
+                        player.setItemInHand(InteractionHand.MAIN_HAND,nativeItem("thaumonomicon"));player.inventoryMenu.broadcastChanges();player.getMainHandItem().use(player.level(),player,InteractionHand.MAIN_HAND);
+                    });advance();
+                }
+                case 140 -> {
+                    if(mc.screen!=null&&mc.screen.getClass().getSimpleName().equals("ThaumonomiconScreen")&&ResearchApi.clientKnowledge().completedResearch().contains("thaumicenergistics:teessterm")){
+                        var definition=ResearchApi.definitions().get("thaumicenergistics:teessterm");
+                        if(definition==null||definition.pageOrder().size()!=9||!definition.secondary()||!net.minecraft.client.resources.language.I18n.exists("tc.research_name."+definition.key()))throw new IllegalStateException("Monitoring research client sync/translation differs from release");
+                        var open=mc.screen.getClass().getDeclaredMethod("openResearch",String.class);open.setAccessible(true);open.invoke(mc.screen,definition.key());advance();
+                    }
+                }
+                case 141 -> capture("monitoring-research-text");
+                case 142 -> {
+                    var pages=mc.screen.getClass().getDeclaredMethod("pages");pages.setAccessible(true);var resolved=(List<?>)pages.invoke(mc.screen);
+                    for(int index=2;index<=3;index++){
+                        var recipe=resolved.get(index).getClass().getDeclaredMethod("recipe");recipe.setAccessible(true);
+                        String expected="thaumicenergistics:"+(index==2?"essentia_terminal":"wireless_essentia_terminal");
+                        if(!recipe.invoke(resolved.get(index)).equals(expected))throw new IllegalStateException("Monitoring recipe page mismatch "+index);
+                    }
+                    var spread=mc.screen.getClass().getDeclaredField("spread");spread.setAccessible(true);spread.setInt(mc.screen,1);EVIDENCE.put("monitoring_research_pages_real_sync",true);advance();
+                }
+                case 143 -> capture("monitoring-research-recipes");
+                case 144 -> finish(true,null);
                 default -> throw new IllegalStateException("Unknown smoke step " + step);
             }
             if (age > 600) throw new IllegalStateException("Client smoke step timeout " + step + "; screen=" + (mc.screen == null ? "none" : mc.screen.getClass().getName())

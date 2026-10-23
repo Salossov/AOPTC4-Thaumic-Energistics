@@ -89,6 +89,7 @@ public final class RecipeNativeTest {
         arcane(h,"essentia_storage_bus","teio",Map.of("ignis",3,"terra",3,"aqua",1));
         matches(h,"vis_interface",grid("ae2:me_p2p_tunnel","thaumcraft:balanced_shard"),"thaumicenergistics:vis_interface");
         arcane(h,"vis_interface","tevisint",Map.of("aer",2,"terra",2,"ignis",2,"aqua",2,"ordo",2,"perditio",2));
-        System.out.println("THE_NATIVE_ORIGINAL_RECIPES_PASS recipes=20"); h.succeed();
+        matches(h,"wireless_essentia_terminal",grid("ae2:wireless_receiver","thaumicenergistics:essentia_terminal","ae2:dense_energy_cell"),"thaumicenergistics:wireless_essentia_terminal");
+        System.out.println("THE_NATIVE_ORIGINAL_RECIPES_PASS recipes=21"); h.succeed();
     }
 }

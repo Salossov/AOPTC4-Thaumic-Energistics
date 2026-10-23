@@ -12,16 +12,18 @@ FEATURES = {
     "FeatureConversionCores": ("TECORES", "tecores", "thaumicenergistics:coalescence_core"),
     "FeatureCells": ("TESTORAGE", "testorage", "thaumicenergistics:essentia_cell_64k"),
     "FeatureEssentiaIOBuses": ("TEIO", "teio", "thaumicenergistics:essentia_export_bus"),
+    "FeatureEssentiaMonitoring": ("TEESSTERM", "teessterm", "thaumicenergistics:essentia_terminal"),
 }
 ASPECTS = {"SLIME": "limus", "MAGIC": "praecantatio", "MECHANISM": "machina", "EXCHANGE": "permutatio",
-           "VOID": "vacuos", "ENERGY": "potentia", "CRYSTAL": "vitreus", "METAL": "metallum", "AIR": "aer"}
+           "VOID": "vacuos", "ENERGY": "potentia", "CRYSTAL": "vitreus", "METAL": "metallum", "AIR": "aer", "SENSES": "sensus", "WATER": "aqua"}
 PARENTS = {
     "teresearch": [],
     "tecores": ["thaumicenergistics:teresearch", "thaumicenergistics:pseudo_distilessentia"],
     "testorage": ["thaumicenergistics:teresearch", "thaumicenergistics:pseudo_distilessentia", "thaumicenergistics:pseudo_wardedarcana"],
     "teio": ["thaumicenergistics:tecores", "thaumicenergistics:pseudo_tubefilter"],
+    "teessterm": ["thaumicenergistics:tecores"],
 }
-HIDDEN_PARENTS = {"teresearch": [], "tecores": ["DISTILESSENTIA"], "testorage": ["DISTILESSENTIA"], "teio": ["TUBEFILTER"]}
+HIDDEN_PARENTS = {"teresearch": [], "tecores": ["DISTILESSENTIA"], "testorage": ["DISTILESSENTIA"], "teio": ["TUBEFILTER"], "teessterm": []}
 
 
 def write(relative: str, value: object) -> None:
@@ -54,10 +56,11 @@ def extract(path: Path, original: str) -> dict:
         elif recipe: pages.append({"recipes": [recipe[1]]})
         elif expression.strip() in arrays: pages.append({"recipes": arrays[expression.strip()]})
         else: raise ValueError(f"Unrecognized original page: {path}: {expression}")
-    complexity = re.search(r"createResearchItem\s*\(\s*\w+\s*,\s*(\d+|(?:ResearchRegistry\.)?COMPLEXITY_MEDIUM)", text)
-    result = {"aspects": costs, "complexity": 0 if complexity is None else (2 if not complexity[1].isdigit() else int(complexity[1])),
+    complexity = re.search(r"createResearchItem\s*\(\s*\w+\s*,\s*(\d+|(?:ResearchRegistry\.)?COMPLEXITY_(?:SMALL|MEDIUM|LARGE))", text)
+    level=0 if complexity is None else (int(complexity[1]) if complexity[1].isdigit() else {"SMALL":1,"MEDIUM":2,"LARGE":3}[complexity[1].split('_')[-1]])
+    result = {"aspects": costs, "complexity": level,
               "pages": pages, "concealed": ".setConcealed(" in text, "round": ".setRound(" in text,
-              "auto_unlock": ".setAutoUnlock(" in text}
+              "auto_unlock": ".setAutoUnlock(" in text, "secondary": ".setSecondary(" in text}
     if not pages: raise ValueError(f"No original pages: {path}")
     return result
 
@@ -67,9 +70,12 @@ def main() -> None:
         raise ValueError("Wrong release reference")
     recipe_report = json.loads((ADDON / "analysis/imported-recipes.json").read_text(encoding="utf-8"))
     recipes = {entry["registry"]: "thaumicenergistics:" + Path(entry["output"]).stem for entry in recipe_report["recipes"]}
+    for registry,name in {"PART_ESSENTIA_TERMINAL":"essentia_terminal", "ITEM_WIRELESS_ESSENTIA_TERMINAL":"wireless_essentia_terminal", "PART_ESSENTIA_LEVEL_EMITTER":"essentia_level_emitter", "PART_ESSENTIA_STORAGE_MONITOR":"essentia_storage_monitor", "PART_ESSENTIA_CONVERSION_MONITOR":"essentia_conversion_monitor"}.items():
+        assert (ROOT/f"data/thaumicenergistics/recipe/{name}.json").is_file()
+        recipes[registry]="thaumicenergistics:"+name
     source_registry = (ADDON / "source_code/src/main/java/thaumicenergistics/common/registries/ResearchRegistry.java").read_text(encoding="utf-8")
     release_registry = (ADDON / "decompiled/thaumicenergistics/common/registries/ResearchRegistry.java").read_text(encoding="utf-8")
-    report = {"research": [], "pending": "All remaining feature branches, config filtering, and Vis's original arcane-terminal parent"}
+    report = {"research": [], "monitoring_profile":{"wireless":True,"conversion":True}, "pending": "All remaining feature branches, config filtering, and Vis's original arcane-terminal parent"}
     write("data/thaumicenergistics/thaumcraft/category.json", {
         "kind": "book_category", "id": "thaumicenergistics:main", "name": "tc.research_category.thaumicenergistics",
         "icon": "thaumicenergistics:textures/research/tab.icon.png", "background": "thaumicenergistics:textures/research/research.background.png", "order": 100})
@@ -86,6 +92,7 @@ def main() -> None:
                  "column": int(coordinates[1]), "row": int(coordinates[2]), "aspects": extracted["aspects"],
                  "complexity": extracted["complexity"], "auto_unlock": extracted["auto_unlock"],
                  "concealed": extracted["concealed"], "round": extracted["round"], "text_pages": [],
+                 "secondary": extracted["secondary"],
                  "recipe_pages": [], "recipe_groups": {}, "page_order": []}
         for index, page in enumerate(extracted["pages"]):
             if "text" in page:
@@ -115,7 +122,7 @@ def main() -> None:
                 if key in values: values[f"tc.research_{kind}.thaumicenergistics:{modern}"] = values[key]
         language.write_text(json.dumps(values, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     (ADDON / "analysis/imported-research.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print("THE_RELEASE_RESEARCH_IMPORTED nodes=4 links=3 source_release_equivalent=true")
+    print("THE_RELEASE_RESEARCH_IMPORTED nodes=5 links=3 source_release_equivalent=true default_monitoring_branches=enabled")
 
 
 if __name__ == "__main__":

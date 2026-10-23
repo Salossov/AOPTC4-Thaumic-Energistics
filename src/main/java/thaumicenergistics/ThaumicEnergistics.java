@@ -79,6 +79,7 @@ public final class ThaumicEnergistics {
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaStorageMonitorItem> STORAGE_MONITOR = ITEMS.register("essentia_storage_monitor",thaumicenergistics.parts.EssentiaStorageMonitorItem::new);
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaConversionMonitorItem> CONVERSION_MONITOR = ITEMS.register("essentia_conversion_monitor",thaumicenergistics.parts.EssentiaConversionMonitorItem::new);
     public static final DeferredHolder<Item, thaumicenergistics.parts.EssentiaTerminalItem> ESSENTIA_TERMINAL = ITEMS.register("essentia_terminal",thaumicenergistics.parts.EssentiaTerminalItem::new);
+    public static final DeferredHolder<Item,thaumicenergistics.items.WirelessEssentiaTerminalItem> WIRELESS_TERMINAL=ITEMS.register("wireless_essentia_terminal",thaumicenergistics.items.WirelessEssentiaTerminalItem::new);
 
     static {
         KEY_TYPES.register("essentia", () -> EssentiaKeyType.INSTANCE);
@@ -99,6 +100,7 @@ public final class ThaumicEnergistics {
                     output.accept(STORAGE_MONITOR.get());
                     output.accept(CONVERSION_MONITOR.get());
                     output.accept(ESSENTIA_TERMINAL.get());
+                    output.accept(WIRELESS_TERMINAL.get());
                     for (var tier : CellTier.values()) {
                         if (!tier.creative()) output.accept(COMPONENT_ITEMS.get(tier).get());
                         output.accept(CELLS.get(tier).get());
@@ -132,6 +134,7 @@ public final class ThaumicEnergistics {
         event.enqueueWork(() -> {
             StorageCells.addCellHandler(EssentiaCell.HANDLER);
             ContainerPermissions.registerDefaults();
+            appeng.api.features.GridLinkables.register(WIRELESS_TERMINAL.get(),appeng.items.tools.powered.WirelessTerminalItem.LINKABLE_HANDLER);
             for (var item : List.of(IMPORT_BUS.get(), EXPORT_BUS.get())) {
                 Upgrades.add(BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:speed_card")), item, 4);
                 Upgrades.add(BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:capacity_card")), item, 2);

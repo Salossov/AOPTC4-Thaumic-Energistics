@@ -48,6 +48,9 @@ public final class ResearchProgressionNativeTest {
             var cores=definitions.get("thaumicenergistics:tecores");
             var storage=definitions.get("thaumicenergistics:testorage");
             var buses=definitions.get("thaumicenergistics:teio");
+            var terminal=definitions.get("thaumicenergistics:teessterm");
+            helper.assertTrue(terminal!=null&&terminal.secondary()&&terminal.concealed()&&terminal.complexity()==1&&terminal.column()==-1&&terminal.row()==-4&&terminal.pageOrder().size()==9&&terminal.parents().equals(List.of("thaumicenergistics:tecores"))&&terminal.aspects().equals(Map.of("permutatio",5,"sensus",5,"potentia",3,"aqua",3)),"original secondary monitoring research costs, parent and nine default-enabled pages");
+            helper.assertTrue(!terminal.available(ResearchApi.knowledge(player)),"monitoring cannot bypass conversion cores");
             helper.assertTrue(root!=null&&root.autoUnlock()&&root.round()&&root.column()==0&&root.row()==0,"original root is round and auto-unlocked");
             helper.assertTrue(cores!=null&&cores.aspects().equals(Map.of("limus",3,"praecantatio",5,"machina",5,"permutatio",5))&&cores.complexity()==2,"original core aspect cost and complexity");
             helper.assertTrue(storage!=null&&storage.pageOrder().size()==8&&storage.recipeGroups().size()==3&&storage.recipePages().size()==14,"storage keeps original eight pages and three grouped variant pages");
@@ -88,7 +91,16 @@ public final class ResearchProgressionNativeTest {
             var book=(AbstractContainerMenu)bookType.getConstructor(int.class,Inventory.class,UUID.class).newInstance(2,player.getInventory(),UUID.randomUUID());
             helper.assertTrue((Boolean)bookType.getMethod("createNote",ServerPlayer.class,String.class).invoke(book,player,buses.key()),"ordinary book action creates an addon bus research note");
             helper.assertTrue(!player.getInventory().contains(item("minecraft:paper"))&&player.getInventory().items.stream().anyMatch(stack->stack.is(item("thaumcraft:research_notes").getItem()))&&!ResearchApi.knows(player,buses.key()),"note creation replaces consumed paper with research notes but does not grant research");
-            System.out.println("THE_NATIVE_IMPORTED_RESEARCH_ARCANE_GATE_PASS nodes=4 links=3 note_created=true puzzle_completion_not_tested=true");
+            for(int slot=0;slot<10;slot++)table.setItem(slot,ItemStack.EMPTY);
+            int ingredient=0;for(String id:List.of("ae2:monitor","thaumicenergistics:diffusion_core","thaumicenergistics:coalescence_core","ae2:logic_processor","thaumcraft:vis_filter"))table.setItem(ingredient++,item(id));
+            menu.broadcastChanges();helper.assertTrue(menu.getSlot(0).getItem().isEmpty(),"terminal arcane output remains gated before monitoring purchase");
+            helper.assertTrue(!(Boolean)bookType.getMethod("createNote",ServerPlayer.class,String.class).invoke(book,player,terminal.key()),"secondary research refuses missing aspect pools");
+            for(var cost:terminal.aspects().entrySet())ResearchApi.completeAspect(player,thaumcraft.api.aspects.Aspect.getAspect(cost.getKey()),cost.getValue().shortValue());
+            helper.assertTrue((Boolean)bookType.getMethod("createNote",ServerPlayer.class,String.class).invoke(book,player,terminal.key())&&ResearchApi.knows(player,terminal.key()),"native book purchases secondary monitoring research without paper");
+            for(var tag:terminal.aspects().keySet())helper.assertTrue(ResearchApi.knowledge(player).aspectPools().get(tag)==0,"native purchase debits exact original aspect cost "+tag);
+            menu.broadcastChanges();helper.assertTrue(menu.getSlot(0).getItem().is(ThaumicEnergistics.ESSENTIA_TERMINAL.get())&&menu.getSlot(0).mayPickup(player),"original terminal recipe becomes craftable after proper secondary completion");
+            var terminalResult=menu.getSlot(0).remove(1);helper.assertTrue(terminalResult.is(ThaumicEnergistics.ESSENTIA_TERMINAL.get())&&table.getItem(0).isEmpty(),"native arcane terminal craft consumes ingredients");
+            System.out.println("THE_NATIVE_IMPORTED_RESEARCH_ARCANE_GATE_PASS nodes=5 links=3 note_created=true monitoring_purchased=true terminal_crafted=true puzzle_completion_not_tested=true");
             helper.succeed();
         } finally {player.connection=null;}
     }

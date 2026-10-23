@@ -27,6 +27,7 @@
     "thaumicenergistics.research_page.TESTORAGE.1",
     "thaumicenergistics.research_page.TESTORAGE.2"
   ],
+  "secondary": false,
   "recipe_pages": [
     "thaumicenergistics:storage_component_1k",
     "thaumicenergistics:storage_component_4k",

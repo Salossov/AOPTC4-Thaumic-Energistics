@@ -173,5 +173,8 @@
   "item.thaumicenergistics.essentia_level_emitter": "源质发信器",
   "item.thaumicenergistics.essentia_storage_monitor": "源质储存监控器",
   "item.thaumicenergistics.essentia_conversion_monitor": "源质交换监控器",
-  "item.thaumicenergistics.essentia_terminal": "源质终端"
+  "item.thaumicenergistics.essentia_terminal": "源质终端",
+  "item.thaumicenergistics.wireless_essentia_terminal": "无线源质终端",
+  "tc.research_name.thaumicenergistics:teessterm": "源质终端",
+  "tc.research_text.thaumicenergistics:teessterm": "已知你有多少源质."
 }

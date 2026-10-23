@@ -20,18 +20,24 @@ public final class EssentiaTerminalMenu extends AbstractContainerMenu {
     private final Player owner;
     private final TerminalHost host;
     private final TerminalInventory inventory;
+    private final DataSlot lockedSlot=DataSlot.standalone();
     private int ticks;
     private long lastCursorSound=System.currentTimeMillis();
     private TerminalStatePayload state,lastSent;
     public EssentiaTerminalMenu(int id,Inventory playerInventory,TerminalHost host){
         super(ThaumicEnergistics.TERMINAL_MENU.get(),id);owner=playerInventory.player;this.host=host;
         inventory=host==null?new TerminalInventory(()->{}):host.inventory();
+        lockedSlot.set(host==null?-1:host.lockedPlayerSlot());addDataSlot(lockedSlot);
         state=new TerminalStatePayload(id,0,0,"",List.of());
         addSlot(new Slot(inventory,0,8,92){@Override public boolean mayPlace(ItemStack item){return TerminalInventory.accepts(item);}});
         addSlot(new Slot(inventory,1,26,92){@Override public boolean mayPlace(ItemStack item){return false;}});
-        for(int column=0;column<9;column++)addSlot(new Slot(playerInventory,column,8+column*18,180));
-        for(int row=0;row<3;row++)for(int column=0;column<9;column++)addSlot(new Slot(playerInventory,9+row*9+column,8+column*18,122+row*18));
+        for(int column=0;column<9;column++)addSlot(playerSlot(playerInventory,column,8+column*18,180));
+        for(int row=0;row<3;row++)for(int column=0;column<9;column++)addSlot(playerSlot(playerInventory,9+row*9+column,8+column*18,122+row*18));
     }
+    private Slot playerSlot(Inventory inv,int index,int x,int y){return new Slot(inv,index,x,y){
+        @Override public boolean mayPickup(Player player){return index!=lockedSlot.get();}
+        @Override public boolean mayPlace(ItemStack item){return index!=lockedSlot.get();}
+    };}
     public List<TerminalEntry> entries(){return state.entries();}
     public int sort(){return state.sort();}
     public ViewItems view(){return ViewItems.values()[Math.floorMod(state.view(),ViewItems.values().length)];}
@@ -49,7 +55,7 @@ public final class EssentiaTerminalMenu extends AbstractContainerMenu {
             var raw=host.rawStorage();
             if(raw!=null&&++ticks>3){
                 host.workTick(ticks);
-                inventory.process(host.selected(),new PoweredEssentiaStorage(raw,host.transferEnergy()),raw,IActionSource.ofPlayer(owner,host));ticks=0;
+                var powered=host.poweredStorage();if(powered!=null)inventory.process(host.selected(),powered,raw,IActionSource.ofPlayer(owner,host));ticks=0;
             }
             state=new TerminalStatePayload(containerId,host.sort(),host.view().ordinal(),host.selected()==null?"":host.selected().getTag(),host.entries());
             if(owner instanceof ServerPlayer player&&!state.equals(lastSent)){PacketDistributor.sendToPlayer(player,state);lastSent=state;}
@@ -84,7 +90,7 @@ public final class EssentiaTerminalMenu extends AbstractContainerMenu {
     private boolean cursorTransfer(Aspect aspect){
         var held=getCarried();if(held.isEmpty())return false;
         var raw=host.rawStorage();if(raw==null)return false;
-        var powered=new PoweredEssentiaStorage(raw,host.transferEnergy());var source=IActionSource.ofPlayer(owner,host);var one=held.copyWithCount(1);
+        var powered=host.poweredStorage();if(powered==null)return false;var source=IActionSource.ofPlayer(owner,host);var one=held.copyWithCount(1);
         var quote=TerminalInventory.quote(one,aspect,powered,source);if(quote.isEmpty()||held.getCount()>1&&!canGive(quote.get()))return false;
         var converted=TerminalInventory.convert(one,aspect,powered,raw,source);if(converted.isEmpty())return false;
         var result=converted.get().result();
@@ -102,11 +108,16 @@ public final class EssentiaTerminalMenu extends AbstractContainerMenu {
         }
         return true;
     }
-    @Override public void clicked(int slot,int button,ClickType type,Player player){if(stillValid(player))super.clicked(slot,button,type,player);}
+    @Override public void clicked(int slot,int button,ClickType type,Player player){
+        if(type==ClickType.SWAP&&button==lockedSlot.get())return;
+        if(slot>=2&&slot<slots.size()&&getSlot(slot).getContainerSlot()==lockedSlot.get())return;
+        if(stillValid(player))super.clicked(slot,button,type,player);
+    }
     @Override public void removed(Player player){super.removed(player);if(host!=null)host.removed(player);}
     @Override public ItemStack quickMoveStack(Player player,int index){
         if(!stillValid(player)||index<0||index>=slots.size())return ItemStack.EMPTY;
         var slot=getSlot(index);if(!slot.hasItem())return ItemStack.EMPTY;var item=slot.getItem();boolean moved;
+        if(index>=2&&slot.getContainerSlot()==lockedSlot.get())return ItemStack.EMPTY;
         if(index<2)moved=moveItemStackTo(item,11,38,false); // Original output/input shift-click targets main inventory only.
         else if(TerminalInventory.accepts(item))moved=moveItemStackTo(item,0,1,false);
         else moved=moveItemStackTo(item,index<11?11:2,index<11?38:11,false);

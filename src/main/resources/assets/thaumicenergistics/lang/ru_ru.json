@@ -148,5 +148,8 @@
   "item.thaumicenergistics.essentia_level_emitter": "Излучатель уровня эссенции",
   "item.thaumicenergistics.essentia_storage_monitor": "Монитор хранения эссенции",
   "item.thaumicenergistics.essentia_conversion_monitor": "Монитор преобразования эссенции",
-  "item.thaumicenergistics.essentia_terminal": "Терминал эссенции"
+  "item.thaumicenergistics.essentia_terminal": "Терминал эссенции",
+  "item.thaumicenergistics.wireless_essentia_terminal": "Беспроводной терминал эссенции",
+  "tc.research_name.thaumicenergistics:teessterm": "Мониторинг эссенции",
+  "tc.research_text.thaumicenergistics:teessterm": "Зная, сколько у Вас есть."
 }

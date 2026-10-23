@@ -26,6 +26,7 @@ public interface TerminalHost extends IActionHost,ISubMenuHost {
     void rotateView(boolean backwards);
     default MEStorage poweredStorage(){var raw=rawStorage();return raw==null?null:new PoweredEssentiaStorage(raw,transferEnergy());}
     default boolean supportsCrafting(){return false;}
+    default int lockedPlayerSlot(){return -1;}
     default MenuHostLocator craftingLocator(){return null;}
     default void workTick(int elapsed){}
     default void removed(Player player){}

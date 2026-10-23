@@ -93,5 +93,7 @@
   "tc.research_name.thaumicenergistics:teio": "Digi-sentia-Transport",
   "tc.research_text.thaumicenergistics:teio": "Essentia digital bewegen!",
   "item.thaumicenergistics.essentia_level_emitter": "ME-Essentia-Füllstandsemitter",
-  "item.thaumicenergistics.essentia_terminal": "Essentia-Konsole"
+  "item.thaumicenergistics.essentia_terminal": "Essentia-Konsole",
+  "tc.research_name.thaumicenergistics:teessterm": "Essentia-Überwachung",
+  "tc.research_text.thaumicenergistics:teessterm": "Wissen, wie viel du hast."
 }

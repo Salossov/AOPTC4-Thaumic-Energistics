@@ -1,0 +1,48 @@
+{
+  "kind": "research",
+  "key": "thaumicenergistics:teessterm",
+  "category": "thaumicenergistics:main",
+  "parents": [
+    "thaumicenergistics:tecores"
+  ],
+  "hidden_parents": [],
+  "icon": "thaumicenergistics:essentia_terminal",
+  "column": -1,
+  "row": -4,
+  "aspects": {
+    "permutatio": 5,
+    "sensus": 5,
+    "potentia": 3,
+    "aqua": 3
+  },
+  "complexity": 1,
+  "auto_unlock": false,
+  "concealed": true,
+  "round": false,
+  "text_pages": [
+    "thaumicenergistics.research_page.TEESSTERM.1",
+    "thaumicenergistics.research_page.TEESSTERM.2",
+    "thaumicenergistics.research_page.TEESSTERM.3",
+    "thaumicenergistics.research_page.TEESSTERM.4"
+  ],
+  "secondary": true,
+  "recipe_pages": [
+    "thaumicenergistics:essentia_terminal",
+    "thaumicenergistics:wireless_essentia_terminal",
+    "thaumicenergistics:essentia_level_emitter",
+    "thaumicenergistics:essentia_storage_monitor",
+    "thaumicenergistics:essentia_conversion_monitor"
+  ],
+  "recipe_groups": {},
+  "page_order": [
+    "thaumicenergistics.research_page.TEESSTERM.1",
+    "thaumicenergistics.research_page.TEESSTERM.2",
+    "thaumicenergistics:essentia_terminal",
+    "thaumicenergistics:wireless_essentia_terminal",
+    "thaumicenergistics.research_page.TEESSTERM.3",
+    "thaumicenergistics:essentia_level_emitter",
+    "thaumicenergistics.research_page.TEESSTERM.4",
+    "thaumicenergistics:essentia_storage_monitor",
+    "thaumicenergistics:essentia_conversion_monitor"
+  ]
+}

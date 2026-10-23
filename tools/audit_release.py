@@ -37,8 +37,9 @@ def client_evidence(code_files: list[Path]) -> dict:
               "monitor_face_down", "monitor_face_up", "monitor_face_north", "monitor_face_south", "monitor_face_west", "monitor_face_east",
               "conversion_fill_real_packet", "conversion_batch_real_packets", "conversion_partial_phial_refused",
               "terminal_menu_real_packets", "terminal_work_slots", "terminal_cursor_transfer", "terminal_native_craft_menu", "terminal_search_filter", "terminal_real_wrench_restore",
-              "cell_chest_native_configuration", "cell_terminal_local_real_packets", "cell_terminal_work_transfer", "cell_terminal_close_conserves_work_items", "cell_terminal_modes_reopen", "cell_terminal_replacement_closes_menu")
-    if not result.get("automation_passed") or len(screenshots) < 40 or not all(result.get(key) is True for key in checks):
+              "cell_chest_native_configuration", "cell_terminal_local_real_packets", "cell_terminal_work_transfer", "cell_terminal_close_conserves_work_items", "cell_terminal_modes_reopen", "cell_terminal_replacement_closes_menu",
+              "wireless_native_ap_binding_packet", "wireless_initial_connection_real_packet", "wireless_bound_slot_real_packets", "wireless_work_and_battery_real_packets", "wireless_modes_reopen", "wireless_native_craft_return", "wireless_range_closes_menu", "monitoring_research_pages_real_sync")
+    if not result.get("automation_passed") or len(screenshots) < 46 or not all(result.get(key) is True for key in checks):
         raise SystemExit("Client smoke failed or screenshots missing")
     hashes = {str(Path(path).resolve()): sha256(Path(path)) for path in screenshots}
     review = json.loads(review_path.read_text(encoding="utf-8")) if review_path.is_file() else {}
@@ -54,7 +55,9 @@ def client_evidence(code_files: list[Path]) -> dict:
             "essentia_terminal_packets": all(result.get(key) for key in ("terminal_menu_real_packets", "terminal_work_slots", "terminal_cursor_transfer", "terminal_native_craft_menu", "terminal_search_filter")),
             "essentia_terminal_wrench_restored": result["terminal_real_wrench_restore"],
             "cell_terminal_packets": all(result[key] for key in ("cell_chest_native_configuration", "cell_terminal_local_real_packets", "cell_terminal_work_transfer", "cell_terminal_close_conserves_work_items", "cell_terminal_modes_reopen", "cell_terminal_replacement_closes_menu")),
-            "scope": "storage bus, priority editor, import/export menus, cell workbench, level emitter, six storage-monitor faces, conversion monitor, essentia terminal work/cursor/search/native-craft menus and wrench restore, local ME Chest cell terminal, Water Vis-interface and aspect palette at GUI scale 2"}
+            "wireless_terminal_packets": all(result[key] for key in ("wireless_native_ap_binding_packet", "wireless_initial_connection_real_packet", "wireless_bound_slot_real_packets", "wireless_work_and_battery_real_packets", "wireless_modes_reopen", "wireless_native_craft_return", "wireless_range_closes_menu")),
+            "monitoring_research_pages_synced": result["monitoring_research_pages_real_sync"],
+            "scope": "storage bus, priority editor, import/export menus, cell workbench, level emitter, six storage-monitor faces, conversion monitor, essentia terminal work/cursor/search/native-craft menus and wrench restore, local ME Chest cell terminal, wireless AP linking/battery/bound slot/native crafting/range, Water Vis-interface and aspect palette at GUI scale 2"}
 
 
 def main() -> None:
@@ -69,7 +72,10 @@ def main() -> None:
                    if hashlib.sha256(jar.read(entry["path"])).hexdigest() != entry["sha256"]]
         invalid_paths = [name for name in jar.namelist() if name.startswith("assets/") and name != name.lower()]
         stale_recipes = [entry["output"] for entry in recipes if jar.read(entry["output"]) != (PROJECT / "src/main/resources" / entry["output"]).read_bytes()]
-        for path in ("data/thaumicenergistics/recipe/essentia_storage_monitor.json", "data/thaumicenergistics/recipe/essentia_conversion_monitor.json", "data/thaumicenergistics/recipe/essentia_terminal.json"):
+        for path in ("data/thaumicenergistics/recipe/essentia_storage_monitor.json", "data/thaumicenergistics/recipe/essentia_conversion_monitor.json", "data/thaumicenergistics/recipe/essentia_terminal.json", "data/thaumicenergistics/recipe/wireless_essentia_terminal.json"):
+            if jar.read(path)!=(PROJECT/"src/main/resources"/path).read_bytes():stale_recipes.append(path)
+        for node in ("teresearch","tecores","testorage","teio","teessterm"):
+            path=f"data/thaumicenergistics/thaumcraft/research/{node}.json"
             if jar.read(path)!=(PROJECT/"src/main/resources"/path).read_bytes():stale_recipes.append(path)
         if forbidden or changed or invalid_paths or stale_recipes:
             raise SystemExit(f"Invalid artifact: forbidden={forbidden}, changed_assets={changed}, invalid_paths={invalid_paths}, stale_recipes={stale_recipes}")
@@ -96,10 +102,11 @@ def main() -> None:
         "renamed_release_assets": sum(entry.get("original_path",entry["path"]) != entry["path"] for entry in reference["assets"]),
         "source_release_equivalent_recipes": len(recipes), "research_progression_verified": False,
         "implemented_research_scope": {
-            "ordinary_nodes": ["teresearch", "tecores", "testorage", "teio"],
+            "ordinary_nodes": ["teresearch", "tecores", "testorage", "teio", "teessterm"],
             "native_links": ["DISTILESSENTIA", "WARDEDARCANA", "TUBEFILTER"],
             "arcane_gate_and_note_creation_tested": any(case.attrib.get("name") == "nativeimportedresearchandarcanegate" for case in cases),
             "puzzle_completion_tested": False,
+            "monitoring_secondary_purchase_and_terminal_craft_tested": any(case.attrib.get("name") == "nativeimportedresearchandarcanegate" for case in cases),
             "configuration_branches_tested": False,
         },
         "core_sha256": sha256(WORKSPACE / "repo/mod/build/libs/thaumcraft-1.21.1-1.0.0.jar"),

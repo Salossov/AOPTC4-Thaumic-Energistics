@@ -116,5 +116,8 @@
   "tc.research_name.thaumicenergistics:teio": "[TE] 디지-센시아 운송",
   "tc.research_text.thaumicenergistics:teio": "에센시아를 디지털식으로 옮기자!",
   "item.thaumicenergistics.essentia_level_emitter": "에센시아 레벨 방출기",
-  "item.thaumicenergistics.essentia_terminal": "에센시아 단말기"
+  "item.thaumicenergistics.essentia_terminal": "에센시아 단말기",
+  "item.thaumicenergistics.wireless_essentia_terminal": "무선 에센시아 단말기",
+  "tc.research_name.thaumicenergistics:teessterm": "[TE]에센시아 단말기",
+  "tc.research_text.thaumicenergistics:teessterm": "당신이 얼마나 가지고 있는지를 알라."
 }

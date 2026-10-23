@@ -175,5 +175,8 @@
   "item.thaumicenergistics.essentia_conversion_monitor": "Essentia Conversion Monitor",
   "item.thaumicenergistics.essentia_terminal": "Essentia Terminal",
   "thaumicenergistics.gui.craft.small": "Craft",
-  "thaumicenergistics.gui.craft.large": "+"
+  "thaumicenergistics.gui.craft.large": "+",
+  "item.thaumicenergistics.wireless_essentia_terminal": "Wireless Essentia Terminal",
+  "tc.research_name.thaumicenergistics:teessterm": "Essentia Monitoring",
+  "tc.research_text.thaumicenergistics:teessterm": "Knowing how much you have."
 }
