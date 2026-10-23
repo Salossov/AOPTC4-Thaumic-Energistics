@@ -6,10 +6,12 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import java.util.*;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import thaumcraft.api.aspects.Aspect;
 
@@ -19,6 +21,8 @@ import thaumcraft.api.aspects.Aspect;
  */
 public class ArcaneCraftingPattern implements IPatternDetails {
     public static final int GRID_SIZE = 9;
+    static final String DEFINITION_TAG = "thaumicenergistics:arcane_pattern";
+    private final HolderLookup.Provider registries;
     private static final String NBTKEY_INGREDIENT_NUM = "input#";
     private static final String NBTKEY_RESULT = "output";
     private static final String NBTKEY_INGREDIENT_TYPE = "ThE_crafting_type";
@@ -37,7 +41,8 @@ public class ArcaneCraftingPattern implements IPatternDetails {
     private List<GenericStack> cachedOutputs = null;
     private IInput[] cachedInputs = null;
 
-    public ArcaneCraftingPattern(ItemStack knowledgeCoreHost, Map<Aspect, Integer> wholeVis, ItemStack result, Object[] inputIngredients) {
+    public ArcaneCraftingPattern(ItemStack knowledgeCoreHost, Map<Aspect, Integer> wholeVis, ItemStack result, Object[] inputIngredients, HolderLookup.Provider registries) {
+        this.registries = Objects.requireNonNull(registries);
         this.knowledgeCoreHost = knowledgeCoreHost == null ? ItemStack.EMPTY : knowledgeCoreHost.copy();
         this.result = result == null ? ItemStack.EMPTY : result.copy();
         if (wholeVis != null) {
@@ -72,6 +77,7 @@ public class ArcaneCraftingPattern implements IPatternDetails {
     }
 
     public ArcaneCraftingPattern(ItemStack knowledgeCoreHost, CompoundTag data, HolderLookup.Provider registries) {
+        this.registries = Objects.requireNonNull(registries);
         this.knowledgeCoreHost = knowledgeCoreHost == null ? ItemStack.EMPTY : knowledgeCoreHost.copy();
         readFromNBT(data, registries);
     }
@@ -93,7 +99,11 @@ public class ArcaneCraftingPattern implements IPatternDetails {
     }
 
     public Map<Aspect, Integer> getAspects() {
-        return Collections.unmodifiableMap(aspects);
+        return Map.copyOf(aspects);
+    }
+
+    public ArcaneCraftingPattern copy() {
+        return new ArcaneCraftingPattern(knowledgeCoreHost, writeToNBT(new CompoundTag(), registries), registries);
     }
 
     public Object[] getIngredients() {
@@ -197,10 +207,12 @@ public class ArcaneCraftingPattern implements IPatternDetails {
 
     public void readFromNBT(CompoundTag data, HolderLookup.Provider registries) {
         this.valid = false;
+        this.cachedInputs = null;
+        this.cachedOutputs = null;
         this.aspects.clear();
         for (int i = 0; i < GRID_SIZE; i++) this.ingredients[i] = null;
         this.result = ItemStack.EMPTY;
-        if (data == null) return;
+        if (data == null || !data.contains("format_version", Tag.TAG_INT) || data.getInt("format_version") != 1) return;
 
         // Read aspects
         if (data.contains(NBTKEY_ASPECTS, Tag.TAG_COMPOUND)) {
@@ -208,9 +220,8 @@ public class ArcaneCraftingPattern implements IPatternDetails {
             for (String key : aspectsTag.getAllKeys()) {
                 Aspect a = Aspect.getAspect(key);
                 int cost = aspectsTag.getInt(key);
-                if (a != null && a.isPrimal() && cost > 0) {
-                    aspects.put(a, cost);
-                }
+                if (a == null || !a.isPrimal() || !aspectsTag.contains(key, Tag.TAG_INT) || cost <= 0) return;
+                aspects.put(a, cost);
             }
         }
         if (aspects.isEmpty()) return;
@@ -229,7 +240,8 @@ public class ArcaneCraftingPattern implements IPatternDetails {
         boolean hasAtLeastOne = false;
         for (int i = 0; i < GRID_SIZE; i++) {
             String key = NBTKEY_INGREDIENT_NUM + i;
-            if (!data.contains(key, Tag.TAG_COMPOUND)) continue;
+            if (!data.contains(key)) continue;
+            if (!data.contains(key, Tag.TAG_COMPOUND)) return;
             CompoundTag ingTag = data.getCompound(key);
             int type = ingTag.getInt(NBTKEY_INGREDIENT_TYPE);
             if (type == NBTKEY_ITEMTYPE) {
@@ -237,7 +249,7 @@ public class ArcaneCraftingPattern implements IPatternDetails {
                 if (opt.isPresent() && !opt.get().isEmpty()) {
                     ingredients[i] = opt.get();
                     hasAtLeastOne = true;
-                }
+                } else return;
             } else if (type == NBTKEY_ARRAYTYPE) {
                 int size = ingTag.getInt(NBTKEY_ARRAY_SIZE);
                 if (size > 0 && size <= 256) {
@@ -248,15 +260,15 @@ public class ArcaneCraftingPattern implements IPatternDetails {
                             var opt = ItemStack.parse(registries, ingTag.getCompound(subKey));
                             if (opt.isPresent() && !opt.get().isEmpty()) {
                                 list.add(opt.get());
-                            }
-                        }
+                            } else return;
+                        } else return;
                     }
                     if (!list.isEmpty()) {
                         ingredients[i] = Collections.unmodifiableList(list);
                         hasAtLeastOne = true;
                     }
-                }
-            }
+                } else return;
+            } else return;
         }
         this.valid = hasAtLeastOne && !result.isEmpty() && !aspects.isEmpty();
     }
@@ -265,7 +277,14 @@ public class ArcaneCraftingPattern implements IPatternDetails {
 
     @Override
     public AEItemKey getDefinition() {
-        return AEItemKey.of(!knowledgeCoreHost.isEmpty() ? knowledgeCoreHost : result);
+        if (!valid) throw new IllegalStateException("Invalid arcane pattern");
+        // A core contains many recipes. Its complete item key cannot identify one recipe.
+        // Keep only this recipe in a private, decoder-recognized definition item.
+        ItemStack definition = new ItemStack(KnowledgeRegistrar.KNOWLEDGE_CORE_ITEM.get());
+        CompoundTag tag = new CompoundTag();
+        tag.put(DEFINITION_TAG, writeToNBT(new CompoundTag(), registries));
+        definition.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        return Objects.requireNonNull(AEItemKey.of(definition));
     }
 
     @Override
@@ -291,7 +310,7 @@ public class ArcaneCraftingPattern implements IPatternDetails {
                     inputsList.add(new IInput() {
                         @Override
                         public GenericStack[] getPossibleInputs() {
-                            return arr;
+                            return arr.clone();
                         }
 
                         @Override
@@ -325,7 +344,7 @@ public class ArcaneCraftingPattern implements IPatternDetails {
             }
             cachedInputs = inputsList.toArray(new IInput[0]);
         }
-        return cachedInputs;
+        return cachedInputs.clone();
     }
 
     @Override

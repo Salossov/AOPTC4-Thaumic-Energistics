@@ -23,6 +23,8 @@ public class HandlerKnowledgeCore {
     private final ArrayList<ArcaneCraftingPattern> patterns = new ArrayList<>(MAXIMUM_STORED_PATTERNS);
     private ItemStack kCore = ItemStack.EMPTY;
     private HolderLookup.Provider registries;
+    private ItemStack snapshot = ItemStack.EMPTY;
+    private boolean writable;
 
     public HandlerKnowledgeCore() {
     }
@@ -44,6 +46,8 @@ public class HandlerKnowledgeCore {
         this.kCore = ItemStack.EMPTY;
         this.registries = null;
         this.patterns.clear();
+        this.snapshot = ItemStack.EMPTY;
+        this.writable = false;
     }
 
     public boolean hasCore() {
@@ -51,7 +55,7 @@ public class HandlerKnowledgeCore {
     }
 
     public ItemStack getCore() {
-        return this.kCore;
+        return this.kCore.copy();
     }
 
     public boolean isHandlingCore(ItemStack candidate) {
@@ -61,11 +65,15 @@ public class HandlerKnowledgeCore {
         if (!(candidate.getItem() instanceof ItemKnowledgeCore)) {
             return false;
         }
-        return ItemStack.matches(this.kCore, candidate);
+        return this.kCore == candidate && ItemStack.matches(this.snapshot, candidate);
+    }
+
+    public boolean canModify() {
+        return writable && isHandlingCore(kCore);
     }
 
     public boolean hasRoomToStorePattern() {
-        return this.patterns.size() < MAXIMUM_STORED_PATTERNS;
+        return canModify() && this.patterns.size() < MAXIMUM_STORED_PATTERNS;
     }
 
     public boolean hasPatternFor(ItemStack resultStack) {
@@ -81,7 +89,7 @@ public class HandlerKnowledgeCore {
                 ItemStack patternResult = p.getResult();
                 // Source rule: exact item equality matching item, count, and components
                 if (ItemStack.matches(patternResult, resultStack)) {
-                    return p;
+                    return p.copy();
                 }
             }
         }
@@ -89,7 +97,7 @@ public class HandlerKnowledgeCore {
     }
 
     public List<ArcaneCraftingPattern> getPatterns() {
-        return Collections.unmodifiableList(new ArrayList<>(this.patterns));
+        return this.patterns.stream().map(ArcaneCraftingPattern::copy).toList();
     }
 
     public List<ItemStack> getStoredOutputs() {
@@ -108,14 +116,15 @@ public class HandlerKnowledgeCore {
         }
         // Duplicate check based on output stack identity
         if (this.getPatternForItem(pattern.getResult()) == null) {
-            pattern.setKnowledgeCoreHost(this.kCore);
-            this.patterns.add(pattern);
+            ArcaneCraftingPattern stored = pattern.copy();
+            stored.setKnowledgeCoreHost(this.kCore);
+            this.patterns.add(stored);
             this.saveKCoreData();
         }
     }
 
     public void removePattern(ArcaneCraftingPattern pattern) {
-        if (pattern == null) {
+        if (pattern == null || !canModify()) {
             return;
         }
         // Remove matching pattern by result equality
@@ -133,7 +142,21 @@ public class HandlerKnowledgeCore {
         CustomData customData = this.kCore.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         CompoundTag data = customData.copyTag();
 
+        this.snapshot = this.kCore.copy();
+        this.writable = (!data.contains("format_version") ||
+                (data.contains("format_version", Tag.TAG_INT) && data.getInt("format_version") == 1));
+        if (!writable) return;
+        if (data.contains(NBTKEY_PATTERNS) && !data.contains(NBTKEY_PATTERNS, Tag.TAG_LIST)) {
+            writable = false;
+            return;
+        }
+
         if (data.contains(NBTKEY_PATTERNS, Tag.TAG_LIST)) {
+            ListTag raw = (ListTag) data.get(NBTKEY_PATTERNS);
+            if ((!raw.isEmpty() && raw.getElementType() != Tag.TAG_COMPOUND) || raw.size() > MAXIMUM_STORED_PATTERNS) {
+                writable = false;
+                return;
+            }
             ListTag plist = data.getList(NBTKEY_PATTERNS, Tag.TAG_COMPOUND);
             int count = Math.min(plist.size(), MAXIMUM_STORED_PATTERNS);
             for (int i = 0; i < count; i++) {
@@ -142,16 +165,17 @@ public class HandlerKnowledgeCore {
                     ArcaneCraftingPattern pattern = new ArcaneCraftingPattern(this.kCore, patternTag, this.registries);
                     if (pattern.isPatternValid()) {
                         this.patterns.add(pattern);
-                    }
+                    } else writable = false;
                 } catch (Exception ignored) {
-                    // Safe decoding: ignore malformed pattern without dropping rest of data
+                    // Reading other valid entries is safe; rewriting would erase unknown data.
+                    writable = false;
                 }
             }
         }
     }
 
     private void saveKCoreData() {
-        if (this.kCore.isEmpty() || this.registries == null) {
+        if (this.kCore.isEmpty() || this.registries == null || !canModify()) {
             return;
         }
         CustomData.update(DataComponents.CUSTOM_DATA, this.kCore, tag -> {
@@ -168,5 +192,6 @@ public class HandlerKnowledgeCore {
                 tag.remove(NBTKEY_PATTERNS);
             }
         });
+        this.snapshot = this.kCore.copy();
     }
 }

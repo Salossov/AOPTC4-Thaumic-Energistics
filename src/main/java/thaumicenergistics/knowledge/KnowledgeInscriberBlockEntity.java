@@ -96,7 +96,10 @@ public class KnowledgeInscriberBlockEntity extends BlockEntity implements Contai
 
     @Override
     public boolean stillValid(Player player) {
-        if (this.level == null || this.level.getBlockEntity(this.worldPosition) != this) {
+        if (this.level == null || this.isRemoved() || player.level() != this.level ||
+                !this.level.hasChunkAt(this.worldPosition) || this.level.getBlockEntity(this.worldPosition) != this ||
+                !player.isAlive() || player instanceof net.neoforged.neoforge.common.util.FakePlayer ||
+                !appeng.util.Platform.hasPermissions(new appeng.api.util.DimensionalBlockPos(this.level, this.worldPosition), player)) {
             return false;
         }
         return player.distanceToSqr(this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 0.5, this.worldPosition.getZ() + 0.5) <= 64.0;

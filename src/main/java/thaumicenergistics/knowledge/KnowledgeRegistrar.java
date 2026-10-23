@@ -41,6 +41,11 @@ public final class KnowledgeRegistrar {
     public static final Supplier<MenuType<KnowledgeInscriberMenu>> KNOWLEDGE_INSCRIBER_MENU = () -> menuTypeInstance;
 
     @SubscribeEvent
+    public static void onCommonSetup(net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> appeng.api.crafting.PatternDetailsHelper.registerDecoder(new ArcanePatternDecoder()));
+    }
+
+    @SubscribeEvent
     public static void onRegister(RegisterEvent event) {
         if (event.getRegistryKey().equals(Registries.BLOCK)) {
             blockInstance = new KnowledgeInscriberBlock();
@@ -79,7 +84,7 @@ public final class KnowledgeRegistrar {
         registrar.playToClient(
                 KnowledgeInscriberStatePayload.TYPE,
                 KnowledgeInscriberStatePayload.CODEC,
-                (payload, context) -> context.enqueueWork(() -> KnowledgeInscriberStatePayload.handle(payload))
+                (payload, context) -> context.enqueueWork(() -> KnowledgeInscriberStatePayload.handle(payload, context.player()))
         );
     }
 

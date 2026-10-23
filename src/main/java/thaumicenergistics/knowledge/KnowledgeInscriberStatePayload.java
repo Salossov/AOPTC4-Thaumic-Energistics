@@ -1,7 +1,7 @@
 package thaumicenergistics.knowledge;
 
 import io.netty.handler.codec.DecoderException;
-import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -36,10 +36,10 @@ public record KnowledgeInscriberStatePayload(int containerId, int saveState, boo
         return TYPE;
     }
 
-    public static void handle(KnowledgeInscriberStatePayload payload) {
-        var mc = Minecraft.getInstance();
-        if (mc.screen instanceof KnowledgeInscriberScreen screen) {
-            screen.onReceiveSaveState(KnowledgeInscriberMenu.CoreSaveState.fromOrdinal(payload.saveState), payload.justSaved);
+    public static void handle(KnowledgeInscriberStatePayload payload, Player player) {
+        if (player.containerMenu instanceof KnowledgeInscriberMenu menu && menu.containerId == payload.containerId) {
+            menu.receiveState(KnowledgeInscriberMenu.CoreSaveState.fromOrdinal(payload.saveState), payload.justSaved);
         }
     }
+
 }

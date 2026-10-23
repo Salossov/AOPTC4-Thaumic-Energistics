@@ -65,6 +65,16 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
     private CraftingInput.Positioned activePositioned = null;
     private ItemStack activeOutput = ItemStack.EMPTY;
     private CoreSaveState lastSentState = null;
+    private CoreSaveState clientSaveState = CoreSaveState.Disabled_MissingCore;
+    private int savedSequence;
+
+    public void receiveState(CoreSaveState state, boolean saved) {
+        if (!owner.level().isClientSide) return;
+        clientSaveState = state;
+        if (saved) savedSequence++;
+    }
+
+    public int savedSequence() { return savedSequence; }
 
     public KnowledgeInscriberMenu(int containerId, Inventory playerInventory, Container inscriber) {
         super(KnowledgeRegistrar.KNOWLEDGE_INSCRIBER_MENU.get(), containerId);
@@ -161,10 +171,11 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
     }
 
     public CoreSaveState getSaveState() {
+        if (owner.level().isClientSide) return clientSaveState;
         if (!kCoreHandler.hasCore()) {
             return CoreSaveState.Disabled_MissingCore;
         }
-        if (activeRecipe == null || activeOutput.isEmpty()) {
+        if (!kCoreHandler.canModify() || activeRecipe == null || activeOutput.isEmpty()) {
             return CoreSaveState.Disabled_InvalidRecipe;
         }
         if (kCoreHandler.hasPatternFor(activeOutput)) {
@@ -226,44 +237,17 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
     }
 
     public void handleAction(ServerPlayer player, int action, int patternIndex) {
+        if (player.containerMenu != this || !stillValid(player)) return;
+        refreshCore();
+        // A packet may arrive before the next menu tick, or after research/recipes changed.
+        updateActiveRecipe();
         if (action == KnowledgeInscriberActionPayload.ACTION_FULL_UPDATE) {
             sendSaveState(player, false);
         } else if (action == KnowledgeInscriberActionPayload.ACTION_SAVE_DELETE) {
             CoreSaveState state = getSaveState();
             if (state == CoreSaveState.Enabled_Save && activeRecipe != null && activePositioned != null && !activeOutput.isEmpty()) {
-                Object[] inputs = new Object[MATRIX_COUNT];
-                NonNullList<Ingredient> ings = activeRecipe.value().getIngredients();
-                int pw = activePositioned.input().width();
-                int ph = activePositioned.input().height();
-                int pl = activePositioned.left();
-                int pt = activePositioned.top();
-
-                for (int i = 0; i < MATRIX_COUNT; i++) {
-                    int gx = i % 3;
-                    int gy = i / 3;
-                    if (gx >= pl && gx < pl + pw && gy >= pt && gy < pt + ph) {
-                        int px = gx - pl;
-                        int py = gy - pt;
-                        int ingIdx = py * pw + px;
-                        if (ingIdx >= 0 && ingIdx < ings.size()) {
-                            Ingredient ing = ings.get(ingIdx);
-                            ItemStack slotStack = craftingMatrix.getItem(i);
-                            ItemStack[] possible = ing.getItems();
-                            if (possible.length > 1) {
-                                List<ItemStack> list = new ArrayList<>();
-                                if (!slotStack.isEmpty()) list.add(slotStack.copy());
-                                for (ItemStack alt : possible) {
-                                    if (list.stream().noneMatch(s -> ItemStack.matches(s, alt))) {
-                                        list.add(alt.copy());
-                                    }
-                                }
-                                inputs[i] = list;
-                            } else if (!slotStack.isEmpty()) {
-                                inputs[i] = slotStack.copy();
-                            }
-                        }
-                    }
-                }
+                Object[] inputs = captureInputs(player);
+                if (inputs == null) return;
 
                 Map<Aspect, Integer> wholeVis = new LinkedHashMap<>();
                 for (Map.Entry<String, Integer> entry : activeRecipe.value().vis(activePositioned.input()).entrySet()) {
@@ -274,7 +258,7 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
                 }
 
                 ItemStack currentCore = inscriber.getItem(KnowledgeInscriberBlockEntity.KCORE_SLOT);
-                ArcaneCraftingPattern pattern = new ArcaneCraftingPattern(currentCore, wholeVis, activeOutput, inputs);
+                ArcaneCraftingPattern pattern = new ArcaneCraftingPattern(currentCore, wholeVis, activeOutput, inputs, owner.level().registryAccess());
                 if (pattern.isPatternValid()) {
                     kCoreHandler.addPattern(pattern);
                     updatePatternSlots();
@@ -320,17 +304,9 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
 
     @Override
     public void broadcastChanges() {
-        if (!owner.level().isClientSide) {
-            ItemStack currentCore = inscriber.getItem(KnowledgeInscriberBlockEntity.KCORE_SLOT);
-            if (!kCoreHandler.isHandlingCore(currentCore)) {
-                if (!currentCore.isEmpty() && currentCore.getItem() instanceof ItemKnowledgeCore) {
-                    kCoreHandler.open(currentCore, owner.level().registryAccess());
-                } else {
-                    kCoreHandler.close();
-                }
-                updatePatternSlots();
+        if (!owner.level().isClientSide && stillValid(owner)) {
+            if (refreshCore()) {
                 updateActiveRecipe();
-                sendSaveState(owner, false);
             }
         }
         super.broadcastChanges();
@@ -338,16 +314,17 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        if (owner != player) return false;
-        return inscriber.stillValid(player);
+        if (owner != player || player instanceof net.neoforged.neoforge.common.util.FakePlayer || !player.isAlive()) return false;
+        return player.level().isClientSide ||
+                (inscriber instanceof KnowledgeInscriberBlockEntity && inscriber.stillValid(player));
     }
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
+        if (!stillValid(player)) return;
         // Exploit protection: reject any sweep, throw, swap, clone, or quick craft targeting ghost/display slots
         if (slotId >= FIRST_PATTERN_SLOT && slotId <= RESULT_SLOT) {
-            if (clickType == ClickType.SWAP || clickType == ClickType.THROW || clickType == ClickType.CLONE ||
-                clickType == ClickType.QUICK_CRAFT || clickType == ClickType.PICKUP_ALL) {
+            if (clickType != ClickType.PICKUP) {
                 return;
             }
 
@@ -356,9 +333,7 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
                 int patternIdx = slotId - FIRST_PATTERN_SLOT;
                 ItemStack patternOut = displayInventory.getItem(patternIdx);
                 if (!patternOut.isEmpty()) {
-                    if (player.level().isClientSide) {
-                        PacketDistributor.sendToServer(new KnowledgeInscriberActionPayload(this.containerId, KnowledgeInscriberActionPayload.ACTION_SELECT_PATTERN, patternIdx));
-                    } else if (player instanceof ServerPlayer sp) {
+                    if (player instanceof ServerPlayer sp) {
                         handleAction(sp, KnowledgeInscriberActionPayload.ACTION_SELECT_PATTERN, patternIdx);
                     }
                 }
@@ -390,6 +365,7 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int slotIndex) {
+        if (!stillValid(player) || slotIndex < 0 || slotIndex >= slots.size()) return ItemStack.EMPTY;
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(slotIndex);
 
@@ -441,5 +417,56 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
         }
 
         return itemstack;
+    }
+
+    @Override
+    public boolean canTakeItemForPickAll(ItemStack stack, Slot slot) {
+        return slot.container != displayInventory && slot.container != craftingMatrix &&
+                slot.container != resultInventory && super.canTakeItemForPickAll(stack, slot);
+    }
+
+    @Override
+    public void removed(Player player) {
+        kCoreHandler.close();
+        super.removed(player);
+    }
+
+    private boolean refreshCore() {
+        ItemStack core = inscriber.getItem(KnowledgeInscriberBlockEntity.KCORE_SLOT);
+        if (core.isEmpty() && !kCoreHandler.hasCore()) return false;
+        if (kCoreHandler.isHandlingCore(core)) return false;
+        kCoreHandler.open(core, owner.level().registryAccess());
+        updatePatternSlots();
+        return true;
+    }
+
+    private Object[] captureInputs(ServerPlayer player) {
+        IArcaneRecipe recipe = activeRecipe.value();
+        Map<String, Integer> costs = recipe.vis(activePositioned.input());
+        Object[] inputs = new Object[MATRIX_COUNT];
+        List<ItemStack> grid = new ArrayList<>();
+        for (int i = 0; i < MATRIX_COUNT; i++) grid.add(craftingMatrix.getItem(i).copy());
+        for (int slot = 0; slot < MATRIX_COUNT; slot++) {
+            ItemStack actual = grid.get(slot);
+            if (actual.isEmpty()) continue;
+            List<ItemStack> alternatives = new ArrayList<>();
+            alternatives.add(actual.copy());
+            // Ingredient indices alone do not identify mirrored or shapeless grid positions.
+            for (Ingredient ingredient : recipe.getIngredients()) {
+                if (!ingredient.test(actual)) continue;
+                for (ItemStack candidate : ingredient.getItems()) {
+                    if (candidate.isEmpty() || alternatives.stream().anyMatch(s -> ItemStack.matches(s, candidate))) continue;
+                    grid.set(slot, candidate.copy());
+                    CraftingInput input = CraftingInput.ofPositioned(3, 3, grid).input();
+                    if (recipe.matches(input, player.level()) && recipe.mayCraft(player, input) &&
+                            ItemStack.matches(activeOutput, recipe.assemble(input, player.level().registryAccess())) &&
+                            costs.equals(recipe.vis(input))) alternatives.add(candidate.copy());
+                }
+            }
+            grid.set(slot, actual);
+            if (alternatives.size() > 256) return null;
+            inputs[slot] = alternatives.size() == 1 ? alternatives.getFirst() : alternatives;
+        }
+        return inputs;
     }
 }
