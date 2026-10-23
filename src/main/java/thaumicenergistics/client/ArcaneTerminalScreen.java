@@ -81,6 +81,7 @@ public final class ArcaneTerminalScreen extends AbstractContainerScreen<ArcaneTe
             String name=entry.key().getDisplayName().getString(),mod=entry.key().getId().getNamespace();
             // RV3 enables SEARCH_TOOLTIPS by default, including @ searches.
             if(!query.matches(name,mod,List.of())){
+                if(!thaumicenergistics.config.ThEClientConfig.SEARCH_TOOLTIPS.get())continue;
                 var tooltip=tooltipSearchCache.computeIfAbsent(entry.key(),key->net.minecraft.client.gui.screens.Screen.getTooltipFromItem(minecraft,key.toStack()).stream().map(Component::getString).toList());
                 if(!query.matches(name,mod,tooltip))continue;
             }

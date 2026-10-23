@@ -222,5 +222,10 @@
   "tc.research_text.thaumicenergistics:tefocuswrench": "Some Assembly Required",
   "block.thaumicenergistics.arcane_assembler": "Arcane Assembler",
   "tc.research_name.thaumicenergistics:tearcaneassembler": "Arcane Assembler",
-  "tc.research_text.thaumicenergistics:tearcaneassembler": "Magical Molecule Assembly"
+  "tc.research_text.thaumicenergistics:tearcaneassembler": "Magical Molecule Assembly",
+  "thaumicenergistics.configuration.wrenchFocus": "Wrench Focus",
+  "thaumicenergistics.configuration.certusQuartzDuplication": "Certus Quartz Duplication",
+  "thaumicenergistics.configuration.forceTcFacades": "Force Thaumcraft Facades",
+  "thaumicenergistics.configuration.disableGearboxModel": "Disable Gearbox Model",
+  "thaumicenergistics.configuration.searchTooltips": "Search Item Tooltips"
 }

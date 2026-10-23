@@ -139,7 +139,8 @@ public final class ThaumicEnergistics {
                 }).build());
     }
 
-    public ThaumicEnergistics(IEventBus modBus) {
+    public ThaumicEnergistics(IEventBus modBus, net.neoforged.fml.ModContainer container) {
+        thaumicenergistics.config.ThEContentConfig.initialize(container);
         thaumicenergistics.assembler.AssemblerRegistration.initialize(modBus);
         thaumicenergistics.crafting.ProviderResearchRegistration.initialize();
         thaumicenergistics.extras.ExtrasRegistrar.initialize(modBus);

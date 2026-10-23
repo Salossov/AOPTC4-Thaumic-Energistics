@@ -38,6 +38,11 @@ public class GearboxItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
+        if (thaumicenergistics.config.ThEClientConfig.DISABLE_GEARBOX_MODEL.get()) {
+            var block = isThaumium ? GolemsRegistrar.THAUMIUM_GEARBOX_BLOCK.get() : GolemsRegistrar.IRON_GEARBOX_BLOCK.get();
+            GearboxFallbackRendering.render(block.defaultBlockState(), poseStack, buffer, packedLight, packedOverlay);
+            return;
+        }
         if (this.model == null || this.bakedGeneration != modelGeneration) {
             this.model = new GearboxModel(Minecraft.getInstance().getEntityModels().bakeLayer(GolemsClientRegistrar.GEARBOX_LAYER));
             this.bakedGeneration = modelGeneration;

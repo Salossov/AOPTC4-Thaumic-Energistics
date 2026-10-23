@@ -194,5 +194,10 @@
   "tc.research_text.thaumicenergistics:tefocuswrench": "Требуется немного сборки",
   "block.thaumicenergistics.arcane_assembler": "Магический сборщик",
   "tc.research_name.thaumicenergistics:tearcaneassembler": "Магический сборщик",
-  "tc.research_text.thaumicenergistics:tearcaneassembler": "Магическая сборка молекул"
+  "tc.research_text.thaumicenergistics:tearcaneassembler": "Магическая сборка молекул",
+  "thaumicenergistics.configuration.wrenchFocus": "Фокус-гаечный ключ",
+  "thaumicenergistics.configuration.certusQuartzDuplication": "Дублирование истинного кварца",
+  "thaumicenergistics.configuration.forceTcFacades": "Разрешить фасады Thaumcraft",
+  "thaumicenergistics.configuration.disableGearboxModel": "Отключить модель редуктора",
+  "thaumicenergistics.configuration.searchTooltips": "Искать по подсказкам предметов"
 }

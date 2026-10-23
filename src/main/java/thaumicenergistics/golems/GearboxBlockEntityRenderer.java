@@ -25,6 +25,10 @@ public class GearboxBlockEntityRenderer implements BlockEntityRenderer<GearboxBl
 
     @Override
     public void render(GearboxBlockEntity gearbox, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+        if (thaumicenergistics.config.ThEClientConfig.DISABLE_GEARBOX_MODEL.get()) {
+            GearboxFallbackRendering.render(gearbox.getBlockState(), poseStack, bufferSource, packedLight, packedOverlay);
+            return;
+        }
         poseStack.pushPose();
 
         // Center model in the block space
