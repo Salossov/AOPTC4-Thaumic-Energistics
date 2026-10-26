@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "thaumicenergistics:items/essentia.cell.1k"
+    "layer0": "thaumicenergistics:items/modern_essentia_cell_1k"
   }
 }

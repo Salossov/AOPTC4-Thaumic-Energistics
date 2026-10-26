@@ -28,5 +28,11 @@
   "result": {
     "id": "thaumicenergistics:distillation_pattern_encoder",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "distillation_pattern_encoder"
+    }
+  ]
 }

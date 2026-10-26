@@ -24,7 +24,7 @@
       "item": "thaumcraft:fire_shard"
     },
     "N": {
-      "item": "minecraft:quartz"
+      "tag": "c:gems/quartz"
     },
     "W": {
       "item": "ae2:certus_quartz_wrench"

@@ -41,7 +41,7 @@ public final class CellWorkbenchScreen extends AbstractContainerScreen<CellWorkb
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int x, int y) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0, false);
+        GuiTitle.draw(graphics, font, title, titleLabelX, titleLabelY, 144, 0, x, y);
     }
 
     @Override

@@ -15,7 +15,8 @@ public final class ProviderResearchRegistration {
     private static void register(AddonRegistrationEvent event){
         boolean mirrors=ContentRules.mirrorsEnabled();
         AddonRegistry.research(read(mirrors?"pseudo_mirror":"pseudo_jarlabel"));
-        AddonRegistry.research(read(mirrors?"teinfprov":"teinfprov_nomirrors"));
+        AddonRegistry.research(read(mirrors?"teinfprov":"teinfprov_nomirrors"),
+                () -> thaumicenergistics.config.ContentFeature.enabled("infusion_provider"));
     }
     private static ResearchDefinition read(String name){
         String path="/data/thaumicenergistics/research_templates/"+name+".json";

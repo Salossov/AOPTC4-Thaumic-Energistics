@@ -7,7 +7,7 @@
     "dark": "thaumicenergistics:blocks/parts/arcane.crafting.overlay3",
     "medium": "thaumicenergistics:blocks/parts/arcane.crafting.overlay2",
     "runes": "thaumicenergistics:blocks/parts/arcane.crafting.overlay4",
-    "status": "thaumicenergistics:blocks/parts/bus.color.dark"
+    "status": "ae2:part/monitor_sides_status_off"
   },
   "elements": [
     {
@@ -76,6 +76,30 @@
         "down": {
           "texture": "#status",
           "tintindex": 2
+        }
+      }
+    },
+    {
+      "name": "Opaque front backing",
+      "from": [
+        2,
+        2,
+        0.00025
+      ],
+      "to": [
+        14,
+        14,
+        0.00025
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
         }
       }
     }

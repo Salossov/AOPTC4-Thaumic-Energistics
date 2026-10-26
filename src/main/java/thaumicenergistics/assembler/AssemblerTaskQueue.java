@@ -22,6 +22,12 @@ public final class AssemblerTaskQueue {
     public boolean hasUnreadableTask() { return opaque != null; }
     public int paidTicks() { return job == null ? 0 : job.paidTicks(); }
     public boolean delivering() { return job != null && job.phase() == AssemblerCraftingJob.Phase.DELIVERING; }
+    public ItemStack visualResult() {
+        if (job == null || job.phase() != AssemblerCraftingJob.Phase.CRAFTING) return ItemStack.EMPTY;
+        var results = job.pendingResults();
+        // Source returns recipe remainders before its product; acceptance has not delivered any yet.
+        return results.isEmpty() ? ItemStack.EMPTY : results.getLast().copy();
+    }
     public ItemStack definition() { return job == null ? ItemStack.EMPTY : job.patternDefinition(); }
 
     public boolean accept(IPatternDetails requested, KeyCounter[] inputs, ServerLevel level,

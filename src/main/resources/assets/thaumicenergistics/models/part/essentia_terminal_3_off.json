@@ -7,7 +7,7 @@
     "dark": "thaumicenergistics:blocks/parts/essentia.terminal.overlay.dark",
     "medium": "thaumicenergistics:blocks/parts/essentia.terminal.overlay.medium",
     "light": "thaumicenergistics:blocks/parts/essentia.terminal.overlay.light",
-    "status": "thaumicenergistics:blocks/parts/bus.color.dark"
+    "status": "ae2:part/monitor_sides_status_off"
   },
   "elements": [
     {
@@ -185,6 +185,30 @@
             13
           ],
           "rotation": 180
+        }
+      }
+    },
+    {
+      "name": "Opaque front backing",
+      "from": [
+        2,
+        2,
+        0.00025
+      ],
+      "to": [
+        14,
+        14,
+        0.00025
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
         }
       }
     }

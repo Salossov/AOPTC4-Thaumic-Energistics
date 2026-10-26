@@ -24,7 +24,8 @@ import thaumicenergistics.storage.EssentiaKeyType;
 public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> {
     @SubscribeEvent
     public static void itemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
-        event.register((stack,tint)->switch(tint){
+        // ItemColor uses ARGB in 1.21.1. AEColor's variants contain only RGB.
+        event.register((stack,tint)->0xff000000 | switch(tint){
             case 1 -> appeng.api.util.AEColor.TRANSPARENT.blackVariant;
             case 2 -> appeng.api.util.AEColor.TRANSPARENT.mediumVariant;
             case 3 -> appeng.api.util.AEColor.TRANSPARENT.whiteVariant;

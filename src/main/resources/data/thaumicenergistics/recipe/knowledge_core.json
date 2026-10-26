@@ -28,5 +28,11 @@
   "result": {
     "id": "thaumicenergistics:knowledge_core",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "arcane_assembler"
+    }
+  ]
 }

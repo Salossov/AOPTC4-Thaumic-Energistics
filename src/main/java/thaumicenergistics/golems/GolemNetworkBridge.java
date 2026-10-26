@@ -1,6 +1,7 @@
 package thaumicenergistics.golems;
 
 import appeng.api.config.Actionable;
+import appeng.api.config.PowerMultiplier;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
@@ -10,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import thaumcraft.api.aspects.Aspect;
 import thaumicenergistics.storage.EssentiaKey;
+import thaumicenergistics.storage.PoweredEssentiaStorage;
 
 /**
  * Handles AE2 network transactions for wireless golems across Items, Essentia, and Fluids.
@@ -23,7 +25,6 @@ public final class GolemNetworkBridge {
     public static final int[] ITEM_RATES = new int[] { 8, 24, 32 };
     public static final int[] ESS_RATES = new int[] { 4, 12, 16 };
 
-    private final IActionSource actionSource = IActionSource.empty();
 
     public static int clampOrderUpgrades(int orderUpgrades) {
         if (orderUpgrades > 2) return 2;
@@ -51,6 +52,10 @@ public final class GolemNetworkBridge {
      * @return number of items accepted.
      */
     public int depositStack(IGrid grid, ItemStack stack, int maxRate) {
+        return depositStack(grid, stack, maxRate, IActionSource.empty());
+    }
+
+    public int depositStack(IGrid grid, ItemStack stack, int maxRate, IActionSource actionSource) {
         if (grid == null || stack == null || stack.isEmpty() || maxRate <= 0) {
             return 0;
         }
@@ -62,7 +67,7 @@ public final class GolemNetworkBridge {
         }
 
         long depositAmount = Math.min(stack.getCount(), maxRate);
-        long inserted = storage.insert(key, depositAmount, Actionable.MODULATE, actionSource);
+        long inserted = poweredItems(grid, key, depositAmount, actionSource, true);
         if (inserted > 0) {
             stack.shrink((int) inserted);
         }
@@ -74,6 +79,10 @@ public final class GolemNetworkBridge {
      * @return extracted ItemStack, or empty if none.
      */
     public ItemStack extractStack(IGrid grid, ItemStack target, int maxRate) {
+        return extractStack(grid, target, maxRate, IActionSource.empty());
+    }
+
+    public ItemStack extractStack(IGrid grid, ItemStack target, int maxRate, IActionSource actionSource) {
         if (grid == null || target == null || target.isEmpty() || maxRate <= 0) {
             return ItemStack.EMPTY;
         }
@@ -85,7 +94,7 @@ public final class GolemNetworkBridge {
         }
 
         long extractAmount = Math.min(target.getCount(), maxRate);
-        long extracted = storage.extract(key, extractAmount, Actionable.MODULATE, actionSource);
+        long extracted = poweredItems(grid, key, extractAmount, actionSource, false);
         if (extracted > 0) {
             return key.toStack((int) extracted);
         }
@@ -97,6 +106,10 @@ public final class GolemNetworkBridge {
      * @return amount of essentia injected.
      */
     public int insertEssentia(IGrid grid, Aspect aspect, int amount, int maxRate) {
+        return insertEssentia(grid, aspect, amount, maxRate, IActionSource.empty());
+    }
+
+    public int insertEssentia(IGrid grid, Aspect aspect, int amount, int maxRate, IActionSource actionSource) {
         if (grid == null || aspect == null || amount <= 0 || maxRate <= 0) {
             return 0;
         }
@@ -104,7 +117,7 @@ public final class GolemNetworkBridge {
         MEStorage storage = grid.getStorageService().getInventory();
         EssentiaKey key = EssentiaKey.of(aspect);
         long amountToInject = Math.min(amount, maxRate);
-        long inserted = storage.insert(key, amountToInject, Actionable.MODULATE, actionSource);
+        long inserted = PoweredEssentiaStorage.of(grid).insert(key, amountToInject, Actionable.MODULATE, actionSource);
         return (int) inserted;
     }
 
@@ -113,6 +126,10 @@ public final class GolemNetworkBridge {
      * @return amount of essentia extracted.
      */
     public int extractEssentia(IGrid grid, Aspect aspect, int amount, int maxRate, Actionable mode) {
+        return extractEssentia(grid, aspect, amount, maxRate, mode, IActionSource.empty());
+    }
+
+    public int extractEssentia(IGrid grid, Aspect aspect, int amount, int maxRate, Actionable mode, IActionSource actionSource) {
         if (grid == null || aspect == null || amount <= 0 || maxRate <= 0) {
             return 0;
         }
@@ -120,7 +137,10 @@ public final class GolemNetworkBridge {
         MEStorage storage = grid.getStorageService().getInventory();
         EssentiaKey key = EssentiaKey.of(aspect);
         long amountToExtract = Math.min(amount, maxRate);
-        long extracted = storage.extract(key, amountToExtract, mode, actionSource);
+        // Legacy jar lookup is unpowered; the real transfer costs 0.3 AE/unit.
+        long extracted = mode == Actionable.SIMULATE
+                ? storage.extract(key, amountToExtract, mode, actionSource)
+                : PoweredEssentiaStorage.of(grid).extract(key, amountToExtract, mode, actionSource);
         return (int) extracted;
     }
 
@@ -129,6 +149,10 @@ public final class GolemNetworkBridge {
      * @return extracted FluidStack, or empty if none.
      */
     public FluidStack extractFluid(IGrid grid, FluidStack target, int maxRate) {
+        return extractFluid(grid, target, maxRate, IActionSource.empty());
+    }
+
+    public FluidStack extractFluid(IGrid grid, FluidStack target, int maxRate, IActionSource actionSource) {
         if (grid == null || target == null || target.isEmpty() || maxRate <= 0) {
             return FluidStack.EMPTY;
         }
@@ -140,10 +164,30 @@ public final class GolemNetworkBridge {
         }
 
         long amountToExtract = Math.min(target.getAmount(), maxRate);
+        // AIAENetworkGolem uses 1 AE/100 mB, independently of modern AE2's quantum.
+        var energy = grid.getEnergyService();
+        double cost = amountToExtract / 100.0;
+        if (energy.extractAEPower(cost, Actionable.SIMULATE, PowerMultiplier.CONFIG) < cost) return FluidStack.EMPTY;
         long extracted = storage.extract(key, amountToExtract, Actionable.MODULATE, actionSource);
+        energy.extractAEPower(extracted / 100.0, Actionable.MODULATE, PowerMultiplier.CONFIG);
         if (extracted > 0) {
             return key.toStack((int) extracted);
         }
         return FluidStack.EMPTY;
     }
+    private static long poweredItems(IGrid grid, AEItemKey key, long requested, IActionSource source, boolean insert) {
+        var storage = grid.getStorageService().getInventory();
+        var energy = grid.getEnergyService();
+        long possible = insert ? storage.insert(key, requested, Actionable.SIMULATE, source)
+                : storage.extract(key, requested, Actionable.SIMULATE, source);
+        double power = energy.extractAEPower(possible, Actionable.SIMULATE, PowerMultiplier.CONFIG);
+        long units = Math.min(possible, (long) (power + 0.9));
+        if (units <= 0) return 0;
+        // Quirk kept: old Platform debits the simulated amount before transferring
+        // the power-limited amount, including its +0.9 partial-power rounding.
+        energy.extractAEPower(possible, Actionable.MODULATE, PowerMultiplier.CONFIG);
+        return insert ? storage.insert(key, units, Actionable.MODULATE, source)
+                : storage.extract(key, units, Actionable.MODULATE, source);
+    }
+
 }

@@ -73,6 +73,8 @@ public final class ThaumicEnergistics {
     private static final DeferredRegister<net.neoforged.neoforge.common.crafting.IngredientType<?>> INGREDIENT_TYPES=DeferredRegister.create(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES,ID);
     public static final DeferredHolder<net.neoforged.neoforge.common.crafting.IngredientType<?>,net.neoforged.neoforge.common.crafting.IngredientType<thaumicenergistics.crafting.EmptyJarIngredient>> EMPTY_JAR_INGREDIENT=
             INGREDIENT_TYPES.register("empty_jar",()->new net.neoforged.neoforge.common.crafting.IngredientType<>(com.mojang.serialization.MapCodec.unit(new thaumicenergistics.crafting.EmptyJarIngredient())));
+    public static final DeferredHolder<net.neoforged.neoforge.common.crafting.IngredientType<?>,net.neoforged.neoforge.common.crafting.IngredientType<thaumicenergistics.crafting.WoodGearIngredient>> WOOD_GEAR_INGREDIENT=
+            INGREDIENT_TYPES.register("wood_gear",()->new net.neoforged.neoforge.common.crafting.IngredientType<>(com.mojang.serialization.MapCodec.unit(new thaumicenergistics.crafting.WoodGearIngredient())));
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<thaumicenergistics.menu.EssentiaLevelEmitterMenu>> EMITTER_MENU =
             MENUS.register("essentia_level_emitter", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
                     (id, inventory, data) -> new thaumicenergistics.menu.EssentiaLevelEmitterMenu(id,inventory,null)));
@@ -141,6 +143,8 @@ public final class ThaumicEnergistics {
 
     public ThaumicEnergistics(IEventBus modBus, net.neoforged.fml.ModContainer container) {
         thaumicenergistics.config.ThEContentConfig.initialize(container);
+        thaumicenergistics.golems.WirelessGolemWork.initialize();
+        thaumicenergistics.config.ContentResearchRegistration.initialize(modBus);
         thaumicenergistics.assembler.AssemblerRegistration.initialize(modBus);
         thaumicenergistics.crafting.ProviderResearchRegistration.initialize();
         thaumicenergistics.extras.ExtrasRegistrar.initialize(modBus);
@@ -184,7 +188,7 @@ public final class ThaumicEnergistics {
             ContainerPermissions.register(id("essentia_vibration_chamber"),false,true,64);
             VIBRATION_CHAMBER.get().setBlockEntity(thaumicenergistics.blocks.VibrationChamberBlockEntity.class,VIBRATION_ENTITY.get(),null,null);
             appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(VIBRATION_ENTITY.get(),VIBRATION_ITEM.get());
-            ESSENTIA_PROVIDER.get().setBlockEntity(thaumicenergistics.blocks.EssentiaProviderBlockEntity.class,ESSENTIA_PROVIDER_ENTITY.get(),(level,pos,state,provider)->provider.serverTick(),null);
+            ESSENTIA_PROVIDER.get().setBlockEntity(thaumicenergistics.blocks.EssentiaProviderBlockEntity.class,ESSENTIA_PROVIDER_ENTITY.get(),null,(level,pos,state,provider)->provider.serverTick());
             INFUSION_PROVIDER.get().setBlockEntity(thaumicenergistics.blocks.InfusionProviderBlockEntity.class,INFUSION_PROVIDER_ENTITY.get(),null,null);
             appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(ESSENTIA_PROVIDER_ENTITY.get(),ESSENTIA_PROVIDER_ITEM.get());
             appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(INFUSION_PROVIDER_ENTITY.get(),INFUSION_PROVIDER_ITEM.get());

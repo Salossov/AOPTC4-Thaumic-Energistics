@@ -77,7 +77,10 @@ public class EssentiaStorageMonitorPart extends AEBasePart implements IStorageMo
         if(!player.isShiftKeyDown()&&InteractionUtil.canWrenchRotate(held)){
             locked=!locked;player.displayClientMessage(Component.translatable(locked?"chat.ae2.isNowLocked":"chat.ae2.isNowUnlocked"),false);changed();return true;
         }
-        if(locked||!(held.getItem() instanceof IAspectItem))return false;
+        // Empty and filled phials shared one whitelisted ItemEssence in 1.7.10.
+        // The modern empty phial is a separate item, identified by the public container API.
+        if(locked||(!(held.getItem() instanceof IAspectItem)
+                &&thaumicenergistics.storage.PortableAspectItems.inspect(held).isEmpty()))return false;
         tracked=EssentiaBusMenu.aspectFromItem(held);amount=0;configureWatcher();changed();return true;
     }
     @Override public int getLightLevel(){return isActive()?9:0;}

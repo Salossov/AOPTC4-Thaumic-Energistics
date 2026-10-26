@@ -62,13 +62,17 @@ public class GolemBackpackModel extends Model {
     }
 
     public void renderBackpack(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float pearlRotation, boolean inRange) {
-        int packColor = 0xFFFFFFFF;
+        renderBackpack(poseStack, buffer, packedLight, packedOverlay, pearlRotation, inRange, 0xFFFFFFFF);
+    }
+
+    public void renderBackpack(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay,
+                               float pearlRotation, boolean active, int packColor) {
         this.packBack.render(poseStack, buffer, packedLight, packedOverlay, packColor);
         this.packFront.render(poseStack, buffer, packedLight, packedOverlay, packColor);
         this.antenna.render(poseStack, buffer, packedLight, packedOverlay, packColor);
 
         renderPearl(poseStack, buffer, packedLight, packedOverlay, pearlRotation,
-                inRange ? 0xFFFFFFFF : 0xFFFF0000);
+                active ? packColor : 0xFFFF0000);
     }
 
     private static void renderPearl(PoseStack poseStack, VertexConsumer buffer, int light, int overlay,

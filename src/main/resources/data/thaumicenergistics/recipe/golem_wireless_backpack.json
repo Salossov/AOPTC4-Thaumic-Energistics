@@ -54,5 +54,11 @@
   "result": {
     "id": "thaumicenergistics:golem_wireless_backpack",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "golem_wireless_backpack"
+    }
+  ]
 }

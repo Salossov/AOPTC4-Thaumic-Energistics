@@ -1,16 +1,34 @@
 {
   "type": "thaumcraft:infusion",
   "research": "thaumicenergistics:tearcaneassembler",
-  "input": { "item": "ae2:molecular_assembler" },
+  "input": {
+    "item": "ae2:molecular_assembler"
+  },
   "components": [
-    { "type": "thaumicenergistics:assembler_sceptre" },
-    { "item": "thaumcraft:air_shard" },
-    { "item": "thaumcraft:earth_shard" },
-    { "item": "thaumcraft:water_shard" },
-    { "item": "thaumcraft:balanced_shard" },
-    { "item": "thaumcraft:order_shard" },
-    { "item": "thaumcraft:entropy_shard" },
-    { "item": "thaumcraft:fire_shard" }
+    {
+      "type": "thaumicenergistics:assembler_sceptre"
+    },
+    {
+      "item": "thaumcraft:air_shard"
+    },
+    {
+      "item": "thaumcraft:earth_shard"
+    },
+    {
+      "item": "thaumcraft:water_shard"
+    },
+    {
+      "item": "thaumcraft:balanced_shard"
+    },
+    {
+      "item": "thaumcraft:order_shard"
+    },
+    {
+      "item": "thaumcraft:entropy_shard"
+    },
+    {
+      "item": "thaumcraft:fire_shard"
+    }
   ],
   "result": {
     "id": "thaumicenergistics:arcane_assembler",
@@ -36,5 +54,11 @@
     "praecantatio": 16,
     "metallum": 8,
     "vitreus": 8
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "arcane_assembler"
+    }
+  ]
 }

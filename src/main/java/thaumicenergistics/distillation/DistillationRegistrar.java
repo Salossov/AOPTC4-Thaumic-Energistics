@@ -1,8 +1,6 @@
 package thaumicenergistics.distillation;
 
 import com.google.common.base.Suppliers;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -19,16 +17,14 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
-import thaumcraft.api.addon.AddonRegistrationEvent;
-import thaumcraft.api.addon.AddonRegistry;
-import thaumcraft.api.research.ResearchDefinition;
 import thaumicenergistics.ThaumicEnergistics;
 import thaumicenergistics.api.ContainerPermissions;
 
 /**
  * Autonomous registrar for Distillation Pattern Encoder.
  * Automatically registers Block, Item, BlockEntityType, MenuType, Client Screen,
- * Permissions, Creative Tab entry, and TC4 Research definition via NeoForge Mod Event Bus.
+ * Permissions and Creative Tab entry via NeoForge Mod Event Bus.
+ * The shared content-config registrar owns its conditional TC4 research definition.
  */
 @EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD)
 public final class DistillationRegistrar {
@@ -46,10 +42,6 @@ public final class DistillationRegistrar {
 
     public static final Supplier<MenuType<DistillationPatternEncoderMenu>> MENU_TYPE =
             Suppliers.memoize(() -> IMenuTypeExtension.create(DistillationPatternEncoderMenu::new));
-
-    static {
-        AddonRegistrationEvent.BUS.addListener(DistillationRegistrar::registerResearch);
-    }
 
     private DistillationRegistrar() {}
 
@@ -78,45 +70,6 @@ public final class DistillationRegistrar {
         event.enqueueWork(() -> {
             ContainerPermissions.register(ID, false, false, 64);
         });
-    }
-
-    public static void registerResearch(AddonRegistrationEvent event) {
-        AddonRegistry.research(new ResearchDefinition(
-                "thaumicenergistics:tedistillationpatternencoder",
-                "thaumicenergistics:main",
-                List.of("thaumicenergistics:teio"),
-                Map.of(
-                        "fabrico", 5,
-                        "permutatio", 5,
-                        "perditio", 5,
-                        "machina", 3,
-                        "lucrum", 3,
-                        "cognitio", 1
-                ),
-                3,     // complexity
-                false, // autoUnlock
-                true,  // concealed
-                -4,    // column
-                -4,    // row
-                List.of("thaumicenergistics.research_page.TEDISTILLATIONPATTERNENCODER.1"),
-                List.of("thaumicenergistics:distillation_pattern_encoder"),
-                "thaumicenergistics:distillation_pattern_encoder",
-                false, // virtual
-                false, // round
-                false, // stub
-                false, // secondary
-                List.of(), // siblings
-                List.of(
-                        "thaumicenergistics.research_page.TEDISTILLATIONPATTERNENCODER.1",
-                        "thaumicenergistics:distillation_pattern_encoder"
-                ),
-                false, // hidden
-                0,     // warp
-                List.of(), // itemTriggers
-                List.of(), // entityTriggers
-                List.of(), // aspectTriggers
-                List.of("thaumicenergistics:teessterm") // hiddenParents
-        ));
     }
 
     @EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)

@@ -1,13 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:gears/wooden"
-      }
-    }
-  ],
   "type": "thaumcraft:arcane",
   "research": "thaumicenergistics:tegearbox",
   "vis": {
@@ -24,7 +15,7 @@
       "tag": "c:ingots/iron"
     },
     "W": {
-      "tag": "c:gears/wooden"
+      "type": "thaumicenergistics:wood_gear"
     }
   },
   "result": {

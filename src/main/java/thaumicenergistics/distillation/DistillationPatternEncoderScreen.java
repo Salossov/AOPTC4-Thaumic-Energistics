@@ -2,7 +2,6 @@ package thaumicenergistics.distillation;
 
 import appeng.api.stacks.GenericStack;
 import appeng.client.gui.Icon;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +30,8 @@ import thaumicenergistics.storage.EssentiaKey;
  * - Encode button with enabled/disabled visual states and tooltips.
  */
 public final class DistillationPatternEncoderScreen extends AbstractContainerScreen<DistillationPatternEncoderMenu> {
+    private static final thaumicenergistics.client.EssentiaRendering ASPECT_RENDERER =
+            new thaumicenergistics.client.EssentiaRendering();
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "textures/gui/distillation.encoder.png");
     private static final ResourceLocation THAUMOMETER_ID =
@@ -73,8 +74,9 @@ public final class DistillationPatternEncoderScreen extends AbstractContainerScr
         // Render Encode Button at (146, 94)
         int btnX = leftPos + 146;
         int btnY = topPos + 94;
-        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(btnX, btnY).blit(graphics);
-        Icon.ARROW_DOWN.getBlitter().dest(btnX, btnY).blit(graphics);
+        // Modern AE2's toolbar background is 18x20; this legacy control is 16x16.
+        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(btnX, btnY, 16, 16).blit(graphics);
+        Icon.ARROW_DOWN.getBlitter().dest(btnX, btnY, 16, 16).blit(graphics);
 
         if (!menu.canEncode()) {
             // Disabled overlay
@@ -84,7 +86,7 @@ public final class DistillationPatternEncoderScreen extends AbstractContainerScr
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);
+        thaumicenergistics.client.GuiTitle.draw(graphics, font, title, titleLabelX, titleLabelY, imageWidth - titleLabelX - 6, 0x404040, mouseX, mouseY);
     }
 
     @Override
@@ -101,19 +103,8 @@ public final class DistillationPatternEncoderScreen extends AbstractContainerScr
                         // Render unknown placeholder '?'
                         graphics.drawString(font, "?", slot.x + 5, slot.y + 4, 0xAAAAAA, false);
                     } else {
-                        // Render aspect icon with native color tint
-                        ResourceLocation aspectTex = ResourceLocation.parse(aspect.texture());
-                        int color = aspect.getColor();
-                        float r = ((color >> 16) & 255) / 255.0F;
-                        float g = ((color >> 8) & 255) / 255.0F;
-                        float b = (color & 255) / 255.0F;
-
-                        RenderSystem.enableBlend();
-                        RenderSystem.defaultBlendFunc();
-                        graphics.setColor(r, g, b, 1.0F);
-                        graphics.blit(aspectTex, slot.x, slot.y, 0, 0, 16, 16, 16, 16);
-                        graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-                        RenderSystem.disableBlend();
+                        // Use the same flushed, native-color rendering as terminals and filters.
+                        ASPECT_RENDERER.drawInGui(minecraft, graphics, slot.x, slot.y, essentiaKey);
 
                         if (amount > 1) {
                             String amtStr = String.valueOf(amount);

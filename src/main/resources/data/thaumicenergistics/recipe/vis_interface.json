@@ -20,5 +20,11 @@
   "result": {
     "id": "thaumicenergistics:vis_interface",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "vis_interface"
+    }
+  ]
 }

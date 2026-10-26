@@ -40,5 +40,11 @@
     {
       "item": "thaumcraft:water_shard"
     }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "essentia_provider"
+    }
   ]
 }

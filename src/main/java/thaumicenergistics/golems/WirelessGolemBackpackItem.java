@@ -111,6 +111,9 @@ public class WirelessGolemBackpackItem extends Item {
         }
 
         BlockEntity be = targetLevel.getBlockEntity(target.pos());
+        if (be instanceof appeng.api.implementations.blockentities.IWirelessAccessPoint point) {
+            return point.getGrid();
+        }
         if (be instanceof IInWorldGridNodeHost host) {
             IGridNode node = host.getGridNode(null);
             if (node != null) {

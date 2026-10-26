@@ -183,8 +183,7 @@ public final class EssentiaCell implements StorageCell {
 
     @Override
     public void persist() {
-        if (isValid() && saves != null) {
-            saves.saveChanges();
-        }
+        // Contents are written directly to the stack by save(). AE2's save provider
+        // may itself call persist() (ME chest); notifying it here causes recursion.
     }
 }

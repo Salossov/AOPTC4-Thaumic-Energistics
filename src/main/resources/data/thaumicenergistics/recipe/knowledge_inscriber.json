@@ -31,5 +31,11 @@
   "result": {
     "id": "thaumicenergistics:knowledge_inscriber",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "arcane_assembler"
+    }
+  ]
 }

@@ -200,10 +200,12 @@ public final class EssentiaIOBusPart extends AEBasePart implements IGridTickable
     @Override public int getLightLevel() { return isActive() ? 4 : 0; }
     @Override public float getCableConnectionLength(AECableType cable) { return 5; }
     @Override public void getBoxes(IPartCollisionHelper boxes) {
+        // Collision helpers use the original south-facing coordinates; baked models
+        // face north. Reflecting these like model JSON puts the hitbox on the wrong face.
         if (importing) {
-            boxes.addBox(4,4,0,12,12,2); boxes.addBox(5,5,2,11,11,4); boxes.addBox(6,6,4,10,10,5);
+            boxes.addBox(4,4,14,12,12,16); boxes.addBox(5,5,12,11,11,14); boxes.addBox(6,6,11,10,10,12);
         } else {
-            boxes.addBox(4,4,2.5,12,12,4); boxes.addBox(5,5,1,11,11,2.5); boxes.addBox(6,6,0,10,10,1);
+            boxes.addBox(4,4,12,12,12,13.5); boxes.addBox(5,5,13.5,11,11,15); boxes.addBox(6,6,15,10,10,16);
         }
     }
     @Override public IPartModel getStaticModels() {

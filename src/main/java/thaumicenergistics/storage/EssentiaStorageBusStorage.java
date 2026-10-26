@@ -23,7 +23,7 @@ import thaumicenergistics.parts.EssentiaStorageBusPart;
 
 /**
  * The original container/interface/condenser duality, adapted to generic AE2 storage.
- * Handles exact handler resolution order, directional capability queries, recursion
+ * Handles exact handler resolution order, native capability queries, recursion
  * protection for sub-networks, power debiting and clean SIMULATE/MODULATE semantics.
  */
 public final class EssentiaStorageBusStorage implements MEStorage {
@@ -57,12 +57,12 @@ public final class EssentiaStorageBusStorage implements MEStorage {
             return new Target(Kind.CONDENSER, null, condenser, null);
         }
 
-        // 2. Aspect Container handler (query facing side first, fallback to null side)
+        // 2. Aspect Container handler. The public TC container capability is unsided;
+        // only AE2's ME storage capability below takes the facing direction.
         var block = level.getBlockState(pos).getBlock();
         var policy = ContainerPermissions.get(BuiltInRegistries.BLOCK.getKey(block));
         if (policy != null) {
-            var cap = level.getCapability(EssentiaCapabilities.CONTAINER, pos, opposite);
-            if (cap == null) cap = level.getCapability(EssentiaCapabilities.CONTAINER, pos, null);
+            var cap = level.getCapability(EssentiaCapabilities.CONTAINER, pos, null);
             if (cap != null) {
                 var container = new ContainerStorage(cap, policy, part.allowVoid(), block.getName());
                 return new Target(Kind.CONTAINER, container, null, null);

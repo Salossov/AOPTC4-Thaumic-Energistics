@@ -21,5 +21,11 @@
   "result": {
     "id": "thaumicenergistics:essentia_vibration_chamber",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "essentia_vibration_chamber"
+    }
+  ]
 }

@@ -28,6 +28,7 @@ import thaumicenergistics.storage.*;
 public final class ArcaneTerminalScreen extends AbstractContainerScreen<ArcaneTerminalMenu> {
     private static final ResourceLocation TEXTURE=ThaumicEnergistics.id("textures/gui/arcane.crafting.png");
     private static final ResourceLocation STATES=ThaumicEnergistics.id("textures/gui/states.png");
+    private static final ResourceLocation SEARCH_STATES=ThaumicEnergistics.id("textures/gui/ae2_rv3_states.png");
     private final Scrollbar scrollbar=new Scrollbar();
     private final EssentiaRendering aspectRenderer=new EssentiaRendering();
     private List<Slot> originalSlots;
@@ -77,7 +78,8 @@ public final class ArcaneTerminalScreen extends AbstractContainerScreen<ArcaneTe
         var partition=ViewCellItem.createItemFilter(cells);var values=new ArrayList<ItemTerminalEntry>();
         for(var entry:menu.entries()){
             if(menu.view()==ViewItems.CRAFTABLE&&!entry.craftable()||menu.view()==ViewItems.STORED&&entry.amount()==0)continue;
-            if(!partition.isEmpty()&&!partition.isListed(entry.key()))continue;
+            // AE2 returns null when no configured view cell contributes a filter.
+            if(partition!=null&&!partition.isEmpty()&&!partition.isListed(entry.key()))continue;
             String name=entry.key().getDisplayName().getString(),mod=entry.key().getId().getNamespace();
             // RV3 enables SEARCH_TOOLTIPS by default, including @ searches.
             if(!query.matches(name,mod,List.of())){
@@ -134,7 +136,11 @@ public final class ArcaneTerminalScreen extends AbstractContainerScreen<ArcaneTe
         toolbar(graphics,8,switch(menu.sort()){case AMOUNT->Icon.SORT_BY_AMOUNT;case MOD->Icon.SORT_BY_MOD;default->Icon.SORT_BY_NAME;});
         toolbar(graphics,28,menu.direction()==SortDir.ASCENDING?Icon.ARROW_UP:Icon.ARROW_DOWN);
         toolbar(graphics,48,menu.view()==ViewItems.ALL?Icon.VIEW_MODE_ALL:menu.view()==ViewItems.STORED?Icon.VIEW_MODE_STORED:Icon.VIEW_MODE_CRAFTING);
-        toolbar(graphics,68,AEConfig.instance().isSyncWithExternalSearch()?Icon.SEARCH_JEI:AEConfig.instance().isAutoFocusSearch()?Icon.SEARCH_AUTO_FOCUS:Icon.SEARCH_DEFAULT);
+        // Release GuiButtonSearchMode uses four distinct RV3 atlas cells. Modern
+        // AE2 retains the old Icon constants but their atlas cells are placeholders.
+        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos-18,topPos+68).blit(graphics);
+        int searchMode=ArcaneTerminalViewRules.searchMode(AEConfig.instance().isAutoFocusSearch(),AEConfig.instance().isSyncWithExternalSearch());
+        GuiTextures.blit(graphics,SEARCH_STATES,leftPos-18,topPos+68,48+searchMode*16,32,16,16);
         toolbar(graphics,88,AEConfig.instance().getTerminalStyle()==TerminalStyle.TALL?Icon.TERMINAL_STYLE_TALL:Icon.TERMINAL_STYLE_SMALL);
         graphics.pose().pushPose();graphics.pose().translate(leftPos+98,topPos+89+lowerOffset,0);graphics.pose().scale(.5F,.5F,1);Icon.CLEAR.getBlitter().dest(0,0).blit(graphics);graphics.pose().popPose();
         graphics.flush();com.mojang.blaze3d.systems.RenderSystem.enableBlend();com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
@@ -142,7 +148,7 @@ public final class ArcaneTerminalScreen extends AbstractContainerScreen<ArcaneTe
         scrollbar.drawForegroundLayer(graphics,new Rect2i(leftPos,topPos,imageWidth,imageHeight),new Point(mouseX,mouseY));
     }
     private void toolbar(GuiGraphics graphics,int y,Icon icon){Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos-18,topPos+y).blit(graphics);icon.getBlitter().dest(leftPos-18,topPos+y).blit(graphics);}
-    @Override protected void renderLabels(GuiGraphics graphics,int x,int y){graphics.drawString(font,title,8,6,0,false);}
+    @Override protected void renderLabels(GuiGraphics graphics,int x,int y){GuiTitle.draw(graphics,font,title,8,6,88,0,x,y);}
     private ItemTerminalEntry underMouse(double x,double y){
         if(!isHovering(7,17,162,rows*18,x,y))return null;
         int index=(int)(x-leftPos-7)/18+(int)(y-topPos-17)/18*9+scrollbar.getCurrentScroll()*9;

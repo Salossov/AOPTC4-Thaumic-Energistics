@@ -10,12 +10,13 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import thaumcraft.api.entities.GolemEquipmentApi;
+import thaumcraft.api.entities.GolemVisualApi;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import thaumcraft.api.entities.IControllableGolem;
 
 /**
@@ -28,9 +29,7 @@ public class GolemBackpackLayerRenderer<T extends LivingEntity, M extends Entity
     private final Map<LivingEntity, PearlAnimation> animations = new WeakHashMap<>();
 
     private static final class PearlAnimation {
-        float lastAge;
         float rotation;
-        boolean wasInRange;
     }
 
     public GolemBackpackLayerRenderer(RenderLayerParent<T, M> renderer, GolemBackpackModel backpackModel) {
@@ -72,19 +71,18 @@ public class GolemBackpackLayerRenderer<T extends LivingEntity, M extends Entity
         ResourceLocation texture = skin.getTextureLocation();
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(texture));
 
-        boolean inRange = GolemWirelessStatusPayload.inRange(entity);
-        var animation = animations.computeIfAbsent(entity, ignored -> {
-            var state = new PearlAnimation();
-            state.lastAge = ageInTicks;
-            return state;
-        });
-        if (inRange && animation.wasInRange && !Minecraft.getInstance().isPaused()) {
-            animation.rotation = (animation.rotation + Math.max(0, ageInTicks - animation.lastAge) * 2.0F) % 360.0F;
+        var visual = GolemVisualApi.state(entity);
+        boolean active = GolemWirelessStatusPayload.inRange(entity) && visual.supported() && !visual.inactive();
+        int packColor = entity.hurtTime > 0 ? 0xFFFF0000 : visual.healingTicks() > 0 ? 0xFF7FFF7F : 0xFFFFFFFF;
+        var animation = animations.computeIfAbsent(entity, ignored -> new PearlAnimation());
+        if (active && !Minecraft.getInstance().isPaused()) {
+            // Quirk kept: WirelessGolemHandler.renderGolem accumulates each render
+            // partial, rather than measuring elapsed entity ticks between frames.
+            animation.rotation += partialTick * 2.0F;
+            if (animation.rotation >= 360.0F) animation.rotation -= 360.0F;
         }
-        animation.lastAge = ageInTicks;
-        animation.wasInRange = inRange;
         this.backpackModel.renderBackpack(poseStack, buffer, packedLight,
-                LivingEntityRenderer.getOverlayCoords(entity, 0), animation.rotation, inRange);
+                OverlayTexture.NO_OVERLAY, animation.rotation, active, packColor);
 
         poseStack.popPose();
     }

@@ -31,7 +31,7 @@ public final class ArcaneAssemblerScreen extends AbstractContainerScreen<ArcaneA
         for(int i=0;i<6;i++)if(isHovering(41+i*18,87,4,16,mouseX,mouseY)){
             var aspect=Aspect.getAspect(AssemblerVisBuffer.PRIMALS.get(i));if(aspect==null)break;
             Component name=aspect.translationKey()==null?Component.literal(aspect.getName()):Component.translatable(aspect.translationKey());
-            var lines=List.of(name.copy().withStyle(style->style.withColor(aspect.getColor())),Component.literal(menu.state().vis().get(i)/10F+" / 150"),
+            List<Component> lines=List.of(name.copy().withStyle(style->style.withColor(aspect.getColor())),Component.literal(menu.state().vis().get(i)/10F+" / 150"),
                     Component.literal(String.format(Locale.getDefault(),"%.0f%% ",menu.state().modifiers().get(i)*100F)).append(Component.translatable("tc.vis.costavg")));
             graphics.renderComponentTooltip(font,lines,mouseX,mouseY);break;
         }

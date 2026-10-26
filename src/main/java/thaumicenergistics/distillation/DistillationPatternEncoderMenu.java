@@ -521,6 +521,13 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     }
 
     @Override
+    public boolean canDragTo(Slot slot) {
+        return slot.index != SLOT_SOURCE_ITEM
+                && (slot.index < SLOT_SOURCE_ASPECTS_START || slot.index > SLOT_SELECTED_ASPECT)
+                && super.canDragTo(slot);
+    }
+
+    @Override
     public boolean stillValid(Player player) {
         if (owner != player || player instanceof FakePlayer) return false;
         if (player.level().isClientSide) {

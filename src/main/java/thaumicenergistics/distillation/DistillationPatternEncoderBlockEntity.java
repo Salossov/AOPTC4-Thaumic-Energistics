@@ -41,11 +41,6 @@ public final class DistillationPatternEncoderBlockEntity extends BlockEntity imp
         }
 
         @Override
-        public int getMaxStackSize(int slot) {
-            return slot == SLOT_ENCODED_PATTERN ? 1 : 64;
-        }
-
-        @Override
         public void setChanged() {
             super.setChanged();
             DistillationPatternEncoderBlockEntity.this.setChanged();

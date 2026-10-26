@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import java.util.function.Consumer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
 import thaumicenergistics.knowledge.ArcaneCraftingPattern;
 
@@ -22,10 +24,18 @@ public final class AssemblerCraftingProvider implements ICraftingProvider {
     private final AssemblerTaskQueue queue;
     private final IActionSource source;
     private final Runnable saveChanges;
+    private final Consumer<ItemStack> started;
 
     public AssemblerCraftingProvider(IManagedGridNode node, Supplier<ServerLevel> level, BooleanSupplier validHost,
                                      Supplier<List<ArcaneCraftingPattern>> patterns, AssemblerTaskQueue queue,
                                      IActionSource source, Runnable saveChanges) {
+        this(node, level, validHost, patterns, queue, source, saveChanges, ignored -> {});
+    }
+
+    public AssemblerCraftingProvider(IManagedGridNode node, Supplier<ServerLevel> level, BooleanSupplier validHost,
+                                     Supplier<List<ArcaneCraftingPattern>> patterns, AssemblerTaskQueue queue,
+                                     IActionSource source, Runnable saveChanges, Consumer<ItemStack> started) {
+        this.started = Objects.requireNonNull(started);
         this.node = Objects.requireNonNull(node);
         this.level = Objects.requireNonNull(level);
         this.validHost = Objects.requireNonNull(validHost);
@@ -47,6 +57,7 @@ public final class AssemblerCraftingProvider implements ICraftingProvider {
         if (!queue.accept(pattern, inputs, current, patterns, () -> validHost.getAsBoolean() && node.isActive()))
             return false;
         saveChanges.run();
+        started.accept(queue.visualResult());
         return true;
     }
 

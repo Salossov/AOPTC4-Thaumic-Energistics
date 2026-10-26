@@ -25,9 +25,9 @@ public final class VibrationChamberScreen extends AbstractContainerScreen<Vibrat
     @Override protected void renderLabels(GuiGraphics graphics,int x,int y){}
     @Override public void render(GuiGraphics graphics,int mouseX,int mouseY,float partial){
         super.render(graphics,mouseX,mouseY,partial);var tooltip=new ArrayList<Component>();
-        if(isHovering(61,12,11,56,mouseX,mouseY))tooltip.add(Component.literal(menu.storedAmount()>0&&menu.storedAspect()!=null?menu.storedAspect().getName()+" x "+menu.storedAmount():"Empty"));
-        else if(isHovering(78,30,15,20,mouseX,mouseY)&&menu.processingAspect()!=null){tooltip.add(Component.literal("Processing: "+menu.processingAspect().getName()));tooltip.add(Component.literal(String.format("Time Remaining: %.0fs",menu.ticksRemaining()/20F)));}
-        else if(isHovering(96,32,6,18,mouseX,mouseY))tooltip.add(Component.literal(String.format("%.0f AE/t",menu.powerPerTick())));
+        if(isHovering(61,12,11,56,mouseX,mouseY))tooltip.add(menu.storedAmount()>0&&menu.storedAspect()!=null?Component.literal(menu.storedAspect().getName()+" x "+menu.storedAmount()):Component.translatable("thaumicenergistics.gui.vibration.chamber.empty"));
+        else if(isHovering(78,30,15,20,mouseX,mouseY)&&menu.processingAspect()!=null){tooltip.add(Component.translatable("thaumicenergistics.gui.vibration.chamber.processing",menu.processingAspect().getName()));tooltip.add(Component.translatable("thaumicenergistics.gui.vibration.chamber.remaining",String.format(Locale.ROOT,"%.0f",menu.ticksRemaining()/20F)));}
+        else if(isHovering(96,32,6,18,mouseX,mouseY))tooltip.add(Component.translatable("thaumicenergistics.gui.vibration.chamber.power",String.format(Locale.ROOT,"%.0f",menu.powerPerTick())));
         if(!tooltip.isEmpty())graphics.renderTooltip(font,tooltip,Optional.empty(),mouseX,mouseY);
     }
 }

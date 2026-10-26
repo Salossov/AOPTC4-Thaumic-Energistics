@@ -187,12 +187,16 @@ public final class ArcaneTerminalMenu extends AbstractContainerMenu {
             }else return false;
         }
         if(!clearGrid())return false;
+        var network=part.network();
+        // clearGrid may just have returned the only matching items to ME.
+        // The terminal's display cache can still be empty in this tick.
+        var available=network==null?null:network.getAvailableStacks();
         for(int slot=0;slot<9;slot++){
             var ingredient=required.get(slot);if(ingredient.isEmpty())continue;
             ItemStack selected=ItemStack.EMPTY;
             for(int offset=0;offset<36&&selected.isEmpty();offset++){int index=offset<27?offset+9:offset-27;var value=player.getInventory().getItem(index);if(ingredient.test(value))selected=player.getInventory().removeItem(index,1);}
-            if(selected.isEmpty()&&part.network()!=null){var grid=part.getMainNode().getGrid();if(grid!=null)for(var entry:grid.getStorageService().getCachedInventory())
-                if(entry.getKey() instanceof AEItemKey key&&entry.getLongValue()>0&&key.matches(ingredient)&&part.network().extract(key,1,Actionable.MODULATE,IActionSource.ofPlayer(player,part))>0){selected=key.toStack();break;}}
+            if(selected.isEmpty()&&network!=null){for(var entry:available)
+                if(entry.getKey() instanceof AEItemKey key&&entry.getLongValue()>0&&key.matches(ingredient)&&network.extract(key,1,Actionable.MODULATE,IActionSource.ofPlayer(player,part))>0){selected=key.toStack();break;}}
             if(!selected.isEmpty())inventory.setItem(slot,selected);
         }
         player.getInventory().setChanged();broadcastChanges();return true;

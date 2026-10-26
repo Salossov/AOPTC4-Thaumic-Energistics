@@ -8,7 +8,7 @@ import appeng.api.parts.*;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.storage.*;
 import appeng.api.util.AECableType;
-import appeng.core.definitions.AEComponents;
+import appeng.api.ids.AEComponents;
 import appeng.parts.AEBasePart;
 import appeng.util.*;
 import java.util.*;

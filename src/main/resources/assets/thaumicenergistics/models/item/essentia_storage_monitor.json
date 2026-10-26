@@ -1,6 +1,220 @@
 {
-  "parent": "thaumicenergistics:part/essentia_storage_monitor_empty_off",
+  "parent": "ae2:item/part_base",
   "textures": {
-    "side": "thaumicenergistics:blocks/parts/essentia.termina.border"
+    "side": "thaumicenergistics:blocks/parts/arcane.crafting.side",
+    "particle": "thaumicenergistics:blocks/parts/arcane.crafting.side",
+    "dark": "ae2:part/monitor_front",
+    "medium": "ae2:part/conversion_monitor_medium",
+    "light": "ae2:part/conversion_monitor_bright",
+    "empty": "thaumicenergistics:blocks/parts/essentia.terminal.overlay.dark"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        7
+      ],
+      "to": [
+        14,
+        14,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        9
+      ],
+      "to": [
+        11,
+        11,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        6.999
+      ],
+      "to": [
+        14,
+        14,
+        6.999
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#dark",
+          "tintindex": 1
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        6.998
+      ],
+      "to": [
+        14,
+        14,
+        6.998
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#medium",
+          "tintindex": 2
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        6.997
+      ],
+      "to": [
+        14,
+        14,
+        6.997
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#light",
+          "tintindex": 3
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        6.996
+      ],
+      "to": [
+        14,
+        14,
+        6.996
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "texture": "#empty",
+          "tintindex": 2
+        }
+      }
+    },
+    {
+      "name": "Opaque front backing",
+      "from": [
+        2,
+        2,
+        7.00025
+      ],
+      "to": [
+        14,
+        14,
+        7.00025
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    }
   }
 }

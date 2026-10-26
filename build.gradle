@@ -11,18 +11,41 @@ sourceSets {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
     }
+    compatVerification {
+        compileClasspath += sourceSets.main.output + sourceSets.verification.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.verification.output
+    }
 }
 configurations.verificationImplementation.extendsFrom configurations.implementation
 configurations.verificationCompileOnly.extendsFrom configurations.compileOnly
 configurations.verificationRuntimeOnly.extendsFrom configurations.runtimeOnly
+def withComputerCraft = providers.gradleProperty('withComputerCraft').map { it.toBoolean() }.getOrElse(false)
+def withCompact = providers.gradleProperty('withCompact').map { it.toBoolean() }.getOrElse(false)
+def withTinkerer = providers.gradleProperty('withTinkerer').map { it.toBoolean() }.getOrElse(false)
+def tinkererJar = file(providers.gradleProperty('tinkererJar').getOrElse('../../../port_addons/Thaumic_Tinkerer/repo/build/libs/ThaumicTinkerer-1.21.1-1.0.0.jar'))
+def viewerSmoke = providers.gradleProperty('viewerSmoke').getOrElse('none')
+if (!(viewerSmoke in ['none','jei','emi','both'])) throw new GradleException('Unknown viewerSmoke profile')
+if (viewerSmoke != 'none' && !withCompact) throw new GradleException('Viewer smoke requires withCompact=true')
+def hudSmoke = providers.gradleProperty('hudSmoke').getOrElse('none')
+if (!(hudSmoke in ['none','jade','wthit'])) throw new GradleException('Unknown hudSmoke profile')
+if (hudSmoke != 'none' && !withCompact) throw new GradleException('HUD smoke requires withCompact=true')
+def compactJar = file(providers.gradleProperty('compactJar').getOrElse('../../../aoptc4-compact/build/libs/aoptc4-compact-0.7.0.jar'))
+if (!withComputerCraft) sourceSets.compatVerification.java.exclude '**/ComputerCraftNativeTest.java'
+if (withCompact) sourceSets.compatVerification.java.srcDir 'src/hudVerification/java'
+if (viewerSmoke != 'none') sourceSets.compatVerification.java.srcDir 'src/viewerVerification/java'
+configurations.compatVerificationImplementation.extendsFrom configurations.verificationImplementation
+configurations.compatVerificationCompileOnly.extendsFrom configurations.verificationCompileOnly
+configurations.compatVerificationRuntimeOnly.extendsFrom configurations.verificationRuntimeOnly
 neoForge {
     version = project.neo_version
     addModdingDependenciesTo sourceSets.verification
+    addModdingDependenciesTo sourceSets.compatVerification
     addModdingDependenciesTo sourceSets.test
     mods {
         thaumicenergistics {
             sourceSet sourceSets.main
             sourceSet sourceSets.verification
+            if (withComputerCraft || withCompact) sourceSet sourceSets.compatVerification
         }
     }
     runs {
@@ -35,10 +58,13 @@ neoForge {
             sourceSet = sourceSets.verification
             gameDirectory = file('runs/client')
             systemProperty 'thaumicenergistics.clientSmoke', 'true'
+            systemProperty 'thaumicenergistics.viewerSmoke', viewerSmoke
+            systemProperty 'thaumicenergistics.hudSmoke', hudSmoke
             // This host permits IPv4 localhost but rejects ::1; JDK's NIO selector
             // wakeup pipe otherwise fails before integrated-server login.
             systemProperty 'java.net.preferIPv4Stack', 'true'
             programArguments.addAll('--mixin','thaumicenergistics-smoke.mixins.json')
+            if (hudSmoke != 'none') programArguments.addAll('--mixin','thaumicenergistics-hud-smoke.mixins.json')
             programArguments.addAll('--quickPlaySingleplayer', 'THE-client-menu-smoke', '--width', '1280', '--height', '720')
         }
         gameTestServer {
@@ -46,7 +72,22 @@ neoForge {
             sourceSet = sourceSets.verification
             gameDirectory = file('runs/gametest')
             systemProperty 'neoforge.enabledGameTestNamespaces', 'thaumicenergistics'
+            systemProperty 'java.net.preferIPv4Stack', 'true'
             systemProperty 'thaumicenergistics.testReport', file('build/test-results/gametest.xml').absolutePath
+        }
+        configMatrixServer {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.verification
+            def profile = providers.gradleProperty('configCase').getOrElse('defaults')
+            if (!(profile ==~ /[a-z0-9-]{1,64}/)) throw new GradleException('Invalid configCase')
+            gameDirectory = file("runs/config-matrix/${profile}")
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'thaumicenergistics_config'
+            systemProperty 'java.net.preferIPv4Stack', 'true'
+            systemProperty 'thaumicenergistics.configCase', profile
+            systemProperty 'thaumicenergistics.disabledFeatures', providers.gradleProperty('disabledFeatures').getOrElse('')
+            systemProperty 'thaumicenergistics.noMirrors', providers.gradleProperty('noMirrors').getOrElse('false')
+            systemProperty 'thaumicenergistics.withWoodGear', providers.gradleProperty('withWoodGear').getOrElse('false')
+            systemProperty 'thaumicenergistics.testReport', file("build/test-results/config-matrix/${profile}.xml").absolutePath
         }
     }
 }
@@ -64,9 +105,30 @@ dependencies {
     runtimeOnly files(coreJar)
     runtimeOnly files(aopUiJar)
     runtimeOnly 'top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1'
+    if (withComputerCraft) verificationRuntimeOnly 'cc.tweaked:cc-tweaked-1.21.1-forge:1.120.2'
+    if (withTinkerer) verificationRuntimeOnly files(tinkererJar)
+    if (withCompact) {
+        compatVerificationCompileOnly files(compactJar)
+        verificationRuntimeOnly files(compactJar)
+    }
+    if (viewerSmoke != 'none') {
+        compatVerificationCompileOnly 'mezz.jei:jei-1.21.1-common-api:19.8.4.110'
+        compatVerificationCompileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1'
+    }
+    if (viewerSmoke in ['jei','both']) verificationRuntimeOnly 'mezz.jei:jei-1.21.1-neoforge:19.64.0.455'
+    if (viewerSmoke in ['emi','both']) verificationRuntimeOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1'
+    if (hudSmoke == 'jade') verificationRuntimeOnly 'maven.modrinth:jade:15.10.1+neoforge'
+    if (hudSmoke == 'wthit') {
+        verificationRuntimeOnly 'mcp.mobius.waila:wthit:neo-12.5.5'
+        verificationRuntimeOnly 'lol.bai:badpackets:neo-0.8.2'
+    }
 }
 repositories {
     mavenCentral()
+    maven { url = 'https://maven.blamejared.com' }
+    maven { url = 'https://maven.terraformersmc.com/releases' }
+    maven { url = 'https://api.modrinth.com/maven' }
+    maven { url = 'https://maven2.bai.lol' }
     maven { url = 'https://maven.squiddev.cc' }
     exclusiveContent {
         forRepository { maven { url = 'https://maven.theillusivec4.top/' } }
@@ -80,12 +142,14 @@ tasks.register('verifyThaumcraftApi') {
 tasks.named('compileJava') { dependsOn 'verifyThaumcraftApi' }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.withType(AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
-tasks.withType(Jar).configureEach { from('LICENSE'); from('NOTICE.md') }
+tasks.withType(Jar).configureEach { from('LICENSE'); from('NOTICE.md'); from('licenses') { into 'licenses' } }
 tasks.named('processResources') {
     def legacyResearchOutput = file('build/resources/main/assets/thaumicenergistics/textures/research/Research.Background.png')
+    def obsoleteGearRecipe = file('build/resources/main/data/thaumicenergistics/recipe/iron_gear_from_stick.json')
     doFirst {
         // Windows Copy can otherwise keep the old case-only output spelling.
         if (legacyResearchOutput.isFile() && !legacyResearchOutput.delete()) throw new GradleException('Cannot clear old research-texture output')
+        if (obsoleteGearRecipe.isFile() && !obsoleteGearRecipe.delete()) throw new GradleException('Cannot clear obsolete split gear recipe output')
     }
     inputs.property('mod_version', project.version)
     def values = [mod_version: project.version]
@@ -117,6 +181,73 @@ tasks.register('assemblerRulesTest', JavaExec) {
 }
 tasks.named('check') { dependsOn 'assemblerRulesTest' }
 
+tasks.register('golemRulesTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'thaumicenergistics.golems.GolemRulesTest'
+}
+tasks.named('check') { dependsOn 'golemRulesTest' }
+
+tasks.named('runConfigMatrixServer') {
+    dependsOn 'jar'
+    def profile = providers.gradleProperty('configCase').getOrElse('defaults')
+    def disabled = providers.gradleProperty('disabledFeatures').getOrElse('')
+    def noMirrors = providers.gradleProperty('noMirrors').getOrElse('false').toBoolean()
+    def withWoodGear = providers.gradleProperty('withWoodGear').getOrElse('false').toBoolean()
+    def directory = file("runs/config-matrix/${profile}")
+    def report = file("build/test-results/config-matrix/${profile}.xml")
+    def inputsReport = file("build/test-results/config-matrix/${profile}-inputs.json")
+    def configKeys = ['arcaneAssembler','arcaneCraftingTerminal','distillationPatternEncoder','essentiaCells',
+            'essentiaProvider','essentiaVibrationChamber','golemWifiBackpack','infusionProvider','ioBuses',
+            'visRelayInterface','wirelessEssentiaTerminal','wrenchFocus','certusQuartzDuplication','forceTcFacades']
+    def runInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"),
+            core: coreJar, api: apiJar, aop_ui: aopUiJar]
+    doFirst {
+        def disabledKeys = disabled.tokenize(',') as Set
+        if (!configKeys.containsAll(disabledKeys)) throw new GradleException('Unknown disabledFeatures')
+        def marker = new File(directory, '.thaumicenergistics-config-owned')
+        if (new File(directory,'world').exists() && !marker.isFile()) throw new GradleException('Refusing unmarked config test world')
+        directory.mkdirs()
+        marker.text = 'Isolated Thaumic Energistics configuration verification; no user saves.\n'
+        def serverProperties = new File(directory,'server.properties')
+        if (!serverProperties.exists()) serverProperties.text = 'level-name=world\n'
+        def config = new File(directory,'config/thaumicenergistics-startup.toml')
+        config.parentFile.mkdirs()
+        config.text = '[crafting]\n' + configKeys.collect { "${it} = ${!disabledKeys.contains(it)}" }.join('\n') + '\n'
+        new File(directory,'config/thaumcraft-startup.toml').text = "allowMirrors = ${!noMirrors}\n"
+        if (withWoodGear) {
+            def pack = new File(directory,'world/datapacks/the-config-wood-gear')
+            def tag = new File(pack,'data/c/tags/item/gears/wooden.json')
+            tag.parentFile.mkdirs()
+            new File(pack,'pack.mcmeta').text = '{"pack":{"pack_format":48,"description":"Isolated config test wooden-gear tag"}}'
+            tag.text = '{"replace":true,"values":["minecraft:wooden_axe"]}'
+        }
+        if (report.exists() && !report.delete()) throw new GradleException('Cannot clear old config test report')
+        def inputs = runInputs.collectEntries { name,path -> [(name): [path:path.absolutePath,
+                sha256:java.security.MessageDigest.getInstance('SHA-256').digest(path.bytes).encodeHex().toString()]] }
+        inputsReport.parentFile.mkdirs()
+        inputsReport.text = new groovy.json.JsonBuilder([profile:profile, disabled:disabledKeys as List,
+                noMirrors:noMirrors, withWoodGear:withWoodGear, inputs:inputs, completed:false]).toPrettyString()
+    }
+    doLast {
+        if (!report.isFile()) throw new GradleException('Missing fresh configuration test XML')
+        def factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+        factory.setFeature('http://apache.org/xml/features/disallow-doctype-decl', true)
+        def xml = factory.newDocumentBuilder().parse(report)
+        if (xml.getElementsByTagName('testcase').length != 1 || xml.getElementsByTagName('failure').length > 0
+                || xml.getElementsByTagName('error').length > 0) throw new GradleException("Configuration test failed: ${profile}")
+        def evidence = new groovy.json.JsonSlurper().parse(inputsReport)
+        runInputs.each { name,path ->
+            if (java.security.MessageDigest.getInstance('SHA-256').digest(path.bytes).encodeHex().toString() != evidence.inputs[name].sha256)
+                throw new GradleException("Config input changed during run: ${name}")
+        }
+        evidence.completed = true
+        evidence.report_sha256 = java.security.MessageDigest.getInstance('SHA-256').digest(report.bytes).encodeHex().toString()
+        inputsReport.text = new groovy.json.JsonBuilder(evidence).toPrettyString()
+        logger.lifecycle("THE_CONFIG_PROFILE_PASS ${profile}")
+    }
+}
+
 tasks.register('prepareQuietClient') {
     def earlyConfig = file('runs/client/config/fml.toml')
     def options = file('runs/client/options.txt')
@@ -144,6 +275,8 @@ tasks.named('runGameTestServer') {
     def report = file('build/test-results/gametest.xml')
     def provenance = file('build/test-results/native-inputs.json')
     def nativeInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar, aop_ui: aopUiJar]
+    if (withCompact) nativeInputs.compact = compactJar
+    if (withTinkerer) nativeInputs.tinkerer = tinkererJar
     doFirst {
         if (report.exists() && !report.delete()) throw new GradleException('Cannot clear previous test report')
         def inputs = nativeInputs.collectEntries { name, path ->
@@ -181,6 +314,8 @@ tasks.named('runClientSmoke') {
     def ownershipMarker = new File(smokeSave,'.thaumicenergistics-smoke-owned')
     def testLevel = file('runs/gametest/world/level.dat')
     def clientInputs = [artifact: file("build/libs/thaumicenergistics-1.21.1-${project.mod_version}.jar"), core: coreJar, api: apiJar, aop_ui: aopUiJar]
+    if (withCompact) clientInputs.compact = compactJar
+    if (withTinkerer) clientInputs.tinkerer = tinkererJar
     doFirst {
         // Refuse an unmarked save before Minecraft can open or autosave it.
         if (smokeSave.exists() && !ownershipMarker.isFile()) throw new GradleException("Refusing unmarked client save: ${smokeSave}")
@@ -208,8 +343,17 @@ tasks.named('runClientSmoke') {
                 'conversion_fill_real_packet','conversion_batch_real_packets','conversion_partial_phial_refused',
                 'terminal_menu_real_packets','terminal_work_slots','terminal_cursor_transfer','terminal_native_craft_menu','terminal_search_filter','terminal_real_wrench_restore',
                 'cell_chest_native_configuration','cell_terminal_local_real_packets','cell_terminal_work_transfer','cell_terminal_close_conserves_work_items','cell_terminal_modes_reopen','cell_terminal_replacement_closes_menu',
-                'wireless_native_ap_binding_packet','wireless_initial_connection_real_packet','wireless_bound_slot_real_packets','wireless_work_and_battery_real_packets','wireless_modes_reopen','wireless_native_craft_return','wireless_range_closes_menu','monitoring_research_pages_real_sync']
-        if (outcome.automation_passed != true || outcome.screenshots.size() < 46
+                'wireless_native_ap_binding_packet','wireless_initial_connection_real_packet','wireless_bound_slot_real_packets','wireless_work_and_battery_real_packets','wireless_modes_reopen','wireless_native_craft_return','wireless_range_closes_menu','monitoring_research_pages_real_sync',
+                'gear_research_active_recipe','gear_stick_fallback_client','distillation_aspect_slots_real_sync','off_terminal_models_real_client',
+                'arcane_preview_costs_real_sync','arcane_result_real_click','arcane_native_vis_debit','knowledge_core_real_save_packet',
+                'inscriber_core_to_assembler_real_sync','assembler_busy_real_packet','assembler_live_job_delivered',
+                'assembler_wrong_dimension_ignored','assembler_effect_setting_respected','assembler_overlapping_effects','assembler_0_to_4_real_events_and_render',
+                'golem_equipment_and_status_real_sync','golem_inactive_pearl_stops','golem_source_partial_rotation','golem_healing_event5_exact_timer','golem_native_green_rendered','golem_native_healing_tint_expires','golem_hurt_overrides_healing','golem_retracking_restores_equipment_and_status']
+        requiredChecks.addAll(['gearbox_models_and_rotation_real_client','gearbox_fallback_cubes_real_client','thaumcraft_facade_real_client_sync','tooltip_search_client_setting_changes_actual_results','arcane_no_view_cells_real_entries','arcane_four_search_modes_real_clicks'])
+        if (viewerSmoke != 'none') requiredChecks.addAll(['viewer_actual_registry_selected','viewer_dry_run_no_mutation','viewer_real_transfer_packet','viewer_vanilla_dry_run_and_wrong_menu','viewer_vanilla_real_transfer_and_craft','viewer_closed_menu_refused','viewer_negative_packets_refused'])
+        if (viewerSmoke != 'none') requiredChecks.addAll(['viewer_shaped_dry_run_no_mutation','viewer_shaped_real_transfer_and_craft','viewer_partial_fill_preserves_legacy','viewer_missing_inputs_cannot_craft','viewer_locked_research_client_refused','viewer_locked_research_server_refused'])
+        if (hudSmoke != 'none') requiredChecks.addAll(['hud_provider_online','hud_provider_offline','hud_vibration_chamber','hud_monitor_south','hud_monitor_east_no_stale','hud_real_server_snapshots_and_draw'])
+        if (outcome.automation_passed != true || outcome.screenshots.size() < 74
                 || requiredChecks.any { outcome[it] != true }
                 || outcome.screenshots.any { !new File(it).isFile() || new File(it).length() < 100 }) {
             throw new GradleException("Client automation failed or screenshots missing: ${result}")

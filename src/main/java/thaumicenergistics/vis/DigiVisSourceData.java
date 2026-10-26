@@ -1,7 +1,7 @@
 package thaumicenergistics.vis;
 
 import appeng.api.networking.IGrid;
-import appeng.api.parts.PartHelper;
+import appeng.api.parts.IPartHost;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -20,11 +20,14 @@ public record DigiVisSourceData(GlobalPos location, Direction side, long uid) {
     public DigiVisSource resolve(MinecraftServer server, IGrid destination) {
         if (server == null || destination == null) return null;
         var level = server.getLevel(location.dimension());
-        if (level == null || !level.hasChunkAt(location.pos())) return null;
+        if (level == null) return null;
+        var chunk = level.getChunkSource().getChunkNow(location.pos().getX() >> 4, location.pos().getZ() >> 4);
+        if (chunk == null) return null;
+        var owner = chunk.getBlockEntity(location.pos(), net.minecraft.world.level.chunk.LevelChunk.EntityCreationType.CHECK);
         Object candidate;
-        if (side == null) candidate = level.getBlockEntity(location.pos());
+        if (side == null) candidate = owner;
         else {
-            var host = PartHelper.getPartHost(level,location.pos());
+            var host = owner instanceof IPartHost partHost ? partHost : null;
             candidate = host == null ? null : host.getPart(side);
         }
         return candidate instanceof DigiVisSource source && source.getUID() == uid

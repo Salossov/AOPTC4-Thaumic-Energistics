@@ -120,6 +120,30 @@
           "texture": "#overlay"
         }
       }
+    },
+    {
+      "name": "Opaque front backing",
+      "from": [
+        1,
+        1,
+        0.00025
+      ],
+      "to": [
+        15,
+        15,
+        0.00025
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        }
+      }
     }
   ]
 }

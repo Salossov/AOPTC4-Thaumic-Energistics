@@ -86,7 +86,8 @@ public class GearboxModel extends Model {
                         .addBox(-0.5F, -3.5F, -0.5F, 1.0F, 7.0F, 1.0F),
                 PartPose.ZERO);
 
-        return LayerDefinition.create(mesh, 64, 64);
+        // Legacy ModelGearbox uses a 32x32 UV grid even for the 64px skin.
+        return LayerDefinition.create(mesh, 32, 32);
     }
 
     @Override

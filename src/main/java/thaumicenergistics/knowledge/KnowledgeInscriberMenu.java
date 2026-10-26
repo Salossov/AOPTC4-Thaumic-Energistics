@@ -431,6 +431,12 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
         super.removed(player);
     }
 
+    @Override
+    public boolean canDragTo(Slot slot) {
+        return slot.container != displayInventory && slot.container != craftingMatrix
+                && slot.container != resultInventory && super.canDragTo(slot);
+    }
+
     private boolean refreshCore() {
         ItemStack core = inscriber.getItem(KnowledgeInscriberBlockEntity.KCORE_SLOT);
         if (core.isEmpty() && !kCoreHandler.hasCore()) return false;

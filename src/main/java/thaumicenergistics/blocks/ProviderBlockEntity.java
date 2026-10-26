@@ -58,12 +58,22 @@ public abstract class ProviderBlockEntity extends AENetworkedBlockEntity impleme
     @Override public AEColor getColor(){return color;}
     public AEColor getGridColor(){return color;}
     private AEColor cableColor(Direction side){
-        if(side==null||level==null||!level.hasChunkAt(worldPosition.relative(side)))return null;
+        if(side==null||!(level instanceof net.minecraft.server.level.ServerLevel server))return null;
+        var pos=worldPosition.relative(side);
+        var chunk=server.getChunkSource().getChunkNow(pos.getX()>>4,pos.getZ()>>4);
+        if(chunk==null||!chunk.getFullStatus().isOrAfter(net.minecraft.server.level.FullChunkStatus.FULL))return null;
         // Only cable buses influence the original automatic color selection.
-        return level.getBlockEntity(worldPosition.relative(side)) instanceof IPartHost host?host.getColor():null;
+        return chunk.getBlockEntity(pos,net.minecraft.world.level.chunk.LevelChunk.EntityCreationType.CHECK) instanceof IPartHost host?host.getColor():null;
     }
     public void checkGridConnectionColor(){
         if(level==null||level.isClientSide||forcedColor||checkingColor)return;
+        // AE2 destroys neighbouring nodes while LevelChunk is unloading, before
+        // every block entity is marked removed. Recolouring here would rescan
+        // capabilities and acquire new generation claims for the dying chunk.
+        if(isRemoved()||!(level instanceof net.minecraft.server.level.ServerLevel server))return;
+        var chunk=server.getChunkSource().getChunkNow(worldPosition.getX()>>4,worldPosition.getZ()>>4);
+        if(chunk==null||!chunk.getFullStatus().isOrAfter(net.minecraft.server.level.FullChunkStatus.FULL)
+                ||chunk.getBlockEntity(worldPosition,net.minecraft.world.level.chunk.LevelChunk.EntityCreationType.CHECK)!=this)return;
         checkingColor=true;
         try{
             var attached=cableColor(attachment);

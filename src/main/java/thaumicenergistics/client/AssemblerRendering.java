@@ -13,7 +13,16 @@ import thaumicenergistics.assembler.AssemblerRegistration;
 @EventBusSubscriber(modid=ThaumicEnergistics.ID,value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
 public final class AssemblerRendering {
     @SubscribeEvent public static void reload(RegisterClientReloadListenersEvent event){
-        event.registerReloadListener((ResourceManagerReloadListener)resources->AssemblerItemRenderer.invalidateModels());
+        event.registerReloadListener((ResourceManagerReloadListener)resources->{AssemblerItemRenderer.invalidateModels();net.minecraft.client.Minecraft.getInstance().execute(AssemblerAnimationEffects::clear);});
+    }
+    @SubscribeEvent public static void setup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event){
+        event.enqueueWork(AssemblerAnimationEffects::install);
+    }
+    @SubscribeEvent public static void particles(net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent event){
+        event.registerSpriteSet(thaumicenergistics.assembler.AssemblerParticles.ENERGY.get(),sprites->{
+            AssemblerAnimationEffects.sprites(sprites);
+            return (type,level,x,y,z,vx,vy,vz)->new AssemblerCraftingParticle(level,x,y,z,vx,vy,vz,sprites);
+        });
     }
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions event){event.registerLayerDefinition(AssemblerModel.LAYER,AssemblerModel::layer);}
     @SubscribeEvent public static void screens(RegisterMenuScreensEvent event){event.register(AssemblerRegistration.MENU.get(),ArcaneAssemblerScreen::new);}

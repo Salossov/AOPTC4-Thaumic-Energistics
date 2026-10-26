@@ -26,9 +26,10 @@ public final class AssemblerRegistration {
             net.neoforged.neoforge.common.crafting.IngredientType<AssemblerSceptreIngredient>> SCEPTRE_INGREDIENT =
             INGREDIENTS.register("assembler_sceptre",()->new net.neoforged.neoforge.common.crafting.IngredientType<>(AssemblerSceptreIngredient.CODEC));
     public static void initialize(IEventBus bus){
+        AssemblerParticles.initialize(bus);
         BLOCKS.register(bus);ITEMS.register(bus);ENTITIES.register(bus);MENUS.register(bus);INGREDIENTS.register(bus);
         bus.addListener((FMLCommonSetupEvent event)->event.enqueueWork(()->{
-            BLOCK.get().setBlockEntity(ArcaneAssemblerBlockEntity.class,BLOCK_ENTITY.get(),(level,pos,state,assembler)->assembler.serverTick(),null);
+            BLOCK.get().setBlockEntity(ArcaneAssemblerBlockEntity.class,BLOCK_ENTITY.get(),null,(level,pos,state,assembler)->assembler.serverTick());
             appeng.blockentity.AEBaseBlockEntity.registerBlockEntityItem(BLOCK_ENTITY.get(),ITEM.get());
             appeng.api.upgrades.Upgrades.add(appeng.core.definitions.AEItems.SPEED_CARD,ITEM.get(),4);
         }));

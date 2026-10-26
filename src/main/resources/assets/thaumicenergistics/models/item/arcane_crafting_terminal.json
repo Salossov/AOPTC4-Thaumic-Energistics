@@ -1,3 +1,232 @@
 {
-  "parent": "thaumicenergistics:part/arcane_crafting_terminal_0_on"
+  "parent": "ae2:item/part_base",
+  "textures": {
+    "side": "thaumicenergistics:blocks/parts/arcane.crafting.side",
+    "particle": "thaumicenergistics:blocks/parts/arcane.crafting.side",
+    "base": "thaumicenergistics:blocks/parts/arcane.crafting.overlay1",
+    "dark": "thaumicenergistics:blocks/parts/arcane.crafting.overlay3",
+    "medium": "thaumicenergistics:blocks/parts/arcane.crafting.overlay2",
+    "runes": "thaumicenergistics:blocks/parts/arcane.crafting.overlay4",
+    "status": "thaumicenergistics:blocks/parts/bus.color.light"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        7
+      ],
+      "to": [
+        14,
+        14,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base",
+          "rotation": 0
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        9
+      ],
+      "to": [
+        11,
+        11,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "up": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#status",
+          "tintindex": 2,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        6.999
+      ],
+      "to": [
+        14,
+        14,
+        6.999
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#dark",
+          "tintindex": 1,
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "rotation": 0,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        6.998
+      ],
+      "to": [
+        14,
+        14,
+        6.998
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#medium",
+          "tintindex": 2,
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "rotation": 0,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        6.997
+      ],
+      "to": [
+        14,
+        14,
+        6.997
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#runes",
+          "tintindex": 4,
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "rotation": 0,
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "name": "Opaque front backing",
+      "from": [
+        2,
+        2,
+        7.00025
+      ],
+      "to": [
+        14,
+        14,
+        7.00025
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    }
+  }
 }

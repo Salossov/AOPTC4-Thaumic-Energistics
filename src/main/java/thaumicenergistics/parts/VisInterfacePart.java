@@ -74,18 +74,22 @@ public final class VisInterfacePart extends AEBasePart implements IGridTickable,
     public int drainColor() { return drainColor; }
     private boolean current() {
         var owner = getBlockEntity();
-        return owner != null && getHost() != null && getSide() != null && !owner.isRemoved()
-                && getLevel() != null && !isClientSide() && getLevel().hasChunkAt(owner.getBlockPos())
-                && getLevel().getBlockEntity(owner.getBlockPos()) == owner && getHost().getPart(getSide()) == this;
+        if (owner == null || !(getLevel() instanceof net.minecraft.server.level.ServerLevel server)) return false;
+        var chunk = server.getChunkSource().getChunkNow(owner.getBlockPos().getX() >> 4, owner.getBlockPos().getZ() >> 4);
+        return getHost() != null && getSide() != null && !owner.isRemoved()
+                && chunk != null && !isClientSide()
+                && chunk.getBlockEntity(owner.getBlockPos(), net.minecraft.world.level.chunk.LevelChunk.EntityCreationType.CHECK) == owner
+                && getHost().getPart(getSide()) == this;
     }
     public TileVisNode getRelay() {
         if (!current()) return null;
         var pos = getBlockEntity().getBlockPos().relative(getSide());
-        if (!getLevel().hasChunkAt(pos)) return null;
-        var state = getLevel().getBlockState(pos);
+        var chunk = ((net.minecraft.server.level.ServerLevel)getLevel()).getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+        if (chunk == null) return null;
+        var state = chunk.getBlockState(pos);
         return BuiltInRegistries.BLOCK.getKey(state.getBlock()).equals(ResourceLocation.parse("thaumcraft:vis_relay"))
                 && state.hasProperty(BlockStateProperties.FACING) && state.getValue(BlockStateProperties.FACING) == getSide()
-                && getLevel().getBlockEntity(pos) instanceof TileVisNode relay && !relay.isRemoved() ? relay : null;
+                && chunk.getBlockEntity(pos, net.minecraft.world.level.chunk.LevelChunk.EntityCreationType.CHECK) instanceof TileVisNode relay && !relay.isRemoved() ? relay : null;
     }
     private VisInterfacePart source() {
         var source = linkedSource == null || getLevel() == null ? null : linkedSource.resolve(getLevel().getServer(),getGrid());

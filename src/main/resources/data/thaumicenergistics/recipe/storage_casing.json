@@ -20,5 +20,11 @@
   "result": {
     "id": "thaumicenergistics:storage_casing",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "essentia_cells"
+    }
+  ]
 }

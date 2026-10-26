@@ -80,8 +80,8 @@ public class GearboxBlock extends Block implements EntityBlock {
             if (!this.isThaumium) {
                 return false; // Iron gearbox cannot be turned by golems/fake players
             }
-            // Thaumium gearbox permits golem interaction (FakeThaumcraftGolem or golem fake players)
-            return true;
+            // AbstractBlockGearBoxBase permits only Thaumcraft's named golem profile.
+            return "FakeThaumcraftGolem".equalsIgnoreCase(fakePlayer.getGameProfile().getName());
         }
         return true;
     }

@@ -25,8 +25,7 @@ import thaumicenergistics.ThaumicEnergistics;
 /**
  * Event-driven bridge and hook dispatcher connecting live Thaumcraft golems with
  * Wireless Golem Backpack interactions, AP status refresh, and lifecycle events.
- * Note: Actual golem AI task replacement (Gather/Fill/Liquid/Alchemy) requires
- * core AI task hooks and remains BLOCKED_CORE_API (G3).
+ * Native Gather/Fill/Liquid/Alchemy goals are registered by WirelessGolemWork via G3.
  */
 @EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.GAME)
 public final class GolemHooksBridge {
@@ -125,20 +124,20 @@ public final class GolemHooksBridge {
     }
 
     // --- Golem Action Helper Handlers (Gather, Fill, Liquid, Essentia) ---
-    // Note: Pending core AI task hook integration (G3 BLOCKED_CORE_API).
+    // Called by the native G3 work goals; transfers attribute actions to the live AP.
 
     /**
      * Executes the Gather action: deposits golem carried stack into the ME network.
      * @return true if any items were deposited.
      */
     public static boolean executeGather(LivingEntity golem, ItemStack carried, int orderUpgrades, boolean advanced) {
-        var conn = GolemBackpackManager.getConnection(golem);
+        var conn = GolemBackpackManager.getActiveConnection(golem);
         if (conn == null || !conn.isInRange || conn.grid == null || carried == null || carried.isEmpty()) {
             return false;
         }
 
         int maxRate = GolemNetworkBridge.getItemRate(orderUpgrades, advanced);
-        int deposited = NETWORK_BRIDGE.depositStack(conn.grid, carried, maxRate);
+        int deposited = NETWORK_BRIDGE.depositStack(conn.grid, carried, maxRate, appeng.api.networking.security.IActionSource.ofMachine(conn.accessPoint));
         return deposited > 0;
     }
 
@@ -147,13 +146,13 @@ public final class GolemHooksBridge {
      * @return extracted ItemStack, or empty if none.
      */
     public static ItemStack executeFill(LivingEntity golem, ItemStack requested, int orderUpgrades, boolean advanced) {
-        var conn = GolemBackpackManager.getConnection(golem);
+        var conn = GolemBackpackManager.getActiveConnection(golem);
         if (conn == null || !conn.isInRange || conn.grid == null || requested == null || requested.isEmpty()) {
             return ItemStack.EMPTY;
         }
 
         int maxRate = GolemNetworkBridge.getItemRate(orderUpgrades, advanced);
-        return NETWORK_BRIDGE.extractStack(conn.grid, requested, maxRate);
+        return NETWORK_BRIDGE.extractStack(conn.grid, requested, maxRate, appeng.api.networking.security.IActionSource.ofMachine(conn.accessPoint));
     }
 
     /**
@@ -161,38 +160,38 @@ public final class GolemHooksBridge {
      * @return extracted FluidStack, or empty if none.
      */
     public static FluidStack executeLiquid(LivingEntity golem, FluidStack wanted, int orderUpgrades, boolean advanced) {
-        var conn = GolemBackpackManager.getConnection(golem);
+        var conn = GolemBackpackManager.getActiveConnection(golem);
         if (conn == null || !conn.isInRange || conn.grid == null || wanted == null || wanted.isEmpty()) {
             return FluidStack.EMPTY;
         }
 
         int maxRate = GolemNetworkBridge.getFluidRate(orderUpgrades, advanced);
-        return NETWORK_BRIDGE.extractFluid(conn.grid, wanted, maxRate);
+        return NETWORK_BRIDGE.extractFluid(conn.grid, wanted, maxRate, appeng.api.networking.security.IActionSource.ofMachine(conn.accessPoint));
     }
 
     /**
      * Executes Essentia insertion into the ME network.
      */
     public static int executeEssentiaInsert(LivingEntity golem, Aspect aspect, int amount, int orderUpgrades, boolean advanced) {
-        var conn = GolemBackpackManager.getConnection(golem);
+        var conn = GolemBackpackManager.getActiveConnection(golem);
         if (conn == null || !conn.isInRange || conn.grid == null || aspect == null || amount <= 0) {
             return 0;
         }
 
         int maxRate = GolemNetworkBridge.getEssentiaRate(orderUpgrades, advanced);
-        return NETWORK_BRIDGE.insertEssentia(conn.grid, aspect, amount, maxRate);
+        return NETWORK_BRIDGE.insertEssentia(conn.grid, aspect, amount, maxRate, appeng.api.networking.security.IActionSource.ofMachine(conn.accessPoint));
     }
 
     /**
      * Executes Essentia extraction from the ME network.
      */
     public static int executeEssentiaExtract(LivingEntity golem, Aspect aspect, int amount, int orderUpgrades, boolean advanced, Actionable mode) {
-        var conn = GolemBackpackManager.getConnection(golem);
+        var conn = GolemBackpackManager.getActiveConnection(golem);
         if (conn == null || !conn.isInRange || conn.grid == null || aspect == null || amount <= 0) {
             return 0;
         }
 
         int maxRate = GolemNetworkBridge.getEssentiaRate(orderUpgrades, advanced);
-        return NETWORK_BRIDGE.extractEssentia(conn.grid, aspect, amount, maxRate, mode);
+        return NETWORK_BRIDGE.extractEssentia(conn.grid, aspect, amount, maxRate, mode, appeng.api.networking.security.IActionSource.ofMachine(conn.accessPoint));
     }
 }

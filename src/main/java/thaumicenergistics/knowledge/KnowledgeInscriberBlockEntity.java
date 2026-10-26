@@ -141,9 +141,7 @@ public class KnowledgeInscriberBlockEntity extends BlockEntity implements Contai
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         if (!coreStack.isEmpty()) {
-            CompoundTag kCoreTag = new CompoundTag();
-            coreStack.save(registries, kCoreTag);
-            tag.put(NBTKEY_KCORE, kCoreTag);
+            tag.put(NBTKEY_KCORE, coreStack.save(registries));
         }
     }
 }

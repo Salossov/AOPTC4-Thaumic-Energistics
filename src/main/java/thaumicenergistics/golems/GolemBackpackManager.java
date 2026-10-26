@@ -62,6 +62,15 @@ public final class GolemBackpackManager {
         return connection == null ? null : snapshot(connection);
     }
 
+    /** Revalidate the actual loaded access point for every server transaction. */
+    public static GolemConnection getActiveConnection(Entity golem) {
+        var connection = resolveConnection(golem);
+        if (connection == null) return null;
+        updateAccessPoint(connection, golem);
+        return connection.isInRange && isUsable(connection.accessPoint, connection.grid, golem)
+                ? snapshot(connection) : null;
+    }
+
     private static GolemConnection resolveConnection(Entity golem) {
         if (!(golem instanceof LivingEntity living) || !(living.level() instanceof ServerLevel level)
                 || !level.getServer().isSameThread() || living.isRemoved()

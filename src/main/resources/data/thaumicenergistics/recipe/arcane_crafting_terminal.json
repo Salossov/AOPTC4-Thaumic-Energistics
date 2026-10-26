@@ -23,5 +23,11 @@
   "result": {
     "id": "thaumicenergistics:arcane_crafting_terminal",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "arcane_crafting_terminal"
+    }
+  ]
 }

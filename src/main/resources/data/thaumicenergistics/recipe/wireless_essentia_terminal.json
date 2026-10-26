@@ -15,5 +15,11 @@
   "result": {
     "id": "thaumicenergistics:wireless_essentia_terminal",
     "count": 1
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "wireless_essentia_terminal"
+    }
+  ]
 }

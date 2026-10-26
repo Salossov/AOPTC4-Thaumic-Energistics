@@ -44,6 +44,10 @@
   "neoforge:conditions": [
     {
       "type": "thaumcraft:mirrors_enabled"
+    },
+    {
+      "type": "thaumicenergistics:content_feature",
+      "feature": "infusion_provider"
     }
   ]
 }

@@ -111,13 +111,14 @@ public final class CellLedger {
      * Attempts to insert essentia.
      * Returns strictly the accepted units count (not the remainder!).
      * Enforces:
-     * - Cutoff <= 0 (returns 0)
+     * - Negative requests are invalid; zero returns 0
      * - Creative cells reject all inserts (return 0)
      * - Partition whitelist checks
      * - Type slot limits (max 12 for normal cells)
      * - Byte capacity limits (overcapacity cells reject new inserts without free space)
      */
     public long insert(String tag, long requested, boolean commit) {
+        if (requested < 0) throw new IllegalArgumentException("Negative essentia insertion");
         if (requested <= 0) {
             return 0L;
         }
@@ -155,11 +156,12 @@ public final class CellLedger {
      * Attempts to extract essentia.
      * Returns strictly the extracted units count.
      * Enforces:
-     * - Cutoff <= 0 (returns 0)
+     * - Negative requests are invalid; zero returns 0
      * - Creative cells provide exact requested amount if aspect is in partition list, with zero accumulation/depletion
      * - Exact or excess extraction frees type slot, resets slot index to empty string "", and preserves slot layout
      */
     public long extract(String tag, long requested, boolean commit) {
+        if (requested < 0) throw new IllegalArgumentException("Negative essentia extraction");
         if (requested <= 0) {
             return 0L;
         }

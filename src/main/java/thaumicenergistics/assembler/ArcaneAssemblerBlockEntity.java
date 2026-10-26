@@ -59,7 +59,7 @@ public final class ArcaneAssemblerBlockEntity extends ProviderBlockEntity implem
         super(AssemblerRegistration.BLOCK_ENTITY.get(), pos, state, AssemblerRules.IDLE_AE);
         crafting = new AssemblerCraftingProvider(getMainNode(),
                 () -> level instanceof ServerLevel server ? server : null,
-                this::current, this::patterns, tasks, getMachineSource(), this::queueChanged);
+                this::current, this::patterns, tasks, getMachineSource(), this::queueChanged, this::craftStarted);
         getMainNode().addService(ICraftingProvider.class, crafting);
     }
 
@@ -95,6 +95,10 @@ public final class ArcaneAssemblerBlockEntity extends ProviderBlockEntity implem
         if (loading || level == null || level.isClientSide) return;
         saveChanges();
         refreshCore();
+    }
+
+    private void craftStarted(ItemStack product) {
+        if (current() && !product.isEmpty()) AssemblerAnimationPayload.send((ServerLevel) level, worldPosition, speed(), product);
     }
 
     private void queueChanged() {

@@ -56,7 +56,7 @@ public final class DistillationPatternHelper {
             return DecodedPattern.INVALID;
         }
         var inGeneric = possibleInputs[0];
-        if (!(inGeneric.what() instanceof AEItemKey itemKey) || inGeneric.amount() != 1) {
+        if (!(inGeneric.what() instanceof AEItemKey itemKey) || inGeneric.amount() != 1 || inputs[0].getMultiplier() != 1) {
             return DecodedPattern.INVALID;
         }
 

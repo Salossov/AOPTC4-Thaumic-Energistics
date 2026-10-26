@@ -178,8 +178,8 @@ public class ArcaneCraftingPattern implements IPatternDetails {
             if (ing == null) continue;
             CompoundTag ingTag = new CompoundTag();
             if (ing instanceof ItemStack single && !single.isEmpty()) {
+                ingTag = (CompoundTag) single.save(registries);
                 ingTag.putInt(NBTKEY_INGREDIENT_TYPE, NBTKEY_ITEMTYPE);
-                single.save(registries, ingTag);
                 data.put(NBTKEY_INGREDIENT_NUM + i, ingTag);
             } else if (ing instanceof List<?> list && !list.isEmpty()) {
                 ingTag.putInt(NBTKEY_INGREDIENT_TYPE, NBTKEY_ARRAYTYPE);
@@ -187,9 +187,7 @@ public class ArcaneCraftingPattern implements IPatternDetails {
                 int itemIdx = 0;
                 for (Object obj : list) {
                     if (obj instanceof ItemStack st && !st.isEmpty()) {
-                        CompoundTag subTag = new CompoundTag();
-                        st.save(registries, subTag);
-                        ingTag.put(NBTKEY_INGREDIENT_NUM + itemIdx, subTag);
+                        ingTag.put(NBTKEY_INGREDIENT_NUM + itemIdx, st.save(registries));
                         itemIdx++;
                     }
                 }
@@ -199,9 +197,7 @@ public class ArcaneCraftingPattern implements IPatternDetails {
 
         // Write output
         if (!result.isEmpty()) {
-            CompoundTag outTag = new CompoundTag();
-            result.save(registries, outTag);
-            data.put(NBTKEY_RESULT, outTag);
+            data.put(NBTKEY_RESULT, result.save(registries));
         }
         return data;
     }
