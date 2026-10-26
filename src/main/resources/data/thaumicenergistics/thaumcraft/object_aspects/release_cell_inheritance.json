@@ -1,0 +1,33 @@
+{
+  "kind": "derived_object_aspects",
+  "entries": {
+    "thaumicenergistics:essentia_cell_1k": {
+      "inherit": "ae2:item_storage_cell_1k",
+      "add": {
+        "praecantatio": 3,
+        "auram": 5
+      }
+    },
+    "thaumicenergistics:essentia_cell_4k": {
+      "inherit": "ae2:item_storage_cell_1k",
+      "add": {
+        "praecantatio": 3,
+        "auram": 5
+      }
+    },
+    "thaumicenergistics:essentia_cell_16k": {
+      "inherit": "ae2:item_storage_cell_1k",
+      "add": {
+        "praecantatio": 3,
+        "auram": 5
+      }
+    },
+    "thaumicenergistics:essentia_cell_64k": {
+      "inherit": "ae2:item_storage_cell_1k",
+      "add": {
+        "praecantatio": 3,
+        "auram": 5
+      }
+    }
+  }
+}
