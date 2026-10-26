@@ -185,7 +185,8 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
         ItemStack slotStack = getSlot(SLOT_SELECTED_ASPECT).getItem();
         if (!slotStack.isEmpty()) {
             var generic = GenericStack.unwrapItemStack(slotStack);
-            if (generic != null && generic.what() instanceof EssentiaKey) {
+            if (generic != null && generic.what() instanceof EssentiaKey
+                    && generic.amount() > 0 && generic.amount() <= Integer.MAX_VALUE) {
                 return (int) generic.amount();
             }
         }
@@ -195,9 +196,9 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
     public static boolean isScanned(Player player, ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (player instanceof ServerPlayer sp) {
-            return AspectApi.scanned(sp, stack);
+            return AspectApi.scanned(sp, stack.copyWithCount(1));
         } else {
-            return AspectApi.scanned(stack);
+            return AspectApi.scanned(stack.copyWithCount(1));
         }
     }
 
@@ -242,17 +243,17 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
             return;
         }
 
+        Map<String, Integer> rawAspects = AspectApi.aspects(owner.level(), source.copyWithCount(1));
+        if (rawAspects.isEmpty()) {
+            clearSelectedAspect();
+            return;
+        }
+
         if (!isScanned(owner, source)) {
             // Unscanned item: mask all 6 slots with unknown aspect placeholder
             for (int i = 0; i < SLOT_SOURCE_ASPECTS_COUNT; i++) {
                 aspectContainer.setItem(i, GenericStack.wrapInItemStack(EssentiaKey.ofTag("unknown"), 1));
             }
-            clearSelectedAspect();
-            return;
-        }
-
-        Map<String, Integer> rawAspects = AspectApi.aspects(owner.level(), source);
-        if (rawAspects.isEmpty()) {
             clearSelectedAspect();
             return;
         }
@@ -305,7 +306,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
             cachedSource = decoded.sourceItem().copyWithCount(1);
             scanSourceItem(false);
             if (isScanned(owner, decoded.sourceItem()) && knowsAspect(owner, decoded.aspect())
-                    && AspectApi.aspects(owner.level(), decoded.sourceItem()).getOrDefault(decoded.aspect().getTag(), 0) == decoded.amount()) {
+                    && AspectApi.aspects(owner.level(), decoded.sourceItem().copyWithCount(1)).getOrDefault(decoded.aspect().getTag(), 0) == decoded.amount()) {
                 setSelectedAspect(decoded.aspect(), decoded.amount());
             } else {
                 clearSelectedAspect();
@@ -343,7 +344,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
         int amount = getSelectedAmount();
         if (aspect == null || amount <= 0 || !knowsAspect(owner, aspect)) return false;
 
-        Map<String, Integer> rawAspects = AspectApi.aspects(owner.level(), source);
+        Map<String, Integer> rawAspects = AspectApi.aspects(owner.level(), source.copyWithCount(1));
         Integer sourceAmount = rawAspects.get(aspect.getTag());
         if (sourceAmount == null || sourceAmount != amount) return false;
 
@@ -360,7 +361,7 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
         int amount = getSelectedAmount();
         if (aspect == null || amount <= 0 || !knowsAspect(owner, aspect)) return;
 
-        Map<String, Integer> rawAspects = AspectApi.aspects(owner.level(), source);
+        Map<String, Integer> rawAspects = AspectApi.aspects(owner.level(), source.copyWithCount(1));
         Integer sourceAmount = rawAspects.get(aspect.getTag());
         if (sourceAmount == null || sourceAmount != amount) {
             clearSelectedAspect();
@@ -393,7 +394,8 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
             ItemStack stack = aspectContainer.getItem(index);
             if (!stack.isEmpty()) {
                 var generic = GenericStack.unwrapItemStack(stack);
-                if (generic != null && generic.what() instanceof EssentiaKey essentiaKey) {
+                if (generic != null && generic.what() instanceof EssentiaKey essentiaKey
+                        && generic.amount() > 0 && generic.amount() <= Integer.MAX_VALUE) {
                     Aspect aspect = essentiaKey.aspect();
                     int amount = (int) generic.amount();
                     if (aspect != null && !aspect.getTag().equals("unknown") && knowsAspect(owner, aspect)) {
