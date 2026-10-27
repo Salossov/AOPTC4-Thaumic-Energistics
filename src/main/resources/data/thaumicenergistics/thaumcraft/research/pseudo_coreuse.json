@@ -3,7 +3,7 @@
   "key": "thaumicenergistics:pseudo_coreuse",
   "category": "thaumicenergistics:main",
   "linked_research": "COREUSE",
-  "column": 5,
+  "column": 3,
   "row": -6,
   "complexity": 1,
   "stub": true,
