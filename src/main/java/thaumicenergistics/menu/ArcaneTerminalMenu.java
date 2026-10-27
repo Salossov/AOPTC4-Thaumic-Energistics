@@ -86,8 +86,9 @@ public final class ArcaneTerminalMenu extends AbstractContainerMenu {
             if(ItemStack.isSameItemSameComponents(stack,wanted)&&!stack.isEmpty())return owner.getInventory().removeItem(slot,1);}
         var source=IActionSource.ofPlayer(owner,part);var exact=AEItemKey.of(wanted);
         if(network.extract(exact,1,Actionable.MODULATE,source)>0)return exact.toStack();
-        var grid=part.getMainNode().getGrid();if(grid==null)return ItemStack.EMPTY;
-        for(var entry:grid.getStorageService().getCachedInventory())if(entry.getKey() instanceof AEItemKey key&&entry.getLongValue()>0&&equivalent(wanted,key.toStack()))
+        // The grid's display cache may lag behind an insertion in this tick.
+        // Legacy monitor.getStorageList() searches the current stored contents.
+        for(var entry:network.getAvailableStacks())if(entry.getKey() instanceof AEItemKey key&&entry.getLongValue()>0&&equivalent(wanted,key.toStack()))
             if(network.extract(key,1,Actionable.MODULATE,source)>0)return key.toStack();
         return ItemStack.EMPTY;
     }
