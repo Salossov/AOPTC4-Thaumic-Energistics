@@ -440,7 +440,7 @@ public class KnowledgeInscriberMenu extends AbstractContainerMenu {
     private boolean refreshCore() {
         ItemStack core = inscriber.getItem(KnowledgeInscriberBlockEntity.KCORE_SLOT);
         if (core.isEmpty() && !kCoreHandler.hasCore()) return false;
-        if (kCoreHandler.isHandlingCore(core)) return false;
+        if (kCoreHandler.isBoundToCore(core)) return false;
         kCoreHandler.open(core, owner.level().registryAccess());
         updatePatternSlots();
         return true;

@@ -65,7 +65,12 @@ public class HandlerKnowledgeCore {
         if (!(candidate.getItem() instanceof ItemKnowledgeCore)) {
             return false;
         }
-        return this.kCore == candidate && ItemStack.matches(this.snapshot, candidate);
+        return ItemStack.matches(this.kCore, candidate) && ItemStack.matches(this.snapshot, candidate);
+    }
+
+    /** A menu must reopen on stack replacement, even when its contents match. */
+    public boolean isBoundToCore(ItemStack candidate) {
+        return this.kCore == candidate && isHandlingCore(candidate);
     }
 
     public boolean canModify() {
