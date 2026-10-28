@@ -85,7 +85,7 @@ public final class ExtrasFocusNativeTest {
     private static void setCableWithImportBus(GameTestHelper helper, BlockPos cable) {
         var level = helper.getLevel();
         PartHelper.setPart(level, cable, null, null, IPartItem.byId(ResourceLocation.parse("ae2:fluix_glass_cable")));
-        PartHelper.setPart(level, cable, Direction.UP, null, ThaumicEnergistics.IMPORT_BUS);
+        PartHelper.setPart(level, cable, Direction.UP, null, ThaumicEnergistics.IMPORT_BUS.get());
     }
 
     @GameTest(template = "empty", timeoutTicks = 120)
