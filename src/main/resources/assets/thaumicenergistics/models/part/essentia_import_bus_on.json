@@ -6,7 +6,10 @@
     "chamber": "thaumicenergistics:blocks/parts/essentia.import.bus.chamber",
     "side": "thaumicenergistics:blocks/parts/essentia.import.bus.side",
     "particle": "thaumicenergistics:blocks/parts/essentia.import.bus.side",
-    "light": "thaumicenergistics:blocks/parts/bus.color.light"
+    "light": "thaumicenergistics:blocks/parts/bus.color.light",
+    "lamp_border": "thaumicenergistics:blocks/parts/bus.color.border",
+    "lamp_side": "thaumicenergistics:blocks/parts/bus.color.side",
+    "lamp_overlay": "thaumicenergistics:blocks/parts/bus.color.light"
   },
   "elements": [
     {
@@ -38,70 +41,6 @@
         },
         "down": {
           "texture": "#side"
-        }
-      }
-    },
-    {
-      "from": [
-        4,
-        4,
-        1
-      ],
-      "to": [
-        12,
-        12,
-        2
-      ],
-      "faces": {
-        "north": {
-          "texture": "#chamber"
-        },
-        "south": {
-          "texture": "#chamber"
-        },
-        "east": {
-          "texture": "#chamber"
-        },
-        "west": {
-          "texture": "#chamber"
-        },
-        "up": {
-          "texture": "#chamber"
-        },
-        "down": {
-          "texture": "#chamber"
-        }
-      }
-    },
-    {
-      "from": [
-        5,
-        5,
-        2
-      ],
-      "to": [
-        11,
-        11,
-        3
-      ],
-      "faces": {
-        "north": {
-          "texture": "#chamber"
-        },
-        "south": {
-          "texture": "#chamber"
-        },
-        "east": {
-          "texture": "#chamber"
-        },
-        "west": {
-          "texture": "#chamber"
-        },
-        "up": {
-          "texture": "#chamber"
-        },
-        "down": {
-          "texture": "#chamber"
         }
       }
     },
@@ -150,22 +89,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#light"
+          "texture": "#lamp_side"
         },
         "south": {
-          "texture": "#light"
+          "texture": "#lamp_side"
         },
         "east": {
-          "texture": "#light"
+          "texture": "#lamp_border"
         },
         "west": {
-          "texture": "#light"
+          "texture": "#lamp_border"
         },
         "up": {
-          "texture": "#light"
+          "texture": "#lamp_border"
         },
         "down": {
-          "texture": "#light"
+          "texture": "#lamp_border"
         }
       }
     },
@@ -174,12 +113,12 @@
       "from": [
         4,
         4,
-        0.00025
+        0.01
       ],
       "to": [
         12,
         12,
-        0.00025
+        0.01
       ],
       "faces": {
         "north": {
@@ -190,6 +129,81 @@
             16
           ],
           "texture": "#side"
+        }
+      }
+    },
+    {
+      "name": "Bus light overlay",
+      "from": [
+        5.999,
+        5.999,
+        3.999
+      ],
+      "to": [
+        10.001,
+        10.001,
+        5.001
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "south": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "east": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "west": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "down": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
         }
       }
     }

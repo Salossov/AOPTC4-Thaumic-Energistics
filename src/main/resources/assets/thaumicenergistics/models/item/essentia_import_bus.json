@@ -6,7 +6,10 @@
     "chamber": "thaumicenergistics:blocks/parts/essentia.import.bus.chamber",
     "side": "thaumicenergistics:blocks/parts/essentia.import.bus.side",
     "particle": "thaumicenergistics:blocks/parts/essentia.import.bus.side",
-    "light": "thaumicenergistics:blocks/parts/bus.color.light"
+    "light": "thaumicenergistics:blocks/parts/bus.color.light",
+    "lamp_border": "thaumicenergistics:blocks/parts/bus.color.border",
+    "lamp_side": "thaumicenergistics:blocks/parts/bus.color.side",
+    "lamp_overlay": "thaumicenergistics:blocks/parts/bus.color.light"
   },
   "elements": [
     {
@@ -53,9 +56,6 @@
         9
       ],
       "faces": {
-        "north": {
-          "texture": "#chamber"
-        },
         "south": {
           "texture": "#chamber"
         },
@@ -85,12 +85,6 @@
         10
       ],
       "faces": {
-        "north": {
-          "texture": "#chamber"
-        },
-        "south": {
-          "texture": "#chamber"
-        },
         "east": {
           "texture": "#chamber"
         },
@@ -150,22 +144,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#chamber"
+          "texture": "#lamp_side"
         },
         "south": {
-          "texture": "#chamber"
+          "texture": "#lamp_side"
         },
         "east": {
-          "texture": "#chamber"
+          "texture": "#lamp_border"
         },
         "west": {
-          "texture": "#chamber"
+          "texture": "#lamp_border"
         },
         "up": {
-          "texture": "#chamber"
+          "texture": "#lamp_border"
         },
         "down": {
-          "texture": "#chamber"
+          "texture": "#lamp_border"
         }
       }
     },
@@ -192,6 +186,81 @@
           "texture": "#side"
         }
       }
+    },
+    {
+      "name": "Bus light overlay",
+      "from": [
+        5.999,
+        5.999,
+        10.999
+      ],
+      "to": [
+        10.001,
+        10.001,
+        12.001000000000001
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "south": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "east": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "west": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        },
+        "down": {
+          "texture": "#lamp_overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "tintindex": 1
+        }
+      }
     }
   ],
   "display": {
@@ -212,5 +281,6 @@
         0.8
       ]
     }
-  }
+  },
+  "render_type": "minecraft:translucent"
 }

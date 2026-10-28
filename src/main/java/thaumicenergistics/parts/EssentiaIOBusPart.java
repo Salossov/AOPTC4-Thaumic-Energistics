@@ -211,4 +211,10 @@ public final class EssentiaIOBusPart extends AEBasePart implements IGridTickable
     @Override public IPartModel getStaticModels() {
         return importing ? (isActive() ? IMPORT_ON : IMPORT_OFF) : (isActive() ? EXPORT_ON : EXPORT_OFF);
     }
+    @Override public boolean requireDynamicRender() { return true; }
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
+    @Override public void renderDynamic(float partial, com.mojang.blaze3d.vertex.PoseStack poses,
+            net.minecraft.client.renderer.MultiBufferSource buffers, int light, int overlay) {
+        thaumicenergistics.client.EssentiaBusRendering.render(this, poses, buffers, light, overlay);
+    }
 }
