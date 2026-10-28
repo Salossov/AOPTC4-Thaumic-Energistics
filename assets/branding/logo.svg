@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Thaumic Energistics</title>
+  <desc id="desc">A blue glass orb with the white flowing essentia symbol, redrawn from the supplied reference.</desc>
+  <defs>
+    <radialGradient id="orb" cx=".34" cy=".27" r=".78"><stop stop-color="#69d9ed"/><stop offset=".38" stop-color="#309cda"/><stop offset=".76" stop-color="#1378bc"/><stop offset="1" stop-color="#075284"/></radialGradient>
+    <radialGradient id="light" cx=".29" cy=".18" r=".77"><stop stop-color="#c8f6ff" stop-opacity=".65"/><stop offset=".58" stop-color="#5dc5ef" stop-opacity=".12"/><stop offset="1" stop-color="#2788ca" stop-opacity="0"/></radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b8d6e3"/><stop offset=".3" stop-color="#1a6e9b"/><stop offset=".72" stop-color="#06406c"/><stop offset="1" stop-color="#9bcbdf"/></linearGradient>
+    <linearGradient id="sigil" x1=".2" y1="0" x2=".6" y2="1"><stop stop-color="#8cdded"/><stop offset=".48" stop-color="#e1ffff"/><stop offset="1" stop-color="#a4e6ec"/></linearGradient>
+    <clipPath id="inside"><circle cx="256" cy="256" r="222"/></clipPath>
+  </defs>
+  <circle cx="256" cy="256" r="232" fill="url(#rim)" stroke="#7199ad" stroke-opacity=".45" stroke-width="5"/>
+  <circle cx="256" cy="256" r="221" fill="url(#orb)" stroke="#0a649e" stroke-width="6"/>
+  <g clip-path="url(#inside)">
+    <circle cx="256" cy="256" r="220" fill="url(#light)"/>
+    <g fill="none" stroke="url(#sigil)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity=".9">
+      <path d="M257 262C252 208 174 164 184 113C190 85 210 70 223 73C262 89 244 166 257 262"/>
+      <path d="M257 262C287 203 335 165 316 118C308 100 293 85 279 82"/>
+      <path d="M257 262C325 230 360 187 389 134"/>
+      <path d="M257 262C324 246 367 257 429 287C381 293 318 289 257 262"/>
+      <path d="M257 262C288 309 328 346 326 407C325 425 320 444 313 459"/>
+      <path d="M257 262C248 319 249 376 219 419C207 436 197 446 184 452"/>
+      <path d="M257 262C207 286 172 315 146 369"/>
+      <path d="M257 262C180 250 113 239 62 248"/>
+      <path d="M257 262C202 225 155 192 117 141C109 129 102 115 99 100"/>
+    </g>
+    <path d="M257 262L274 255L263 272L253 278L244 266Z" fill="#e5ffff"/>
+    <path d="M88 177C112 100 182 55 264 56" fill="none" stroke="#d0f3ff" stroke-opacity=".3" stroke-width="7" stroke-linecap="round"/>
+  </g>
+</svg>

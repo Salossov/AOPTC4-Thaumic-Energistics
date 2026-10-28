@@ -1,6 +1,12 @@
 $ErrorActionPreference = 'Stop'
 $taskRoot = $PSScriptRoot
-$taskWorkspace = [IO.Path]::GetFullPath((Join-Path $taskRoot '..\..\..'))
+$taskWorkspace = $taskRoot
+for ($taskDepth = 0; $taskDepth -lt 8; $taskDepth++) {
+    if (Test-Path -LiteralPath (Join-Path $taskWorkspace '.tools/java21')) { break }
+    $taskParent = Split-Path -Parent $taskWorkspace
+    if (-not $taskParent -or $taskParent -eq $taskWorkspace) { break }
+    $taskWorkspace = $taskParent
+}
 $taskJava = $null
 foreach ($taskJdkRoot in @((Join-Path $taskRoot '.tools\java21'), (Join-Path $taskWorkspace '.tools\java21'))) {
     if (-not (Test-Path -LiteralPath $taskJdkRoot)) { continue }
@@ -18,7 +24,7 @@ $env:JAVA_HOME = Split-Path -Parent (Split-Path -Parent $taskJava)
 $taskCacheRoot = Join-Path $taskRoot '.cache'
 if (Test-Path -LiteralPath (Join-Path $taskWorkspace '.cache\gradle')) { $taskCacheRoot = Join-Path $taskWorkspace '.cache' }
 if (-not $env:GRADLE_USER_HOME) { $env:GRADLE_USER_HOME = Join-Path $taskCacheRoot 'gradle' }
-$env:TEMP = Join-Path $taskRoot '.cache\tmp'
+$env:TEMP = Join-Path $taskCacheRoot 'tmp'
 $env:TMP = $env:TEMP
 $taskJavaHome = Join-Path $taskCacheRoot 'java-home'
 New-Item -ItemType Directory -Force -Path $env:GRADLE_USER_HOME,$env:TEMP,$taskJavaHome | Out-Null

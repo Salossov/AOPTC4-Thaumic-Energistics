@@ -1,0 +1,8 @@
+{
+  "mod_id": "thaumicenergistics",
+  "dependency_roles": [
+    "thaumcraftApiJar",
+    "thaumcraftRuntimeJar",
+    "aopUiJar"
+  ]
+}

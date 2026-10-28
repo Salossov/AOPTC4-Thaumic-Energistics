@@ -1,0 +1,118 @@
+name: Build and verify
+
+on:
+  push:
+    branches: [main]
+    paths: &build_paths
+      - 'src/**'
+      - 'assets/branding/**'
+      - '*.gradle'
+      - 'gradle.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.ps1'
+      - 'LICENSE'
+      - 'NOTICE.md'
+      - 'licenses/**'
+      - '.github/**'
+  pull_request:
+    paths: *build_paths
+  workflow_dispatch:
+    inputs:
+      dependency_url:
+        description: 'Optional HTTPS URL override for the verified dependency ZIP'
+        type: string
+        default: ''
+      dependency_sha256:
+        description: 'Optional SHA-256 override for the dependency ZIP'
+        type: string
+        default: ''
+      force_rebuild:
+        description: Rebuild instead of reusing a verified artifact cache
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    env:
+      AOP_DEPENDENCIES_URL: ${{ inputs.dependency_url || vars.AOP_DEPENDENCIES_URL }}
+      AOP_DEPENDENCIES_SHA256: ${{ inputs.dependency_sha256 || vars.AOP_DEPENDENCIES_SHA256 }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Check CI contracts and repository resources
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
+      - name: Set up Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+          cache-disabled: ${{ env.ACT == 'true' }}
+      - name: Restore downloaded dependency bundle
+        if: ${{ !env.ACT }}
+        uses: actions/cache@v5
+        with:
+          path: .cache/ci-dependencies
+          key: dependency-bundle-${{ inputs.dependency_sha256 || vars.AOP_DEPENDENCIES_SHA256 }}
+      - name: Verify dependencies and lock build identity
+        id: lock
+        run: python3 .github/scripts/ci.py prepare
+      - name: Restore verified build
+        if: ${{ !env.ACT && !inputs.force_rebuild }}
+        uses: actions/cache/restore@v5
+        with:
+          path: dist
+          key: verified-build-${{ steps.lock.outputs.key }}
+      - name: Build or reuse verified JARs
+        env:
+          FORCE_REBUILD: ${{ inputs.force_rebuild || false }}
+        run: |
+          if [ "$FORCE_REBUILD" = true ]; then
+            python3 .github/scripts/ci.py build --force
+          else
+            python3 .github/scripts/ci.py build
+          fi
+      - name: Save verified build
+        if: ${{ !env.ACT }}
+        uses: actions/cache/save@v5
+        with:
+          path: dist
+          key: verified-build-${{ steps.lock.outputs.key }}
+      - name: Save gameplay JAR, sources and provenance
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: thaumicenergistics-verified-${{ github.run_number }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save failed build diagnostics
+        if: ${{ failure() && !env.ACT }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: thaumicenergistics-failed-${{ github.run_number }}
+          path: |
+            dist/build.log
+            build/reports/**
+            build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7

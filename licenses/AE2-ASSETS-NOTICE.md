@@ -10,4 +10,6 @@ Covered derived files: assets/thaumicenergistics/textures/items/modern_essentia_
 modern_essentia_cell_4k.png, modern_essentia_cell_16k.png, modern_essentia_cell_64k.png,
 modern_essentia_cell_creative.png.
 
-Changes: green/cyan recoloring of colored cell panels and LEDs, and composition of the existing LED layer onto the existing cell sprite. No pixel resampling or geometry changes. These derivatives retain CC BY-NC-SA 3.0. This notice does not apply that license to independent addon code or unchanged original Thaumic Energistics assets.
+Also covered: the corresponding derived sprites under assets/ae2/textures/block/drive/ in this addon.
+
+Changes: green recoloring of the neutral chassis and composition of the existing LED layer. Capacity panels and status LEDs keep their original colors. Drive slot geometry, transparent areas and the pixel grid are preserved. These derivatives retain CC BY-NC-SA 3.0. This notice does not apply that license to independent addon code or unchanged original Thaumic Energistics assets.

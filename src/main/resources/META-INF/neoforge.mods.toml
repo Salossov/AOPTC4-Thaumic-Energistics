@@ -5,8 +5,9 @@ license="MIT"
 modId="thaumicenergistics"
 version="${mod_version}"
 displayName="Thaumic Energistics"
+logoFile="logo.png"
 authors="Nividica (original); unofficial 1.21.1 port"
-description='''A bridge between Thaumcraft and Applied Energistics. Migration in progress.'''
+description='''Unofficial Thaumic Energistics 1.1.3.0 port: essentia storage, terminals and arcane automation for Thaumcraft and AE2.'''
 [[dependencies.thaumicenergistics]]
 modId="minecraft"
 type="required"
@@ -35,5 +36,12 @@ side="BOTH"
 modId="computercraft"
 type="optional"
 versionRange="[1.113.0,)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.thaumicenergistics]]
+modId="aop_ui"
+type="required"
+versionRange="[0.7.0,)"
 ordering="AFTER"
 side="BOTH"

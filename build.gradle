@@ -96,9 +96,9 @@ def apiJar = file(providers.gradleProperty('thaumcraftApiJar')
 def coreJar = file(providers.gradleProperty('thaumcraftRuntimeJar')
         .getOrElse("../../../repo/mod/build/libs/thaumcraft-1.21.1-${project.thaumcraft_version}.jar"))
 def aopUiJar = file(providers.gradleProperty('aopUiJar')
-        .getOrElse('../../../aopui/build/libs/aopui-1.21.1-0.7.0.jar'))
+        .getOrElse('../../../aopui/repo/build/libs/aopui-1.21.1-0.7.0.jar'))
 dependencies {
-    compileOnly files(apiJar)
+    compileOnly files(apiJar, aopUiJar)
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.113.0'
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-core-api:1.113.0'
     implementation "org.appliedenergistics:appliedenergistics2:${project.ae2_version}"
@@ -136,7 +136,8 @@ repositories {
     }
 }
 tasks.register('verifyThaumcraftApi') {
-    inputs.file(apiJar)
+    inputs.files(apiJar, aopUiJar)
+    doLast { if (!aopUiJar.isFile()) throw new GradleException("Pass -PaopUiJar=<AOP UI 0.7 gameplay JAR>") }
     doLast { if (!apiJar.isFile()) throw new GradleException("Missing public Thaumcraft API: ${apiJar}") }
 }
 tasks.named('compileJava') { dependsOn 'verifyThaumcraftApi' }
