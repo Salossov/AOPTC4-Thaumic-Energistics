@@ -30,12 +30,12 @@ public final class CellWorkbenchScreen extends AbstractContainerScreen<CellWorkb
         if (!menu.getSlot(CellWorkbenchMenu.CELL_SLOT).hasItem()) {
             Icon.BACKGROUND_STORAGE_CELL.getBlitter().dest(leftPos + 152, topPos + 8).blit(graphics);
         }
-        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos - 18, topPos + 8).blit(graphics);
-        Icon.CLEAR.getBlitter().dest(leftPos - 18, topPos + 8).blit(graphics);
-        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos - 18, topPos + 28).blit(graphics);
+        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos - 22, topPos + 8, 22, 22).blit(graphics);
+        Icon.CLEAR.getBlitter().dest(leftPos - 19, topPos + 11).blit(graphics);
+        Icon.TOOLBAR_BUTTON_BACKGROUND.getBlitter().dest(leftPos - 22, topPos + 30, 22, 22).blit(graphics);
         var wrench = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(ResourceLocation.parse("ae2:nether_quartz_wrench"));
         if (wrench != null) {
-            graphics.renderItem(wrench.getDefaultInstance(), leftPos - 18, topPos + 28);
+            graphics.renderItem(wrench.getDefaultInstance(), leftPos - 19, topPos + 33);
         }
     }
 
@@ -84,13 +84,13 @@ public final class CellWorkbenchScreen extends AbstractContainerScreen<CellWorkb
         } else {
             renderTooltip(graphics, x, y);
         }
-        if (isHovering(-18, 8, 16, 16, x, y)) {
+        if (isHovering(-22, 8, 22, 22, x, y)) {
             graphics.renderComponentTooltip(font, List.of(
                 Component.translatable("gui.tooltips.ae2.Clear"),
                 Component.translatable("gui.tooltips.ae2.ClearSettings").withStyle(net.minecraft.ChatFormatting.GRAY)
             ), x, y);
         }
-        if (isHovering(-18, 28, 16, 16, x, y)) {
+        if (isHovering(-22, 30, 22, 22, x, y)) {
             graphics.renderComponentTooltip(font, List.of(
                 Component.translatable("gui.tooltips.ae2.PartitionStorage"),
                 Component.translatable("gui.tooltips.ae2.PartitionStorageHint").withStyle(net.minecraft.ChatFormatting.GRAY)
@@ -101,8 +101,8 @@ public final class CellWorkbenchScreen extends AbstractContainerScreen<CellWorkb
     @Override
     public boolean mouseClicked(double x, double y, int button) {
         if ((button == 0 || button == 1) && minecraft.gameMode != null) {
-            int action = isHovering(-18, 8, 16, 16, x, y) ? CellWorkbenchMenu.CLEAR
-                    : isHovering(-18, 28, 16, 16, x, y) ? CellWorkbenchMenu.PARTITION_CONTENTS : -1;
+            int action = isHovering(-22, 8, 22, 22, x, y) ? CellWorkbenchMenu.CLEAR
+                    : isHovering(-22, 30, 22, 22, x, y) ? CellWorkbenchMenu.PARTITION_CONTENTS : -1;
             if (action >= 0) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, action);
                 minecraft.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0f));

@@ -25,12 +25,11 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
     @SubscribeEvent
     public static void itemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
         // ItemColor uses ARGB in 1.21.1. AEColor's variants contain only RGB.
-        event.register((stack,tint)->0xff000000 | switch(tint){
-            case 1 -> appeng.api.util.AEColor.TRANSPARENT.blackVariant;
-            case 2 -> appeng.api.util.AEColor.TRANSPARENT.mediumVariant;
-            case 3 -> appeng.api.util.AEColor.TRANSPARENT.whiteVariant;
-            default -> 0xffffff;
-        },ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get(),ThaumicEnergistics.ESSENTIA_TERMINAL.get(),ThaumicEnergistics.ARCANE_TERMINAL.get(),ThaumicEnergistics.IMPORT_BUS.get(),ThaumicEnergistics.EXPORT_BUS.get());
+        // The nine-slot arcane display is green. Include AE2 tint 4 (the
+        // intermediate rune layer), otherwise its inventory face stays white.
+        event.register((stack,tint)->0xff000000 | (stack.is(ThaumicEnergistics.ARCANE_TERMINAL.get())
+                ? appeng.api.util.AEColor.GREEN : appeng.api.util.AEColor.TRANSPARENT).getVariantByTintIndex(tint),
+                ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get(),ThaumicEnergistics.ESSENTIA_TERMINAL.get(),ThaumicEnergistics.ARCANE_TERMINAL.get(),ThaumicEnergistics.IMPORT_BUS.get(),ThaumicEnergistics.EXPORT_BUS.get());
     }
     @SubscribeEvent
     public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
