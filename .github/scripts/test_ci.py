@@ -99,6 +99,7 @@ class ResourceContracts(unittest.TestCase):
                 match=re.search(r'\.define(?:InRange|ListAllowEmpty)?\("([^"]+)"',line)
                 if match: paths.append('aopui.option.forbidden.'+category+'.'+match[1])
             self.assertEqual(len(paths),27)
+            self.assertEqual(len(re.findall(r'\.gameRestart\(\)\.define(?:InRange|ListAllowEmpty)?\(',source)),27,'AOP UI requires restart metadata for every STARTUP value')
         else:
             folder=root/'src/main/java/thaumicenergistics/config'
             text=(folder/'ThEContentConfig.java').read_text()+(folder/'ThEClientConfig.java').read_text()
