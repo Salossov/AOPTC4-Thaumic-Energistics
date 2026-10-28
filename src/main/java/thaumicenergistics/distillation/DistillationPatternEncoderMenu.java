@@ -259,10 +259,9 @@ public final class DistillationPatternEncoderMenu extends AbstractContainerMenu 
         }
 
         List<Map.Entry<String, Integer>> sorted = new ArrayList<>(rawAspects.entrySet());
-        sorted.sort((a, b) -> {
-            int cmp = Integer.compare(b.getValue(), a.getValue());
-            return cmp != 0 ? cmp : a.getKey().compareTo(b.getKey());
-        });
+        // List.sort is stable, like the release's getAspectsSortedAmount():
+        // equal amounts retain the insertion order supplied by the aspect API.
+        sorted.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
 
         int count = Math.min(SLOT_SOURCE_ASPECTS_COUNT, sorted.size());
         Aspect firstKnown = null;
