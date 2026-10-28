@@ -98,6 +98,9 @@ def coreJar = file(providers.gradleProperty('thaumcraftRuntimeJar')
 def aopUiJar = file(providers.gradleProperty('aopUiJar')
         .getOrElse('../../../aopui/build/libs/aopui-1.21.1-0.7.0.jar'))
 dependencies {
+    // testClasses also compiles the JUnit-authored golem fixtures; check runs
+    // the existing standalone rule launchers below.
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
     compileOnly files(apiJar)
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.113.0'
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-core-api:1.113.0'
