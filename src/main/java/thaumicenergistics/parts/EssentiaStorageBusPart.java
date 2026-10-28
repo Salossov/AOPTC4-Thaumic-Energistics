@@ -328,9 +328,10 @@ public final class EssentiaStorageBusPart extends AEBasePart implements IStorage
 
     @Override
     public void getBoxes(IPartCollisionHelper boxes) {
-        boxes.addBox(1, 1, 0, 15, 15, 1);
-        boxes.addBox(4, 4, 1, 12, 12, 2);
-        boxes.addBox(5, 5, 2, 11, 11, 3);
+        // AE2 collision helpers use south-facing local coordinates. Models face north.
+        boxes.addBox(1, 1, 15, 15, 15, 16);
+        boxes.addBox(4, 4, 14, 12, 12, 15);
+        boxes.addBox(5, 5, 13, 11, 11, 14);
     }
 
     @Override

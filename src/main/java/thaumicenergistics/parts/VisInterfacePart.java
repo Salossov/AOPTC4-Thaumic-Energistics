@@ -185,7 +185,12 @@ public final class VisInterfacePart extends AEBasePart implements IGridTickable,
     }
     @Override public int getLightLevel() { return 8; }
     @Override public float getCableConnectionLength(AECableType cable) { return 2; }
-    @Override public void getBoxes(IPartCollisionHelper boxes) { boxes.addBox(6,6,0,10,10,1); boxes.addBox(4,4,1,12,12,2); boxes.addBox(5,5,2,11,11,3); }
+    @Override public void getBoxes(IPartCollisionHelper boxes) {
+        // Preserve the source/AE2 collision contract; baked models face north instead.
+        boxes.addBox(6,6,15,10,10,16);
+        boxes.addBox(4,4,14,12,12,15);
+        boxes.addBox(5,5,13,11,11,14);
+    }
     @Override public IPartModel getStaticModels() { return isActive() ? ON : OFF; }
     @Override public boolean requireDynamicRender() { return true; }
     @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
