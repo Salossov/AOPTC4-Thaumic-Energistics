@@ -30,7 +30,7 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
             case 2 -> appeng.api.util.AEColor.TRANSPARENT.mediumVariant;
             case 3 -> appeng.api.util.AEColor.TRANSPARENT.whiteVariant;
             default -> 0xffffff;
-        },ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get(),ThaumicEnergistics.ESSENTIA_TERMINAL.get(),ThaumicEnergistics.ARCANE_TERMINAL.get());
+        },ThaumicEnergistics.STORAGE_MONITOR.get(),ThaumicEnergistics.CONVERSION_MONITOR.get(),ThaumicEnergistics.ESSENTIA_TERMINAL.get(),ThaumicEnergistics.ARCANE_TERMINAL.get(),ThaumicEnergistics.IMPORT_BUS.get(),ThaumicEnergistics.EXPORT_BUS.get());
     }
     @SubscribeEvent
     public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
@@ -47,7 +47,8 @@ public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> 
     public static void setup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             AEKeyRendering.register(EssentiaKeyType.INSTANCE, EssentiaKey.class, new EssentiaRendering());
-            ThaumicEnergistics.CELLS.values().forEach(cell -> StorageCellModels.registerModel(cell.get(), StorageCellModels.getDefaultModel()));
+            ThaumicEnergistics.CELLS.forEach((tier, cell) -> StorageCellModels.registerModel(cell.get(),
+                    ThaumicEnergistics.id("block/drive/essentia_cell_" + tier.suffix)));
         });
     }
     private ResourceLocation texture(EssentiaKey key) {
