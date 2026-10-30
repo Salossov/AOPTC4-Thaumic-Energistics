@@ -18,7 +18,7 @@ import thaumicenergistics.ThaumicEnergistics;
 /**
  * Client-only event subscriber for registering Gearbox BER, Model Layers, and Golem Backpack RenderLayer.
  */
-@EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class GolemsClientRegistrar {
     public static final ModelLayerLocation GEARBOX_LAYER = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "gearbox"), "main");

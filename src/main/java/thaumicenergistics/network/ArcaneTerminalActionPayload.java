@@ -19,7 +19,7 @@ public record ArcaneTerminalActionPayload(int menuId,int action,int index,int bu
         buffer.writeVarInt(value.menuId);buffer.writeVarInt(value.action);buffer.writeVarInt(value.index);buffer.writeInt(value.button);buffer.writeBoolean(value.shift);ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer,value.stack);buffer.writeUtf(value.recipe,256);
     },buffer->new ArcaneTerminalActionPayload(buffer.readVarInt(),buffer.readVarInt(),buffer.readVarInt(),buffer.readInt(),buffer.readBoolean(),ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer),buffer.readUtf(256)));
     @Override public Type<ArcaneTerminalActionPayload> type(){return TYPE;}
-    @EventBusSubscriber(modid=ThaumicEnergistics.ID,bus=EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration{
         @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event){event.registrar("1").playToServer(TYPE,CODEC,(payload,context)->context.enqueueWork(()->{if(context.player().containerMenu instanceof ArcaneTerminalMenu menu)menu.action(context.player(),payload);}));}
     }

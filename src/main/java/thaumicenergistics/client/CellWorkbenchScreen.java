@@ -65,7 +65,7 @@ public final class CellWorkbenchScreen extends AbstractContainerScreen<CellWorkb
                 if (key.aspect() != null) {
                     boolean known = thaumcraft.api.research.ResearchApi.clientKnowledge().knows(key.aspect());
                     String namespace = ResourceLocation.parse(key.aspect().texture()).getNamespace();
-                    String mod = known ? net.neoforged.fml.ModList.get().getModContainerById(namespace).map(v -> v.getModInfo().getDisplayName()).orElse("Unknown") : "Unknown";
+                    String mod = known ? AspectModNames.owner(namespace) : "Unknown";
                     String help = "tc.aspect.help." + key.tag();
                     var name = known ? key.getDisplayName() : Component.translatable("tc.aspect.unknown");
                     var description = known && net.minecraft.client.resources.language.I18n.exists(help) ? Component.translatable(help) : name;

@@ -52,7 +52,7 @@ public record WrenchFocusBeamPayload(int sourceId, double targetX, double target
         }
     }
 
-    @EventBusSubscriber(modid = thaumicenergistics.ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = thaumicenergistics.ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
     public static final class Registration {
         @SubscribeEvent
         public static void register(RegisterPayloadHandlersEvent event) {

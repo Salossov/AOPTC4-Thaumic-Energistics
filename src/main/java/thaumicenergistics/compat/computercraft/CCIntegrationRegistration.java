@@ -9,7 +9,7 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
  * Isolated Mod-bus event subscriber for ComputerCraft capability registration.
  * Guarantees zero classloading of CC:Tweaked classes when CC is absent.
  */
-@EventBusSubscriber(modid = "thaumicenergistics", bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = "thaumicenergistics_aop", bus = EventBusSubscriber.Bus.MOD)
 public final class CCIntegrationRegistration {
     public static final String MOD_ID = "computercraft";
 

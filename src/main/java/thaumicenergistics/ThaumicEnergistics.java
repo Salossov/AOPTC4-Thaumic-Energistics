@@ -29,9 +29,10 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.List;
 
-@Mod(ThaumicEnergistics.ID)
+@Mod(ThaumicEnergistics.MOD_ID)
 public final class ThaumicEnergistics {
     public static final String ID = "thaumicenergistics";
+    public static final String MOD_ID = "thaumicenergistics_aop";
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ID);
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ID);
     private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, ID);

@@ -9,7 +9,7 @@ import thaumicenergistics.ThaumicEnergistics;
 /**
  * Client-only event subscriber for registering Knowledge Inscriber screens.
  */
-@EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class KnowledgeClientRegistrar {
     @SubscribeEvent
     public static void onRegisterScreens(RegisterMenuScreensEvent event) {

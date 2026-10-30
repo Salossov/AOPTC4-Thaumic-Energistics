@@ -27,7 +27,7 @@ public record TerminalStatePayload(int containerId,int sort,int view,String sele
         return new TerminalStatePayload(id,sort,view,selected,entries);
     });
     @Override public Type<TerminalStatePayload> type(){return TYPE;}
-    @EventBusSubscriber(modid=ThaumicEnergistics.ID,bus=EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration{
         @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event){
             event.registrar("1").playToClient(TYPE,CODEC,(payload,context)->context.enqueueWork(()->{

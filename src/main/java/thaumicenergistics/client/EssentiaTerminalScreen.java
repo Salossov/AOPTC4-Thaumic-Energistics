@@ -88,7 +88,7 @@ public final class EssentiaTerminalScreen extends AbstractContainerScreen<Essent
         var entry=underMouse(mouseX,mouseY);
         if(entry!=null){
             boolean known=ResearchApi.clientKnowledge().knows(entry.key().aspect());String namespace=ResourceLocation.parse(entry.key().aspect().texture()).getNamespace();
-            String mod=known?net.neoforged.fml.ModList.get().getModContainerById(namespace).map(value->value.getModInfo().getDisplayName()).orElse("Unknown"):"Unknown";
+            String mod=known?AspectModNames.owner(namespace):"Unknown";
             String help="tc.aspect.help."+entry.key().tag();
             var description=known&&net.minecraft.client.resources.language.I18n.exists(help)?Component.translatable(help):aspectName(entry);
             graphics.renderComponentTooltip(font,List.of(aspectName(entry),description.copy().withStyle(net.minecraft.ChatFormatting.GRAY),Component.literal(mod).withStyle(net.minecraft.ChatFormatting.DARK_PURPLE,net.minecraft.ChatFormatting.ITALIC)),mouseX,mouseY);

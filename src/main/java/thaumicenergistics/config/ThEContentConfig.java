@@ -45,12 +45,12 @@ public final class ThEContentConfig {
     }
 
     public static void initialize(ModContainer container) {
-        container.registerConfig(ModConfig.Type.STARTUP, SPEC);
-        container.registerConfig(ModConfig.Type.CLIENT, ThEClientConfig.SPEC);
-        aop.ui.api.SettingsRegistry.register("thaumicenergistics", "Thaumic Energistics",
+        container.registerConfig(ModConfig.Type.STARTUP, SPEC, "thaumicenergistics-startup.toml");
+        container.registerConfig(ModConfig.Type.CLIENT, ThEClientConfig.SPEC, "thaumicenergistics-client.toml");
+        aop.ui.api.SettingsRegistry.register("thaumicenergistics_aop", "thaumicenergistics", "Thaumic Energistics",
                 new aop.ui.api.UiTheme("aop_ui", "thaumicenergistics", 0xffe0edf2, 0xff99b4bd, 0xff6cd4e8), SPEC, ThEClientConfig.SPEC);
-        aop.ui.api.SettingsRegistry.registerCategory("thaumicenergistics", "crafting", "thaumicenergistics.configuration.category.crafting");
-        aop.ui.api.SettingsRegistry.registerCategory("thaumicenergistics", "client", "thaumicenergistics.configuration.category.client");
+        aop.ui.api.SettingsRegistry.registerCategory("thaumicenergistics_aop", "crafting", "thaumicenergistics.configuration.category.crafting");
+        aop.ui.api.SettingsRegistry.registerCategory("thaumicenergistics_aop", "client", "thaumicenergistics.configuration.category.client");
         ExtrasConfig.install(new ExtrasConfig.Access() {
             @Override public boolean wrenchFocus() { return WRENCH_FOCUS.get(); }
             @Override public boolean certusDupe() { return CERTUS_QUARTZ_DUPLICATION.get(); }

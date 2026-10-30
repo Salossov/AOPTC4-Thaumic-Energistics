@@ -9,7 +9,7 @@ final class ExternalRecipeSearch {
     private static Method compactSearch;
     static boolean publish(String text){
         if(ItemListMod.isEnabled()){ItemListMod.setSearchText(text);return true;}
-        if(!ModList.get().isLoaded("thaumcraft_viewers"))return false;
+        if(!ModList.get().isLoaded("thaumcraft_compact"))return false;
         try{
             if(compactSearch==null)compactSearch=Class.forName("thaumcraft.viewers.jei.JeiPlugin").getMethod("setTerminalSearchText",String.class);
             return Boolean.TRUE.equals(compactSearch.invoke(null,text));

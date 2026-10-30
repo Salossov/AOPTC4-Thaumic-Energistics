@@ -16,7 +16,7 @@ public record TerminalActionPayload(int containerId,int action,String aspect) im
         buffer.writeVarInt(value.containerId);buffer.writeByte(value.action);buffer.writeUtf(value.aspect,256);
     },buffer->new TerminalActionPayload(buffer.readVarInt(),buffer.readUnsignedByte(),buffer.readUtf(256)));
     @Override public Type<TerminalActionPayload> type(){return TYPE;}
-    @EventBusSubscriber(modid=ThaumicEnergistics.ID,bus=EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration{
         @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event){
             event.registrar("1").playToServer(TYPE,CODEC,(payload,context)->context.enqueueWork(()->{

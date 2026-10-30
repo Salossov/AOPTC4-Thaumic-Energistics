@@ -15,7 +15,7 @@ public record ChamberStatePayload(int containerId,String stored,int amount,Strin
         buffer.writeVarInt(state.containerId);buffer.writeUtf(state.stored,256);buffer.writeVarInt(state.amount);buffer.writeUtf(state.processing,256);buffer.writeFloat(state.power);buffer.writeFloat(state.maximumPower);buffer.writeInt(state.remaining);buffer.writeInt(state.total);
     },buffer->new ChamberStatePayload(buffer.readVarInt(),buffer.readUtf(256),buffer.readVarInt(),buffer.readUtf(256),buffer.readFloat(),buffer.readFloat(),buffer.readInt(),buffer.readInt()));
     @Override public Type<ChamberStatePayload> type(){return TYPE;}
-    @EventBusSubscriber(modid=ThaumicEnergistics.ID,bus=EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration{
         @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event){event.registrar("1").playToClient(TYPE,CODEC,(payload,context)->context.enqueueWork(()->{if(context.player().containerMenu instanceof VibrationChamberMenu menu)menu.receive(payload);}));}
     }

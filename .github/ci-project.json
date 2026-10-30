@@ -1,8 +1,12 @@
 {
-  "mod_id": "thaumicenergistics",
+  "mod_id": "thaumicenergistics_aop",
   "dependency_roles": [
     "thaumcraftApiJar",
     "thaumcraftRuntimeJar",
     "aopUiJar"
-  ]
+  ],
+  "name": "Thaumic Energistics",
+  "repository": "Salossov/AOPTC4-Thaumic-Energistics",
+  "requirements": "Minecraft 1.21.1, Java 21, NeoForge 21.1.166, AOP: Thaumcraft 4 1.1.0 and AOP UI 0.8.0. Applied Energistics 2 19.0.24 or newer within 19.x and its dependencies are required.",
+  "namespace": "thaumicenergistics"
 }

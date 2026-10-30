@@ -34,7 +34,7 @@ import thaumicenergistics.ThaumicEnergistics;
 import thaumicenergistics.assembler.AssemblerAnimationPayload;
 
 /** Cosmetic-only client particles. No item entity, world inventory or server output is created. */
-@EventBusSubscriber(modid=ThaumicEnergistics.ID, value=Dist.CLIENT, bus=EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID, value=Dist.CLIENT, bus=EventBusSubscriber.Bus.GAME)
 public final class AssemblerAnimationEffects {
     private static final List<Animation> ACTIVE = new ArrayList<>();
     private static ClientLevel currentLevel;

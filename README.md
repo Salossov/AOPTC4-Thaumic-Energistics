@@ -8,11 +8,13 @@
 
 Unofficial port of Nividica’s Thaumic Energistics **1.1.3.0 / AE2 RV3** to **Minecraft 1.21.1 / NeoForge**. Brings essentia cells, buses, terminals, providers, arcane crafting automation and golem backpacks to a modern AE2 network.
 
-Install the gameplay JAR on client and server with **Java 21**, **NeoForge 21.1.252**, **AOP: Thaumcraft 4 1.0.0**, **Applied Energistics 2 19.2.18** and **AOP UI 0.7.0**, plus their own dependencies. Optional ComputerCraft support uses a compatible CC: Tweaked. Recipe-viewer and HUD bridges live in AOP Compact. Source/API JARs do not belong in `mods/`.
+Install the gameplay JAR on client and server with **Java 21**, **NeoForge 21.1.166**, **AOP: Thaumcraft 4 1.1.0**, **Applied Energistics 2 19.0.24 or newer within 19.x** and **AOP UI 0.8.0**, plus their own dependencies. Optional ComputerCraft support uses a compatible CC: Tweaked. Recipe-viewer and HUD bridges live in AOP Compact. Source/API JARs do not belong in `mods/`.
 
 The behavior reference is [the original AE2-RV3 branch](https://github.com/Nividica/ThaumicEnergistics/tree/AE2-RV3), pinned to release 1.1.3.0. Wireless equipment uses current AE2 access-point linking.
 
-**1.1.3.0-port.1** · MIT
+**1.0.0** · MIT · [Changelog](CHANGELOG.md)
+
+NeoForge mod ID: **`thaumicenergistics_aop`**. Registry and resource namespace: **`thaumicenergistics`**. Existing item/block IDs and configuration filenames are retained.
 
 ## Settings
 
@@ -20,47 +22,28 @@ Open the mod through the Mods screen → Config, or select it in AOP UI. All exi
 
 ## Build
 
-Requires Java 21, Python 3.11+ and the pinned dependency bundle. The API and runtime JARs are dependencies, never embedded in this mod.
+Requires Java 21, Python 3.11+ and compatible AOP UI / Thaumcraft API and runtime JARs. Dependencies are never embedded in the gameplay JAR.
 
-Set `AOP_DEPENDENCIES_URL` to the HTTPS URL of your dependency ZIP and `AOP_DEPENDENCIES_SHA256` to its exact SHA-256. Then run from the repository root:
+Build locally with `./gradlew.ps1 build sourcesJar` (PowerShell) or `./gradlew build sourcesJar` (POSIX), passing `-P<role>=<absolute path>` for the dependency roles listed below. The wrapper downloads the pinned Gradle distribution. CI builds our dependencies from their source repositories automatically.
 
-```powershell
-python .github/scripts/ci.py prepare
-python .github/scripts/ci.py build
-```
+## Continuous integration
 
-This runs the Gradle wrapper directly through Java, including `clean build sourcesJar` and the repository's checks. Verified gameplay and sources JARs, a build log and a source/dependency hash manifest go to `dist/`. A changed source, dependency, Java runtime or damaged cached JAR requires a rebuild.
+In **Actions → Build and release → Run workflow**, enable **release** for an ordinary `v<version>` release; leave it unchecked for the single `nightly` prerelease. Blank **version** uses `mod_version`; an override must be `major.minor.patch`. Pull requests build without publishing. Existing ordinary tags are never overwritten; ordinary release notes list commits since the preceding release. Local `act` runs only validate publication plans and cannot publish.
 
-For a manual local build, `./gradlew.ps1 build sourcesJar` (PowerShell) or `./gradlew build sourcesJar` (POSIX) accepts explicit `-P<role>=<absolute path>` properties listed below. The wrapper downloads the pinned Gradle distribution. A local checkout layout is only a convenience; CI uses explicit paths.
+Dependencies are built automatically from the AOP UI and Thaumcraft source repositories. Repository/ref defaults can be overridden with `AOPUI_REPOSITORY` / `AOPUI_REF`, `THAUMCRAFT_REPOSITORY` / `THAUMCRAFT_REF`, where applicable. `DEPENDENCY_TOKEN` needs Contents read access when a dependency repository is private; public source repositories need no additional token. No dependency archive URL or SHA-256 repository variables are required. Cached JARs are reused only when source revisions, content, toolchain and dependency checksums match. Dependencies are never published by this workflow.
 
-## CI
+The workflow generates and verifies its dependency manifest and SHA-256 automatically. Artifacts contain gameplay/sources JARs, `SHA256SUMS.txt` and build provenance.
 
-`.github/workflows/build.yml` runs checks and Java 21 builds on pushes to `main`, pull requests and manual dispatch. Configure repository variables `AOP_DEPENDENCIES_URL` and `AOP_DEPENDENCIES_SHA256`, or supply the manual dispatch overrides. The workflow uploads build artifacts; it does not publish releases or push commits.
-
-The ZIP contains `manifest.json` and only the JARs it lists:
-
-```json
-{
-  "format": 1,
-  "artifacts": {
-    "thaumcraftApiJar": {
-      "file": "jars/thaumcraft-api-1.0.0.jar",
-      "sha256": "<64 lowercase hexadecimal characters>"
-    }
-  }
-}
-```
-
-Add every required role below to `artifacts`. Each role has a unique JAR path and SHA-256; runtime entries may also set `mod_id` to validate their NeoForge mod ID. Include files without separate ZIP directory entries. The entire ZIP checksum is checked before extraction and each JAR is checked afterwards. Host only dependencies you are authorized to distribute; a private archive is sufficient. No machine-specific URL or dependency archive is committed.
-
-For local workflow verification use `act workflow_dispatch -j build` with the two dependency variables in an environment file. A read-only local HTTP fixture is allowed only under `ACT=true`; GitHub CI requires HTTPS. Windows linked worktrees also need `python .github/scripts/ci.py inventory` before `act`, because their `.git` points to a host path. This exports an ignored tracked-file inventory; CI hashes the actual file contents.
+For local `act` verification, export compatible source checkouts to `.dependencies/aopui`, `.dependencies/thaumcraft`, or set the corresponding `SUITE_*_ROOT` variables. Windows linked worktrees need ignored `.suite-source.json` inventories for exported dependency checkouts and `python .github/scripts/ci.py inventory` for the current component. Local publication is always a dry run.
 
 ## Artwork and credits
-
-The editable vector logo is [assets/branding/logo.svg](assets/branding/logo.svg). Its transparent 512 × 512 and 64 × 64 PNG exports are packaged for NeoForge and AOP UI, which load PNG textures. The SVG remains the source of the artwork.
 
 See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md) for authors and third-party terms. Third-party dependencies and the separate Thaumcraft runtime are not relicensed by this project.
 
 Required dependency roles: `thaumcraftApiJar`, `thaumcraftRuntimeJar`, `aopUiJar`.
 
 AE2 and Curios are resolved from the repositories declared in Gradle; their versions are pinned in `gradle.properties`.
+
+- Nividica: original Thaumic Energistics; CyanideX: original textures.
+- [Salossov](https://github.com/Salossov): port and maintenance.
+- NeoForge, AOP: Thaumcraft 4, AOP UI and the integrated mod projects: platform and APIs.

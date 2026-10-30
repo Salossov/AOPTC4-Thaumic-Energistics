@@ -20,7 +20,7 @@ import thaumicenergistics.ThaumicEnergistics;
 import thaumicenergistics.storage.EssentiaKey;
 import thaumicenergistics.storage.EssentiaKeyType;
 
-@EventBusSubscriber(modid = ThaumicEnergistics.ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class EssentiaRendering implements AEKeyRenderHandler<EssentiaKey> {
     @SubscribeEvent
     public static void itemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {

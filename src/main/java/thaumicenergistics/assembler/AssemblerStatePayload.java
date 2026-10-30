@@ -27,7 +27,7 @@ public record AssemblerStatePayload(int menuId,boolean active,boolean crafting,i
         return new AssemblerStatePayload(id,active,crafting,ticks,speed,vis,modifiers);
     });
     @Override public Type<AssemblerStatePayload> type(){return TYPE;}
-    @EventBusSubscriber(modid=ThaumicEnergistics.ID,bus=EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration{
         @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event){event.registrar("1").playToClient(TYPE,CODEC,(payload,context)->context.enqueueWork(()->{
             if(context.player().containerMenu instanceof ArcaneAssemblerMenu menu)menu.receive(payload);

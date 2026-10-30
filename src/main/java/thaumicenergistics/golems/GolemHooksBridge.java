@@ -27,7 +27,7 @@ import thaumicenergistics.ThaumicEnergistics;
  * Wireless Golem Backpack interactions, AP status refresh, and lifecycle events.
  * Native Gather/Fill/Liquid/Alchemy goals are registered by WirelessGolemWork via G3.
  */
-@EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public final class GolemHooksBridge {
     private static final GolemNetworkBridge NETWORK_BRIDGE = new GolemNetworkBridge();
 

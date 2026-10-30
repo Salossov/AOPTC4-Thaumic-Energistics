@@ -26,7 +26,7 @@ import thaumicenergistics.api.ContainerPermissions;
  * Permissions and Creative Tab entry via NeoForge Mod Event Bus.
  * The shared content-config registrar owns its conditional TC4 research definition.
  */
-@EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class DistillationRegistrar {
     public static final ResourceLocation ID =
             ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "distillation_pattern_encoder");
@@ -72,7 +72,7 @@ public final class DistillationRegistrar {
         });
     }
 
-    @EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static final class ClientRegistration {
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {

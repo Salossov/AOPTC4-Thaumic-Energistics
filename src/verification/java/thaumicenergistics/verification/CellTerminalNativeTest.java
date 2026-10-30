@@ -46,7 +46,7 @@ public final class CellTerminalNativeTest {
             h.assertTrue(chest.isPowered(),"chest uses actual AE2 power");
             var host=new CellTerminalHost(chest);
             h.assertTrue(host.valid(player)&&host.entries().size()==1&&host.entries().getFirst().amount()==32&&!host.entries().getFirst().craftable(),"cell terminal advertises only its local32, not network1032");
-            var grid=chest.getActionableNode().getGrid();grid.getCraftingService().addGlobalCraftingProvider(TerminalCraftingFixture.provider(level));
+            var grid=chest.getActionableNode().getGrid();TerminalCraftingFixture.install(grid,level);
             h.assertTrue(!host.supportsCrafting()&&host.entries().stream().noneMatch(TerminalEntry::craftable),"local cell never exposes grid craftables");
             var menu=new EssentiaTerminalMenu(11,player.getInventory(),host);player.containerMenu=menu;
             h.assertTrue(menu.action(player,11,0,"aqua")&&!menu.action(player,11,6,"ignis"),"cell selection works but crafting launch denied");

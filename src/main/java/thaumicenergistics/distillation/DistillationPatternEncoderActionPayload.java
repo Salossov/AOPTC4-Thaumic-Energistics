@@ -35,7 +35,7 @@ public record DistillationPatternEncoderActionPayload(int containerId, BlockPos 
         return TYPE;
     }
 
-    @EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
     public static final class Registration {
         @SubscribeEvent
         public static void register(RegisterPayloadHandlersEvent event) {

@@ -16,7 +16,7 @@ public record PriorityPayload(int containerId, int value) implements CustomPacke
     public static final StreamCodec<RegistryFriendlyByteBuf,PriorityPayload> CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT,PriorityPayload::containerId,ByteBufCodecs.INT,PriorityPayload::value,PriorityPayload::new);
     @Override public Type<PriorityPayload> type() { return TYPE; }
-    @EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
     public static final class Registration {
         @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event) {
             event.registrar("1").playToServer(TYPE,CODEC,(payload,context) -> context.enqueueWork(() -> {

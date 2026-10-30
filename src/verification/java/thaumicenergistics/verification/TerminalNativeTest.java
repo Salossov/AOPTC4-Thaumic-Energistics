@@ -82,7 +82,7 @@ public final class TerminalNativeTest {
             var drops=new ArrayList<ItemStack>();part.addPartDrop(drops,true);part.addAdditionalDrops(drops,true);
             h.assertTrue(drops.size()==1&&drops.getFirst().is(ThaumicEnergistics.ESSENTIA_TERMINAL.get())&&drops.getFirst().get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag().contains("slots"),"AE2 wrench item contains work inventory once without separate contents drops");
             drops.clear();part.addAdditionalDrops(drops,false);h.assertTrue(drops.size()==2,"ordinary break exposes both retained work-slot items");
-            var grid=part.getMainNode().getGrid();grid.getCraftingService().addGlobalCraftingProvider(TerminalCraftingFixture.provider(level));
+            var grid=part.getMainNode().getGrid();TerminalCraftingFixture.install(grid,level);
             h.assertTrue(grid.getCraftingService().isCraftable(EssentiaKey.of(Aspects.FIRE)),"native generic processing pattern advertises essentia craftable key");
             var recipe=level.getRecipeManager().byKey(ThaumicEnergistics.id("essentia_terminal")).orElseThrow().value();
             h.assertTrue(recipe.getResultItem(level.registryAccess()).is(ThaumicEnergistics.ESSENTIA_TERMINAL.get())&&!recipe.getType().equals(net.minecraft.world.item.crafting.RecipeType.CRAFTING),"original terminal is arcane and cannot use ordinary crafting table");

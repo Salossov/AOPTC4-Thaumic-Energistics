@@ -16,7 +16,7 @@ import thaumicenergistics.storage.EssentiaCellItem;
 /** Modern AE2 removed ICellHandler.openChestGui. Intercept only its storage-display face;
  * the other faces still open native cell/configuration slots. Never override a protection denial.
  */
-@EventBusSubscriber(modid=ThaumicEnergistics.ID)
+@EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID)
 public final class CellTerminalInteraction{
     @SubscribeEvent(priority=EventPriority.LOWEST)
     public static void openCell(PlayerInteractEvent.RightClickBlock event){

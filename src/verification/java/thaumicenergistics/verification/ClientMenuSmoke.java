@@ -59,7 +59,7 @@ import thaumicenergistics.storage.EssentiaKey;
 
 /** Verification source set only: real client screens, packets and framebuffer captures.
  * Uses no desktop input and mutates only a marked, isolated verification save. */
-@EventBusSubscriber(modid = ThaumicEnergistics.ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, value = Dist.CLIENT)
 public final class ClientMenuSmoke {
     private static final String SAVE = "THE-client-menu-smoke";
     private static final BlockPos CABLE = new BlockPos(3,100,3), BENCH = new BlockPos(5,100,3);
@@ -503,7 +503,7 @@ public final class ClientMenuSmoke {
                 case 78 -> {
                     var host=PartHelper.getPartHost(mc.level,TERMINAL);
                     if(host!=null&&host.getPart(Direction.SOUTH) instanceof thaumicenergistics.parts.EssentiaTerminalPart part&&part.isActive()){
-                        server(player->{var partServer=(thaumicenergistics.parts.EssentiaTerminalPart)PartHelper.getPartHost(player.level(),TERMINAL).getPart(Direction.SOUTH);partServer.getMainNode().getGrid().getCraftingService().addGlobalCraftingProvider(TerminalCraftingFixture.provider(player.level()));});
+                        server(player->{var partServer=(thaumicenergistics.parts.EssentiaTerminalPart)PartHelper.getPartHost(player.level(),TERMINAL).getPart(Direction.SOUTH);TerminalCraftingFixture.install(partServer.getMainNode().getGrid(),player.level());});
                         capture("terminal-world-active");
                     }
                 }
@@ -705,7 +705,7 @@ public final class ClientMenuSmoke {
                 }
                 case 122 -> {
                     if(age>=40&&mc.player.getMainHandItem().is(ThaumicEnergistics.WIRELESS_TERMINAL.get())&&mc.level.getBlockEntity(WIRELESS_AP) instanceof appeng.blockentity.networking.WirelessAccessPointBlockEntity){
-                        server(player->{var ap=(appeng.blockentity.networking.WirelessAccessPointBlockEntity)player.level().getBlockEntity(WIRELESS_AP);if(!ap.isActive())throw new IllegalStateException("Wireless fixture AP inactive");ap.getGrid().getCraftingService().addGlobalCraftingProvider(TerminalCraftingFixture.provider(player.level()));});
+                        server(player->{var ap=(appeng.blockentity.networking.WirelessAccessPointBlockEntity)player.level().getBlockEntity(WIRELESS_AP);if(!ap.isActive())throw new IllegalStateException("Wireless fixture AP inactive");TerminalCraftingFixture.install(ap.getGrid(),player.level());});
                         mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(WIRELESS_AP).add(0,.501,0),Direction.UP,WIRELESS_AP,false));advance();
                     }
                 }

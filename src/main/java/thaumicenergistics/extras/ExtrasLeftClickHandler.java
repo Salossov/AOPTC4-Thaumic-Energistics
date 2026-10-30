@@ -20,7 +20,7 @@ import thaumicenergistics.ThaumicEnergistics;
  * original canceled the swing); the client keeps its vanilla behavior and may
  * briefly show break particles - a recorded engine adaptation.
  */
-@EventBusSubscriber(modid = ThaumicEnergistics.ID)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID)
 public final class ExtrasLeftClickHandler {
 
     @SubscribeEvent

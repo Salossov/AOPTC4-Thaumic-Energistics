@@ -23,7 +23,7 @@ import thaumicenergistics.ThaumicEnergistics;
  * Autonomous NeoForge EventBusSubscriber registrar for Knowledge Inscriber components.
  * Modifies no shared entrypoints, registers block, items, BE, menu, payloads, capabilities, and creative tab.
  */
-@EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class KnowledgeRegistrar {
     public static final ResourceLocation INSCRIBER_ID = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "knowledge_inscriber");
     public static final ResourceLocation CORE_ID = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "knowledge_core");

@@ -33,7 +33,7 @@ public final class ProviderRendering<T extends ProviderBlockEntity> implements B
         int red=color>>16&255,green=color>>8&255,blue=color&255;
         for(var point:points)vertices.addVertex(pose,point[0],point[1],point[2]).setColor(red,green,blue,255).setUv(point[3],point[4]).setLight(light);
     }
-    @EventBusSubscriber(modid=ThaumicEnergistics.ID,value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration {
         @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers event){
             event.registerBlockEntityRenderer(ThaumicEnergistics.ESSENTIA_PROVIDER_ENTITY.get(),context->new ProviderRendering<>("essentia"));

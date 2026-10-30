@@ -1,4 +1,4 @@
-name: Build and verify
+name: Build and release
 
 on:
   push:
@@ -19,12 +19,12 @@ on:
     paths: *build_paths
   workflow_dispatch:
     inputs:
-      dependency_url:
-        description: 'Optional HTTPS URL override for the verified dependency ZIP'
-        type: string
-        default: ''
-      dependency_sha256:
-        description: 'Optional SHA-256 override for the dependency ZIP'
+      release:
+        description: Publish an ordinary release (unchecked updates nightly)
+        type: boolean
+        default: false
+      version:
+        description: Optional major.minor.patch override; blank uses mod_version
         type: string
         default: ''
       force_rebuild:
@@ -41,20 +41,42 @@ concurrency:
 
 jobs:
   build:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     defaults:
       run:
         shell: bash
     env:
-      AOP_DEPENDENCIES_URL: ${{ inputs.dependency_url || vars.AOP_DEPENDENCIES_URL }}
-      AOP_DEPENDENCIES_SHA256: ${{ inputs.dependency_sha256 || vars.AOP_DEPENDENCIES_SHA256 }}
+      RELEASE_REQUESTED: ${{ inputs.release || false }}
+      RELEASE_VERSION: ${{ inputs.version || '' }}
     steps:
       - name: Check out source
         uses: actions/checkout@v7
         with:
           persist-credentials: false
           fetch-depth: 0
+      - name: Check out AOP UI
+        if: ${{ !env.ACT }}
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.AOPUI_REPOSITORY || 'Salossov/AOP-UI' }}
+          ref: ${{ vars.AOPUI_REF || 'main' }}
+          token: ${{ secrets.DEPENDENCY_TOKEN || github.token }}
+          path: .dependencies/aopui
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out Thaumcraft
+        if: ${{ !env.ACT }}
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.THAUMCRAFT_REPOSITORY || 'Salossov/AOP-Thaumcraft-4' }}
+          ref: ${{ vars.THAUMCRAFT_REF || 'main' }}
+          token: ${{ secrets.DEPENDENCY_TOKEN || github.token }}
+          path: .dependencies/thaumcraft
+          fetch-depth: 0
+          persist-credentials: false
       - name: Check CI contracts and repository resources
         run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
       - name: Set up Java 21
@@ -67,12 +89,23 @@ jobs:
         with:
           cache-provider: basic
           cache-disabled: ${{ env.ACT == 'true' }}
-      - name: Restore downloaded dependency bundle
+      - name: Restore verified source dependency builds
         if: ${{ !env.ACT }}
-        uses: actions/cache@v5
+        uses: actions/cache/restore@v5
         with:
-          path: .cache/ci-dependencies
-          key: dependency-bundle-${{ inputs.dependency_sha256 || vars.AOP_DEPENDENCIES_SHA256 }}
+          path: .cache/source-builds
+          key: source-dependencies-${{ runner.os }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: source-dependencies-${{ runner.os }}-
+      - name: Build dependencies from source and pin their checksums
+        env:
+          FORCE_REBUILD: ${{ inputs.force_rebuild || false }}
+        run: python3 .github/scripts/source_dependencies.py
+      - name: Save verified source dependency builds
+        if: ${{ !env.ACT }}
+        uses: actions/cache/save@v5
+        with:
+          path: .cache/source-builds
+          key: source-dependencies-${{ runner.os }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Verify dependencies and lock build identity
         id: lock
         run: python3 .github/scripts/ci.py prepare
@@ -97,12 +130,14 @@ jobs:
         with:
           path: dist
           key: verified-build-${{ steps.lock.outputs.key }}
+      - name: Collect release artifacts and provenance
+        run: python3 .github/scripts/ci.py package
       - name: Save gameplay JAR, sources and provenance
         if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v7
         with:
           name: thaumicenergistics-verified-${{ github.run_number }}
-          path: dist/*
+          path: dist/release/*
           if-no-files-found: error
           retention-days: 14
       - name: Save failed build diagnostics
@@ -116,3 +151,11 @@ jobs:
             build/test-results/**
           if-no-files-found: ignore
           retention-days: 7
+      - name: Verify publication plan locally
+        if: ${{ env.ACT && github.event_name != 'pull_request' }}
+        run: python3 .github/scripts/ci.py publish --dry-run
+      - name: Publish component to GitHub Releases
+        if: ${{ !env.ACT && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/ci.py publish

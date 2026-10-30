@@ -1,7 +1,7 @@
 """Verified dependency bundles, reproducible build identity and artifact checks.
 
-Follows the AOP suite's content-addressed cache/provenance model. This workflow
-only builds artifacts; it has no publication or push command.
+Follows the AOP suite's content-addressed cache/provenance model. Builds and release packaging use the same pinned inputs. Local act runs may
+only inspect publication plans; hosted publication is an explicit workflow mode.
 """
 import argparse
 import hashlib
@@ -19,6 +19,8 @@ import tomllib
 from urllib.parse import urlparse
 from urllib.request import urlopen
 import zipfile
+
+import release
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / '.github/ci-project.json'
@@ -128,8 +130,11 @@ def prepare():
     checksum = os.environ.get('AOP_DEPENDENCIES_SHA256', '').lower()
     if not re.fullmatch('[0-9a-f]{64}', checksum):
         raise ValueError('Set AOP_DEPENDENCIES_SHA256 to the dependency ZIP SHA-256')
-    bundle = ROOT / '.cache/ci-dependencies' / (checksum + '.zip')
-    if not bundle.is_file() or digest(bundle) != checksum:
+    generated = os.environ.get('AOP_DEPENDENCIES_FILE', '')
+    bundle = Path(generated) if generated else ROOT / '.cache/ci-dependencies' / (checksum + '.zip')
+    if generated and (bundle.is_symlink() or not bundle.is_file() or digest(bundle) != checksum):
+        raise ValueError('Generated dependency bundle SHA-256 mismatch')
+    if not generated and (not bundle.is_file() or digest(bundle) != checksum):
         url = os.environ.get('AOP_DEPENDENCIES_URL', '')
         parsed = urlparse(url)
         local = os.environ.get('ACT') == 'true' and parsed.scheme == 'http' and parsed.hostname in {'127.0.0.1', 'localhost', 'host.docker.internal'}
@@ -152,14 +157,21 @@ def prepare():
     props = dict(line.split('=', 1) for line in (ROOT / 'gradle.properties').read_text().splitlines()
                  if '=' in line and not line.lstrip().startswith(('#', '!')))
     java = subprocess.run(['java', '-version'], capture_output=True, text=True, check=True)
-    lock = {'format': 1, 'source': source_identity(), 'bundle_sha256': checksum,
-            'version': props['mod_version'].strip(), 'mod_id': config['mod_id'],
+    source = source_identity()
+    mode = release.select_mode(os.environ.get('GITHUB_EVENT_NAME', 'pull_request'), os.environ.get('RELEASE_REQUESTED', '').lower() == 'true')
+    version = release.select_version('release', os.environ.get('RELEASE_VERSION', ''), props['mod_version'].strip(), '')
+    if mode == 'nightly': version += '-nightly.' + source['revision'][:12]
+    lock = {'format': 1, 'source': source, 'bundle_sha256': checksum,
+            'mode': mode, 'version': version, 'mod_id': config['mod_id'],
+            'dependency_checksums': {role: digest(path) for role, path in paths.items()},
             'runtime': {'os': platform.system(), 'java': java.stdout + java.stderr}, 'dependencies': paths}
     # Absolute extraction paths are not part of the reusable identity.
     identity = {k: v for k, v in lock.items() if k != 'dependencies'}
     lock['key'] = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
     write(ROOT / '.cache/ci-lock.json', lock)
     output('key', lock['key'])
+    output('version', version)
+    output('mode', mode)
     print('Pinned dependency bundle ' + checksum + '; source ' + lock['source']['revision'])
 
 
@@ -198,6 +210,9 @@ def build(force=False):
     lock = load(ROOT / '.cache/ci-lock.json')
     if source_identity() != lock['source']:
         raise ValueError('Sources changed after prepare; run prepare again')
+    for role, path in lock['dependencies'].items():
+        if digest(path) != lock['dependency_checksums'][role]:
+            raise ValueError('Dependency changed after prepare: ' + role)
     if not force:
         try:
             if verified_dist(lock):
@@ -207,6 +222,7 @@ def build(force=False):
     command = ['java', '-Xmx768m', '-Dorg.gradle.jvmargs=-Xmx1536m', '-classpath',
                'gradle/wrapper/gradle-wrapper.jar', 'org.gradle.wrapper.GradleWrapperMain',
                '--no-daemon', '--console=plain', '--no-configuration-cache', '--max-workers=2', 'clean', 'build', 'sourcesJar']
+    command.append('-Pmod_version=' + lock['version'])
     command += ['-P' + key + '=' + value for key, value in sorted(lock['dependencies'].items())]
     dist = ROOT / 'dist'; dist.mkdir(exist_ok=True)
     with (dist / 'build.log').open('w', encoding='utf-8') as log:
@@ -232,6 +248,34 @@ def build(force=False):
     print('BUILT and verified ' + lock['mod_id'])
 
 
+
+def package_release():
+    lock = load(ROOT / '.cache/ci-lock.json')
+    if not verified_dist(lock): raise ValueError('Release packaging requires verified artifacts')
+    manifest = load(ROOT / 'dist/manifest.json')
+    destination = ROOT / 'dist/release'; destination.mkdir(exist_ok=True)
+    for old in destination.iterdir():
+        if old.is_file(): old.unlink()
+    for name in sorted(manifest['artifacts']): shutil.copy2(ROOT / 'dist' / name, destination / name)
+    write(destination / 'aop-build-manifest.json', manifest)
+    (destination / 'SHA256SUMS.txt').write_text(''.join(checksum + '  ' + name + '\n' for name, checksum in sorted(manifest['artifacts'].items())), encoding='utf-8')
+    print('Packaged gameplay JAR, sources, checksums and provenance; no build log is published')
+
+
+def publish(dry_run=False):
+    if os.environ.get('ACT') == 'true' and not dry_run:
+        raise ValueError('Local act runs may only verify a dry-run publication plan')
+    lock = load(ROOT / '.cache/ci-lock.json')
+    if lock['mode'] == 'build': raise ValueError('Pull requests cannot publish')
+    if not verified_dist(lock): raise ValueError('Cannot publish unverified artifacts')
+    config = load(CONFIG)
+    repository = os.environ.get('GITHUB_REPOSITORY') or config['repository']
+    if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository): raise ValueError('Invalid repository')
+    os.environ.update(RELEASE_MODE=lock['mode'], BUILD_VERSION=lock['version'], RELEASE_NAME=config['name'],
+                      GH_REPO=repository, GITHUB_SHA=lock['source']['revision'], RELEASE_REQUIREMENTS=config['requirements'])
+    release.publish(dry_run, str(ROOT / 'dist/release'))
+
+
 def inventory():
     names = subprocess.check_output(['git', '-C', str(ROOT), 'ls-files', '-z']).decode().split('\0')
     write(ROOT / '.ci-source.json', {'revision': subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip(), 'files': sorted(filter(None, names))})
@@ -239,9 +283,12 @@ def inventory():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['prepare', 'build', 'inventory'])
+    parser.add_argument('command', choices=['prepare', 'build', 'package', 'publish', 'inventory'])
     parser.add_argument('--force', action='store_true')
+    parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
     if args.command == 'build': build(args.force)
     elif args.command == 'prepare': prepare()
+    elif args.command == 'package': package_release()
+    elif args.command == 'publish': publish(args.dry_run)
     else: inventory()

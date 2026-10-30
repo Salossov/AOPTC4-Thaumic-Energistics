@@ -21,5 +21,18 @@ final class TerminalCraftingFixture {
             @Override public boolean pushPattern(IPatternDetails details,KeyCounter[] inputs){return false;}
         };
     }
+    static void install(appeng.api.networking.IGrid grid,Level level){
+        var owner=new Object();
+        var node=appeng.api.networking.GridHelper.createManagedNode(owner,(ignored,changed)->{});
+        node.setInWorldNode(false).setIdlePowerUsage(0).addService(ICraftingProvider.class,provider(level));
+        node.create(level,net.minecraft.core.BlockPos.ZERO);
+        try {
+            appeng.api.networking.GridHelper.createConnection(node.getNode(),grid.getPivot());
+            node.getGrid().getCraftingService().refreshNodeCraftingProvider(node.getNode());
+        } catch (RuntimeException failure) {
+            node.destroy();
+            throw new IllegalStateException("Cannot attach native verification crafting provider",failure);
+        }
+    }
     private TerminalCraftingFixture(){}
 }

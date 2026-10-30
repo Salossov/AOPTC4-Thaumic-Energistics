@@ -33,7 +33,7 @@ public record ArcaneTerminalStatePayload(int menuId,int revision,int offset,bool
         return new ArcaneTerminalStatePayload(menu,revision,offset,last,sort,direction,view,costs,entries);
     });
     @Override public Type<ArcaneTerminalStatePayload> type(){return TYPE;}
-    @EventBusSubscriber(modid=ThaumicEnergistics.ID,bus=EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration{
         @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event){event.registrar("1").playToClient(TYPE,CODEC,(payload,context)->context.enqueueWork(()->{if(context.player().containerMenu instanceof ArcaneTerminalMenu menu)menu.receive(payload);}));}
     }

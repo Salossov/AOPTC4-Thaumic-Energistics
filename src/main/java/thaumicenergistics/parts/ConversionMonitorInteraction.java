@@ -12,7 +12,7 @@ import thaumicenergistics.ThaumicEnergistics;
 /** Restore the original shift-right-click despite vanilla's held-item sneak bypass.
  * AE2's onShiftClicked is a left-click callback, not the old onShiftActivate.
  */
-@EventBusSubscriber(modid=ThaumicEnergistics.ID)
+@EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID)
 public final class ConversionMonitorInteraction {
     @SubscribeEvent(priority=EventPriority.LOWEST)
     public static void portableContainerUse(PlayerInteractEvent.RightClickBlock event){

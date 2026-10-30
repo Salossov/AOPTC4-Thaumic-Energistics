@@ -15,7 +15,7 @@ public record EmitterThresholdPayload(int containerId,long threshold) implements
     public static final StreamCodec<RegistryFriendlyByteBuf,EmitterThresholdPayload> CODEC=StreamCodec.composite(
             ByteBufCodecs.VAR_INT,EmitterThresholdPayload::containerId,ByteBufCodecs.VAR_LONG,EmitterThresholdPayload::threshold,EmitterThresholdPayload::new);
     @Override public Type<EmitterThresholdPayload> type() { return TYPE; }
-    @EventBusSubscriber(modid=ThaumicEnergistics.ID,bus=EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration {
         @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event) {
             event.registrar("1").playToServer(TYPE,CODEC,(payload,context)->context.enqueueWork(()->{

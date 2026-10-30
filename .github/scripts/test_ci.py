@@ -77,7 +77,7 @@ class DependencyBundleTests(unittest.TestCase):
 
 class ResourceContracts(unittest.TestCase):
     def test_svg_sources_and_engine_exports(self):
-        root=ci.ROOT; config=ci.load(ci.CONFIG); mid=config['mod_id']
+        root=ci.ROOT; config=ci.load(ci.CONFIG); mid=config.get('namespace',config['mod_id'])
         svg=ET.parse(root/'assets/branding/logo.svg').getroot()
         self.assertEqual(svg.attrib['viewBox'],'0 0 512 512')
         self.assertFalse(any(node.tag.endswith('image') for node in svg.iter()),'SVG must be real vector artwork')
@@ -88,7 +88,7 @@ class ResourceContracts(unittest.TestCase):
         self.assertEqual(ci.digest(root/'src/main/resources/logo.png'),ci.digest(root/f'src/main/resources/assets/aop_ui/textures/branding/{mid}.png'))
 
     def test_every_existing_setting_has_both_languages_and_help(self):
-        root=ci.ROOT;mid=ci.load(ci.CONFIG)['mod_id']
+        root=ci.ROOT;config=ci.load(ci.CONFIG);mid=config.get('namespace',config['mod_id'])
         paths=[]
         if mid=='forbidden':
             source=(root/'src/main/java/forbidden/config/ForbiddenConfig.java').read_text()

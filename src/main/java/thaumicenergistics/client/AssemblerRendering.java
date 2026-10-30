@@ -10,7 +10,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import thaumicenergistics.ThaumicEnergistics;
 import thaumicenergistics.assembler.AssemblerRegistration;
 
-@EventBusSubscriber(modid=ThaumicEnergistics.ID,value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid=ThaumicEnergistics.MOD_ID,value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
 public final class AssemblerRendering {
     @SubscribeEvent public static void reload(RegisterClientReloadListenersEvent event){
         event.registerReloadListener((ResourceManagerReloadListener)resources->{AssemblerItemRenderer.invalidateModels();net.minecraft.client.Minecraft.getInstance().execute(AssemblerAnimationEffects::clear);});

@@ -22,14 +22,14 @@ configurations.verificationRuntimeOnly.extendsFrom configurations.runtimeOnly
 def withComputerCraft = providers.gradleProperty('withComputerCraft').map { it.toBoolean() }.getOrElse(false)
 def withCompact = providers.gradleProperty('withCompact').map { it.toBoolean() }.getOrElse(false)
 def withTinkerer = providers.gradleProperty('withTinkerer').map { it.toBoolean() }.getOrElse(false)
-def tinkererJar = file(providers.gradleProperty('tinkererJar').getOrElse('../../../port_addons/Thaumic_Tinkerer/repo/build/libs/ThaumicTinkerer-1.21.1-1.0.0.jar'))
+def tinkererJar = file(providers.gradleProperty('tinkererJar').getOrElse('../../../port_addons/Thaumic_Tinkerer/repo/build/libs/ThaumicTinkerer-1.21.1-1.1.0.jar'))
 def viewerSmoke = providers.gradleProperty('viewerSmoke').getOrElse('none')
 if (!(viewerSmoke in ['none','jei','emi','both'])) throw new GradleException('Unknown viewerSmoke profile')
 if (viewerSmoke != 'none' && !withCompact) throw new GradleException('Viewer smoke requires withCompact=true')
 def hudSmoke = providers.gradleProperty('hudSmoke').getOrElse('none')
 if (!(hudSmoke in ['none','jade','wthit'])) throw new GradleException('Unknown hudSmoke profile')
 if (hudSmoke != 'none' && !withCompact) throw new GradleException('HUD smoke requires withCompact=true')
-def compactJar = file(providers.gradleProperty('compactJar').getOrElse('../../../aoptc4-compact/build/libs/aoptc4-compact-0.7.0.jar'))
+def compactJar = file(providers.gradleProperty('compactJar').getOrElse('../../../aoptc4-compact/build/libs/aoptc4-compact-0.8.0.jar'))
 if (!withComputerCraft) sourceSets.compatVerification.java.exclude '**/ComputerCraftNativeTest.java'
 if (withCompact) sourceSets.compatVerification.java.srcDir 'src/hudVerification/java'
 if (viewerSmoke != 'none') sourceSets.compatVerification.java.srcDir 'src/viewerVerification/java'
@@ -42,7 +42,7 @@ neoForge {
     addModdingDependenciesTo sourceSets.compatVerification
     addModdingDependenciesTo sourceSets.test
     mods {
-        thaumicenergistics {
+        thaumicenergistics_aop {
             sourceSet sourceSets.main
             sourceSet sourceSets.verification
             if (withComputerCraft || withCompact) sourceSet sourceSets.compatVerification
@@ -96,15 +96,15 @@ def apiJar = file(providers.gradleProperty('thaumcraftApiJar')
 def coreJar = file(providers.gradleProperty('thaumcraftRuntimeJar')
         .getOrElse("../../../repo/mod/build/libs/thaumcraft-1.21.1-${project.thaumcraft_version}.jar"))
 def aopUiJar = file(providers.gradleProperty('aopUiJar')
-        .getOrElse('../../../aopui/repo/build/libs/aopui-1.21.1-0.7.0.jar'))
+        .getOrElse('../../../aopui/repo/build/libs/aopui-1.21.1-0.8.0.jar'))
 dependencies {
     compileOnly files(apiJar, aopUiJar)
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.113.0'
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-core-api:1.113.0'
-    implementation "org.appliedenergistics:appliedenergistics2:${project.ae2_version}"
+    implementation "appeng:appliedenergistics2:${project.ae2_version}"
     runtimeOnly files(coreJar)
     runtimeOnly files(aopUiJar)
-    runtimeOnly 'top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1'
+    runtimeOnly 'top.theillusivec4.curios:curios-neoforge:9.5.0+1.21.1'
     if (withComputerCraft) verificationRuntimeOnly 'cc.tweaked:cc-tweaked-1.21.1-forge:1.120.2'
     if (withTinkerer) verificationRuntimeOnly files(tinkererJar)
     if (withCompact) {
@@ -124,6 +124,7 @@ dependencies {
     }
 }
 repositories {
+    maven { url = "https://modmaven.dev/"; content { includeGroup "appeng" } }
     mavenCentral()
     maven { url = 'https://maven.blamejared.com' }
     maven { url = 'https://maven.terraformersmc.com/releases' }
@@ -137,7 +138,7 @@ repositories {
 }
 tasks.register('verifyThaumcraftApi') {
     inputs.files(apiJar, aopUiJar)
-    doLast { if (!aopUiJar.isFile()) throw new GradleException("Pass -PaopUiJar=<AOP UI 0.7 gameplay JAR>") }
+    doLast { if (!aopUiJar.isFile()) throw new GradleException("Pass -PaopUiJar=<AOP UI 0.8 gameplay JAR>") }
     doLast { if (!apiJar.isFile()) throw new GradleException("Missing public Thaumcraft API: ${apiJar}") }
 }
 tasks.named('compileJava') { dependsOn 'verifyThaumcraftApi' }

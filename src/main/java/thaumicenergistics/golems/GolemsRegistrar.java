@@ -19,7 +19,7 @@ import thaumicenergistics.ThaumicEnergistics;
  * Autonomous NeoForge EventBusSubscriber registrar for Gears, Gearboxes, and Golem Backpack.
  * Registers blocks, items, block entities, payloads, AE2 GridLinkables, and creative tab entries.
  */
-@EventBusSubscriber(modid = ThaumicEnergistics.ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ThaumicEnergistics.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class GolemsRegistrar {
     public static final ResourceLocation IRON_GEAR_ID = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "iron_gear");
     public static final ResourceLocation IRON_GEARBOX_ID = ResourceLocation.fromNamespaceAndPath(ThaumicEnergistics.ID, "iron_gear_box");
