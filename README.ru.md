@@ -1,6 +1,8 @@
 # Thaumic Energistics
 
-![Thaumic Energistics](assets/branding/logo.svg)
+<img src="assets/branding/aop-logo.png" alt="Thaumic Energistics" width="256" height="256">
+
+**Проекты AOP:** [Thaumcraft 4](https://github.com/Salossov/AOP-Thaumcraft-4) · [Compact](https://github.com/Salossov/AOPTC4-Compact) · [Thaumic Tinkerer](https://github.com/Salossov/AOPTC4-Thaumic-Tinkerer) · [AOP UI](https://github.com/Salossov/AOP-UI) · [Forbidden Magic](https://github.com/Salossov/AOPTC4-Forbidden-Magic) · [Thaumic Energistics](https://github.com/Salossov/AOPTC4-Thaumic-Energistics)
 
 [English](README.md) · [Русский](README.ru.md)
 

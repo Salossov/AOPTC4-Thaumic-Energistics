@@ -265,5 +265,5 @@
   "thaumicenergistics.configuration.disableGearboxModel.tooltip": "Показывает железные и таумиевые редукторы обычными кубами. Клиентская настройка.",
   "thaumicenergistics.configuration.searchTooltips.tooltip": "Ищет в арканном терминале также по подсказкам предметов, включая запросы @. Клиентская настройка.",
   "thaumicenergistics.configuration.category.crafting": "Создание и исследования",
-  "thaumicenergistics.configuration.category.client": "Клиент"
+  "thaumicenergistics.configuration.category.client": "Отображение"
 }

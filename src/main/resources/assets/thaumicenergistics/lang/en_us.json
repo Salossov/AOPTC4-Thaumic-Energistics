@@ -263,5 +263,5 @@
   "thaumicenergistics.configuration.disableGearboxModel.tooltip": "Render iron and thaumium gearboxes as ordinary cubes. Client setting.",
   "thaumicenergistics.configuration.searchTooltips.tooltip": "Search arcane terminal item tooltips in addition to names and mod IDs, including @ queries. Client setting.",
   "thaumicenergistics.configuration.category.crafting": "Crafting and research",
-  "thaumicenergistics.configuration.category.client": "Client"
+  "thaumicenergistics.configuration.category.client": "Display"
 }
